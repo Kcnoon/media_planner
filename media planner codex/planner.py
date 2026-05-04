@@ -189,13 +189,16 @@ def suggest_slots(
     inventory_rows: list[dict],
     slot_meta: dict[tuple[str, str], dict],
     settings,
-    limit: int = 10,
+    limit: int | None = None,
 ) -> list[dict]:
     candidates = build_candidates(historical_rows, slot_meta, settings, req.marketplace)
     inventory = _inventory_by_slot_phase(req, inventory_rows)
     phases = default_phases(req)
     seen: set[str] = set()
     suggestions: list[dict] = []
+
+    per_country_min = _per_country_min_lines(req)
+    target_total = max((limit or 0), per_country_min * max(len(req.countries or []), 1))
 
     ranked = sorted(candidates, key=lambda candidate: _candidate_score(candidate, req.objective), reverse=True)
     for candidate in ranked:
@@ -221,7 +224,7 @@ def suggest_slots(
                 "score": round(_candidate_score(candidate, req.objective), 4),
             }
         )
-        if len(suggestions) >= limit:
+        if len(suggestions) >= target_total:
             break
     return suggestions
 

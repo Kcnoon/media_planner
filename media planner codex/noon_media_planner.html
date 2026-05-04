@@ -385,7 +385,13 @@ td.mono{font-family:var(--mono);font-size:11px}
 <div class="panel" id="p4">
   <div class="card">
     <div class="card-hd">Suggested slots</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">We suggest the top 10 country-slot options from historical performance and forecast availability. Keep the ones you want, add more manually, and mark any selected slots as FOC if they should contribute views with zero cost.</p>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">We suggest country-slot options from historical performance and forecast availability with at least the minimum target per country. Keep the ones you want, add more manually, and mark any selected slots as FOC if they should contribute views with zero cost.</p>
+    <div class="filter-row" style="margin-bottom:12px">
+      <span class="filter-lbl">Page:</span>
+      <select id="preselectionPageFilter" onchange="setPreselectionPageFilter(this.value)" style="max-width:260px">
+        <option value="all">All pages</option>
+      </select>
+    </div>
     <div id="slotSuggestionGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"></div>
   </div>
   <div class="card">
@@ -509,7 +515,7 @@ const S={
   phases:[],
   rows:[], budget:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', excludedSlotKeys:[], slotCatalog:[],
-  slotSuggestions:[], selectedSlots:[], manualFoc:false,
+  slotSuggestions:[], selectedSlots:[], manualFoc:false, preselectionPageFilter:'all',
   calPage:0,
   picking:false, pickFrom:null,
 };
@@ -723,6 +729,22 @@ function toggleSelectedFoc(key){
   renderSlotPreselection();
 }
 
+
+function setPreselectionPageFilter(value){
+  S.preselectionPageFilter=value||'all';
+  renderSlotPreselection();
+}
+
+function renderPreselectionPageFilter(){
+  const sel=document.getElementById('preselectionPageFilter');
+  if(!sel) return;
+  const selected=S.preselectionPageFilter||'all';
+  const pages=[...new Set((S.slotSuggestions||[]).map(slot=>(slot.page||'Page pending').trim()||'Page pending'))].sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML=`<option value="all">All pages</option>${pages.map(page=>`<option value="${page}">${page}</option>`).join('')}`;
+  sel.value=pages.includes(selected)?selected:'all';
+  S.preselectionPageFilter=sel.value;
+}
+
 function addManualSelectedSlot(){
   const country=document.getElementById('manualSlotCountry')?.value||'';
   const slotCode=document.getElementById('manualSlotCode')?.value||'';
@@ -753,7 +775,10 @@ function renderSlotPreselection(){
   const suggestionWrap=document.getElementById('slotSuggestionGrid');
   const selectedWrap=document.getElementById('selectedSlotList');
   if(!suggestionWrap||!selectedWrap) return;
-  suggestionWrap.innerHTML=(S.slotSuggestions||[]).map(slot=>{
+  renderPreselectionPageFilter();
+  const pageFilter=S.preselectionPageFilter||'all';
+  const filteredSuggestions=(S.slotSuggestions||[]).filter(slot=>pageFilter==='all'||((slot.page||'Page pending').trim()||'Page pending')===pageFilter);
+  suggestionWrap.innerHTML=filteredSuggestions.map(slot=>{
     const picked=S.selectedSlots.some(item=>item.slot_key===slot.slot_key);
     return `<div class="card" style="margin:0;padding:14px;border-color:${picked?'var(--blue)':'var(--border)'}">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
@@ -795,6 +820,7 @@ async function openPreselection(){
       throw new Error((detail&&detail.message)||detail||'Unable to fetch slot suggestions');
     }
     S.slotSuggestions=data.suggestions||[];
+    S.preselectionPageFilter='all';
     S.selectedSlots=S.slotSuggestions.map(slot=>({...slot,foc:false}));
     nav(4);
   }catch(e){
