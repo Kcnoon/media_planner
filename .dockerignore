@@ -1,0 +1,11 @@
+.git
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite
+*.db
+.DS_Store
+.env
+noon_media_planner_sheets_backend.zip

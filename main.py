@@ -1,0 +1,176 @@
+from __future__ import annotations
+
+from datetime import date
+
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+
+from bigquery_repository import BigQueryRepository
+from config import Settings, get_settings
+from models import MediaPlanRequest, MediaPlanResponse
+from planner import plan_media, suggest_slots
+
+
+app = FastAPI(title="Noon Media Planner API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.exception_handler(Exception)
+def unhandled_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"detail": {"message": str(exc) or "Internal Server Error"}})
+
+
+def get_repo(settings: Settings = Depends(get_settings)) -> BigQueryRepository:
+    return BigQueryRepository(settings)
+
+
+def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None):
+    allocated = round(sum(row.cost for row in rows), 2)
+    views = sum(row.views or 0 for row in rows)
+    summary = {
+        "brand": req.brand,
+        "comcats": req.comcats,
+        "countries": req.countries,
+        "budget": req.budget,
+        "discount_pct": req.discount_pct,
+        "allocated": allocated,
+        "remaining": round(req.budget - allocated, 2),
+        "estimated_views": views,
+        "line_count": len(rows),
+    }
+    sheet_plan_code, sheet_plan_link = repo.save_plan(req, rows, summary, diagnostics, plan_code=plan_id)
+    summary["sheet_plan_code"] = sheet_plan_code
+    summary["sheet_plan_link"] = sheet_plan_link
+    summary["plan_id"] = sheet_plan_code
+    return {"rows": rows, "summary": summary, "diagnostics": diagnostics}
+
+
+def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
+    available_by_slot = {}
+    for row in inventory_rows:
+        available = max(int(row.get("available_views") or 0), 0)
+        if available <= 0:
+            continue
+        key = (row.get("country") or "", row.get("slot_code") or "")
+        if not key[0] or not key[1]:
+            continue
+        available_by_slot[key] = available_by_slot.get(key, 0) + available
+
+    available_slots = []
+    for key, available in available_by_slot.items():
+        meta = slot_meta.get(key, {})
+        slot_name = str(meta.get("slot_name") or key[1]).strip()
+        available_slots.append(
+            {
+                "country": key[0],
+                "slot_code": key[1],
+                "slot_name": slot_name,
+                "page": str(meta.get("page") or meta.get("publisher") or "").strip(),
+                "category": str(meta.get("category") or meta.get("page") or "").strip(),
+                "zone": str(meta.get("zone") or "").strip(),
+                "dimension": str(meta.get("dimension") or "").strip(),
+                "publisher": str(meta.get("publisher") or "").strip(),
+                "pricing_model": str(meta.get("pricing_model") or "cpm").strip(),
+                "rate": float(meta.get("rate") or 0) or 10.0,
+                "available_views": available,
+            }
+        )
+    available_slots.sort(key=lambda slot: (slot["country"], -slot["available_views"], slot["slot_name"].lower()))
+    return available_slots
+
+
+@app.get("/")
+def index():
+    return FileResponse("noon_media_planner.html", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/health")
+def health():
+    return {"ok": True}
+
+
+@app.get("/api/options")
+def list_options(repo: BigQueryRepository = Depends(get_repo)):
+    return {
+        "countries": ["ae", "sa", "eg"],
+        "comcats": repo.list_comcats(),
+        "slots": repo.fetch_slot_catalog(),
+    }
+
+
+@app.post("/api/slot-preselection")
+def slot_preselection(req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
+    req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
+    historical_rows = repo.fetch_historical_performance(req)
+    inventory_rows = repo.fetch_inventory(req)
+    slot_meta = repo.fetch_slot_meta()
+    suggestions = suggest_slots(req, historical_rows, inventory_rows, slot_meta, settings, limit=max(len(req.countries), 1) * (6 if req.budget <= 10000 else 10))
+    available_slots = build_available_slots(req, inventory_rows, slot_meta)
+    return {
+        "suggestions": suggestions,
+        "available_slots": available_slots,
+        "diagnostics": {
+            "historical_rows": len(historical_rows),
+            "inventory_rows": len(inventory_rows),
+            "selected_countries": req.countries,
+            "selected_comcats": req.comcats,
+            "brand_tag": req.brand_tag,
+        },
+    }
+
+
+@app.post("/api/media-plan", response_model=MediaPlanResponse)
+def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
+    if req.end_date < req.start_date:
+        raise HTTPException(status_code=400, detail="end_date must be on or after start_date")
+    if req.start_date < date.today():
+        raise HTTPException(status_code=400, detail="start_date must be today or later")
+    if req.budget <= 0:
+        raise HTTPException(status_code=400, detail="budget must be positive")
+    if not req.comcats:
+        raise HTTPException(status_code=400, detail="select at least one comcat")
+    if not req.countries:
+        raise HTTPException(status_code=400, detail="select at least one country")
+    if any(c.lower() not in {"ae", "sa", "eg"} for c in req.countries):
+        raise HTTPException(status_code=400, detail="countries must be selected from ae, sa, eg")
+
+    req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
+    historical_rows = repo.fetch_historical_performance(req)
+    inventory_rows = repo.fetch_inventory(req)
+    slot_meta = repo.fetch_slot_meta()
+    rows, diagnostics = plan_media(req, historical_rows, inventory_rows, slot_meta, settings)
+    diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag})
+    if not rows:
+        raise HTTPException(status_code=422, detail={"message": diagnostics.get("reason") or "No plan rows generated.", "diagnostics": diagnostics})
+    return build_response(req, rows, diagnostics, repo)
+
+
+@app.post("/api/media-plan/{plan_id}/regenerate", response_model=MediaPlanResponse)
+def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
+    req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
+    historical_rows = repo.fetch_historical_performance(req)
+    inventory_rows = repo.fetch_inventory(req)
+    slot_meta = repo.fetch_slot_meta()
+    rows, diagnostics = plan_media(req, historical_rows, inventory_rows, slot_meta, settings)
+    diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "regenerated": True})
+    if not rows:
+        raise HTTPException(status_code=422, detail={"message": diagnostics.get("reason") or "No plan rows generated.", "diagnostics": diagnostics})
+    return build_response(req, rows, diagnostics, repo, plan_id=plan_id)
+
+
+@app.get("/api/media-plan/{plan_id}")
+def get_media_plan(plan_id: str, repo: BigQueryRepository = Depends(get_repo)):
+    plan = repo.get_saved_plan(plan_id)
+    if not plan:
+        raise HTTPException(status_code=404, detail="plan not found")
+    return plan
+
+
+app.mount("/static", StaticFiles(directory="."), name="static")

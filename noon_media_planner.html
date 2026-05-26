@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Noon Ads — Media Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#fbfaf6;--surface:#ffffff;--surface2:#f5f1e6;--surface3:#1f2128;--border:#e9dfbf;--border2:#d9c98e;
+  --text:#1f2128;--text2:#5c606b;--text3:#8a8f9c;
+  --blue:#2c313c;--blue-bg:#f4f5f8;--blue-text:#1f2128;
+  --green:#178a57;--green-bg:#eaf8f0;--green-text:#0d5a38;
+  --amber:#d9a400;--amber-bg:#fff5cc;--amber-text:#7d5d00;
+  --red:#c43535;--red-bg:#fdeaea;--red-text:#8a1a1a;
+  --purple:#444b5c;--purple-bg:#eef0f4;--purple-text:#2c313c;
+  --noon:#ffcf33;--noon-soft:#fff3bf;--ink:#1f2128;
+  --r-sm:8px;--r-md:14px;--r-lg:22px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --shadow:0 16px 40px rgba(31,33,40,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:radial-gradient(circle at top left,#fff7d8 0,#fbfaf6 36%,#f3f4f7 100%);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+.shell{display:flex;flex-direction:column;min-height:100vh}
+.topnav{background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 10px 30px rgba(31,33,40,.05)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{background:linear-gradient(135deg,var(--noon),#ffdf70);border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#111;box-shadow:0 8px 18px rgba(255,207,51,.35)}
+.logo-name{font-size:16px;font-weight:700;letter-spacing:-.4px}
+.logo-sep{color:var(--border2);margin:0 6px}
+.logo-sub{font-size:13px;color:var(--text2)}
+.nav-pills{display:flex;gap:2px}
+.np{padding:5px 14px;border-radius:var(--r-md);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:.15s}
+.np:hover{background:var(--surface2)}
+.np.active{background:var(--ink);color:var(--noon)}
+.np.done{background:var(--green-bg);color:var(--green-text)}
+.np.done::before{content:"✓ ";font-size:10px}
+.nav-right{display:flex;align-items:center;gap:8px}
+.chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--noon-soft);color:var(--ink);border:1px solid rgba(255,207,51,.6)}
+.main{flex:1;padding:24px 28px;max-width:1200px;margin:0 auto;width:100%}
+.panel{display:none;animation:fadeIn .2s ease}
+.panel.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card{background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-hd{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+.fg{display:grid;gap:12px}
+.fg-2{grid-template-columns:repeat(2,1fr)}
+.fg-3{grid-template-columns:repeat(3,1fr)}
+.fg-4{grid-template-columns:repeat(4,1fr)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:.02em}
+.field input,.field select,.field textarea{padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;background:var(--surface);color:var(--text);font-family:var(--font);transition:.15s;outline:none}
+.field input:focus,.field select:focus{border-color:var(--noon);box-shadow:0 0 0 4px rgba(255,207,51,.2)}
+.field textarea{resize:vertical;min-height:60px}
+.pill-group{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:6px 13px;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);background:var(--surface);transition:.12s;user-select:none}
+.pill:hover{border-color:var(--border2)}
+.pill.on{background:var(--noon-soft);color:var(--ink);border-color:var(--noon)}
+.pill.on-g{background:var(--green-bg);color:var(--green-text);border-color:var(--green)}
+.obj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.obj-card{border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;cursor:pointer;background:var(--surface);transition:.15s}
+.obj-card:hover{border-color:var(--border2)}
+.obj-card.on{border-color:var(--noon);background:linear-gradient(180deg,#fffdf2,#fff7d6)}
+.obj-icon{width:32px;height:32px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.obj-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.obj-desc{font-size:11px;color:var(--text2);line-height:1.45}
+.obj-card.on .obj-title{color:var(--ink)}
+.w-wrap{background:linear-gradient(180deg,#fffdf3,#f7f1db);border-radius:var(--r-md);padding:14px;margin-top:10px;border:1px solid var(--border)}
+.w-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.w-row:last-child{margin-bottom:0}
+.w-lbl{font-size:12px;color:var(--text2);width:52px;flex-shrink:0}
+.w-val{font-size:12px;font-weight:600;color:var(--blue);width:34px;text-align:right;flex-shrink:0}
+input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--noon)}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 20px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--text);font-family:var(--font);transition:.15s}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn.pri{background:var(--ink);color:var(--noon);border-color:var(--ink)}
+.btn.pri:hover{background:#111319}
+.btn.ghost{color:var(--ink);border-color:var(--border2);background:#fffced}
+.btn.ghost:hover{background:var(--noon-soft)}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px}
+.metric .ml{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.metric .mv{font-size:22px;font-weight:600;letter-spacing:-.5px}
+.metric .ms{font-size:11px;color:var(--text2);margin-top:2px}
+.metric.accent{background:linear-gradient(135deg,var(--ink),#343946);border-color:var(--ink)}
+.metric.accent .ml{color:rgba(255,255,255,.65)}
+.metric.accent .mv,.metric.accent .ms{color:#fff}
+.metric.accent .ms{opacity:.7}
+.bbar-wrap{margin-top:10px}
+.bbar-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px}
+.bbar-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bbar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--noon),#ffd94d);transition:width .4s ease}
+.bbar-fill.warn{background:var(--amber)}
+.bbar-fill.over{background:var(--red)}
+.tl-card{background:linear-gradient(180deg,#fffef9,#fff);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.tl-months{display:flex;margin-bottom:8px;margin-left:110px}
+.tl-month{flex:1;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;border-left:1px solid var(--border);padding-left:6px}
+.tl-row{display:flex;align-items:center;margin-bottom:5px}
+.tl-label{width:110px;min-width:110px;font-size:11px;color:var(--text2);text-align:right;padding-right:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-track{flex:1;height:24px;background:var(--surface2);border-radius:var(--r-sm);position:relative;overflow:hidden}
+.tl-bar{position:absolute;height:100%;border-radius:4px;display:flex;align-items:center;padding:0 7px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;cursor:default}
+.tl-bar:hover{opacity:.85}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;background:linear-gradient(180deg,#fff7d7,#f7f1de);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
+tbody td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fffdf5}
+td.mono{font-family:var(--mono);font-size:11px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.b-cpm{background:var(--blue-bg);color:var(--blue-text)}
+.b-cpd{background:var(--green-bg);color:var(--green-text)}
+.ph-jan{background:#DDEEFF;color:#1243A0}
+.ph-feb{background:#D4F5E8;color:#0F5C39}
+.ph-mar{background:#FDE8BB;color:#7A4A0A}
+.ph-ram{background:#F9D8ED;color:#8A1A50}
+.ph-eid{background:#EAD8F9;color:#3D1A9E}
+.ph-custom{background:#F0EBFC;color:#3D1A9E}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.12s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--ink);border-bottom-color:var(--noon)}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.filter-lbl{font-size:11px;color:var(--text3);font-weight:500;margin-right:2px}
+.tot-row{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:12px 0 0;margin-top:4px;border-top:1px solid var(--border)}
+.tot-lbl{font-size:12px;color:var(--text2)}
+.tot-val{font-size:18px;font-weight:600;letter-spacing:-.3px}
+.rem-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:var(--r-sm)}
+.rem-ok{background:var(--green-bg);color:var(--green-text)}
+.rem-over{background:var(--red-bg);color:var(--red-text)}
+.del-btn{width:22px;height:22px;border:1px solid var(--border);border-radius:var(--r-sm);background:transparent;cursor:pointer;font-size:13px;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:.12s;padding:0;line-height:1}
+.del-btn:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-bg)}
+.brand-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.brand-title{font-size:20px;font-weight:600;letter-spacing:-.4px}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+.tbl-container{max-height:500px;overflow-y:auto;border-radius:var(--r-md);border:1px solid var(--border);background:#fff}
+.plan-cell-input,.plan-cell-select,.plan-cell-note{width:100%;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:7px 9px;font-size:12px;color:var(--text);font-family:var(--font);outline:none;transition:.12s}
+.plan-cell-input:focus,.plan-cell-select:focus,.plan-cell-note:focus{border-color:var(--noon);box-shadow:0 0 0 4px rgba(255,207,51,.18)}
+.plan-cell-note{min-width:180px}
+.slot-meta{font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono);line-height:1.4}
+.country-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:var(--surface2);font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase}
+.plan-toolbar-note{font-size:12px;color:var(--text2);margin-top:8px}
+
+/* Calendar */
+.cal-scroll{overflow-x:auto;padding-bottom:4px}
+.cal-months-row{display:flex;gap:24px;min-width:max-content}
+.cal-month-block{width:210px;flex-shrink:0}
+.cal-month-name{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:3px 0;letter-spacing:.03em}
+.cal-day{height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;color:var(--text2);transition:.1s;user-select:none;position:relative}
+.cal-day:hover:not(.cal-out):not(.cal-off){background:var(--surface2);color:var(--text)}
+.cal-day.cal-out{visibility:hidden}
+.cal-day.cal-off{color:var(--border2);pointer-events:none;opacity:.5}
+.cal-day.cal-inrange{background:rgba(26,95,212,.1)}
+.cal-day.cal-rangesel{background:var(--blue);color:#fff;font-weight:600}
+.cal-day.cal-today{font-weight:600;color:var(--blue)}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-nav{width:28px;height:28px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.cal-nav:hover{background:var(--surface2)}
+.cal-nav:disabled{opacity:.3;pointer-events:none}
+.cal-window-lbl{font-size:12px;color:var(--text2)}
+
+/* Phase segments */
+.seg-bar{height:30px;background:var(--surface2);border-radius:var(--r-md);position:relative;overflow:hidden;margin-top:14px;border:1px solid var(--border)}
+.seg-chunk{position:absolute;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;padding:0 4px}
+.phase-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.phase-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--r-md);padding:10px 12px;border:1px solid var(--border)}
+.phase-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.phase-dates{font-size:12px;font-weight:500;color:var(--text);min-width:140px}
+.phase-name-inp{border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 9px;font-size:12px;background:var(--surface);color:var(--text);font-family:var(--font);outline:none;flex:1;max-width:200px}
+.phase-name-inp:focus{border-color:var(--blue)}
+.phase-del{width:22px;height:22px;border:none;background:transparent;cursor:pointer;color:var(--text3);font-size:15px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:3px;line-height:1}
+.phase-del:hover{color:var(--red)}
+.hint-bar{font-size:12px;color:var(--ink);background:linear-gradient(180deg,#fff8dc,#fff2ba);border-radius:var(--r-sm);padding:8px 12px;margin-top:10px;display:none;border:1px solid rgba(255,207,51,.5)}
+.hint-bar.show{display:block}
+
+@media(max-width:800px){
+  .fg-3,.fg-4{grid-template-columns:repeat(2,1fr)}
+  .obj-grid{grid-template-columns:1fr}
+  .metric-grid{grid-template-columns:repeat(2,1fr)}
+  .main{padding:16px}
+  .topnav{padding:0 16px}
+}
+@media print{
+  .topnav,.btn-row,.tab-bar,.filter-row,.del-btn{display:none!important}
+  #p1,#p2,#p3{display:none!important}
+  #p4{display:block!important}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="topnav">
+  <div class="logo">
+    <div class="logo-mark">n</div>
+    <div><span class="logo-name">noon ads</span><span class="logo-sep">/</span><span class="logo-sub">Media Planner</span></div>
+  </div>
+  <div class="nav-pills">
+    <div class="np active" id="sn1" onclick="nav(1)">1 · Brand</div>
+    <div class="np" id="sn2" onclick="nav(2)">2 · Objective</div>
+    <div class="np" id="sn3" onclick="nav(3)">3 · Budget</div>
+    <div class="np" id="sn4" onclick="nav(4)">4 · Slot-preselection</div>
+    <div class="np" id="sn5" onclick="nav(5)">5 · Plan</div>
+  </div>
+  <div class="nav-right">
+    <span class="chip" id="navChip">No plan generated</span>
+    <button class="btn" onclick="nav(5)" style="font-size:12px;padding:6px 14px">View plan →</button>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- P1: Brand -->
+<div class="panel show" id="p1">
+  <div class="card">
+    <div class="card-hd">Brand details</div>
+    <div class="fg fg-4">
+      <div class="field"><label>Brand name</label><input id="bName" type="text" placeholder="Brand name"/></div>
+      <div class="field"><label>Countries</label>
+        <div class="pill-group" id="bCountryGroup" style="margin-top:4px">
+          <div class="pill" onclick="toggleCountry(this,'ae')">ae</div>
+          <div class="pill" onclick="toggleCountry(this,'sa')">sa</div>
+          <div class="pill" onclick="toggleCountry(this,'eg')">eg</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Marketplace</label>
+        <div class="pill-group" style="margin-top:4px">
+          <div class="pill on" id="mk-both" onclick="setMarketplace('both')">Both</div>
+          <div class="pill" id="mk-core" onclick="setMarketplace('core')">Core</div>
+          <div class="pill" id="mk-supermall" onclick="setMarketplace('supermall')">Supermall</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Sub-brands</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+          <input id="subBrandInput" type="text" placeholder="Add sub-brand" style="flex:1"/>
+          <button class="btn" type="button" style="padding:7px 12px;font-size:12px" onclick="addSubBrand()">Add</button>
+        </div>
+        <div class="pill-group" id="subBrandChips" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hd">Comcat codes</div>
+    <div class="pill-group" id="comcatGroup">
+      <div class="pill" onclick="toggleComcat(this,'audio_video')">audio_video</div>
+      <div class="pill" onclick="toggleComcat(this,'hair_personal_care')">hair_personal_care</div>
+      <div class="pill" onclick="toggleComcat(this,'epc')">epc</div>
+      <div class="pill" onclick="toggleComcat(this,'fragrance')">fragrance</div>
+      <div class="pill" onclick="toggleComcat(this,'colour_cosmetics')">colour_cosmetics</div>
+      <div class="pill" onclick="toggleComcat(this,'camera')">camera</div>
+      <div class="pill" onclick="toggleComcat(this,'automotive')">automotive</div>
+      <div class="pill" onclick="toggleComcat(this,'bags_luggage')">bags_luggage</div>
+      <div class="pill" onclick="toggleComcat(this,'jewelry')">jewelry</div>
+      <div class="pill" onclick="toggleComcat(this,'footwear')">footwear</div>
+      <div class="pill" onclick="toggleComcat(this,'apparel')">apparel</div>
+      <div class="pill" onclick="toggleComcat(this,'headsets_headphones')">headsets_headphones</div>
+      <div class="pill" onclick="toggleComcat(this,'baby_consumables')">baby_consumables</div>
+      <div class="pill" onclick="toggleComcat(this,'home_improvement')">home_improvement</div>
+      <div class="pill" onclick="toggleComcat(this,'furniture')">furniture</div>
+      <div class="pill" onclick="toggleComcat(this,'kitchen_dining')">kitchen_dining</div>
+      <div class="pill" onclick="toggleComcat(this,'bath_bedding')">bath_bedding</div>
+      <div class="pill" onclick="toggleComcat(this,'home_decor')">home_decor</div>
+      <div class="pill" onclick="toggleComcat(this,'laptop_accessories')">laptop_accessories</div>
+      <div class="pill" onclick="toggleComcat(this,'laptops')">laptops</div>
+      <div class="pill" onclick="toggleComcat(this,'small_appliances')">small_appliances</div>
+      <div class="pill" onclick="toggleComcat(this,'mobiles')">mobiles</div>
+      <div class="pill" onclick="toggleComcat(this,'large_appliances')">large_appliances</div>
+      <div class="pill" onclick="toggleComcat(this,'mobile_accessories')">mobile_accessories</div>
+      <div class="pill" onclick="toggleComcat(this,'baby_nonconsumables')">baby_nonconsumables</div>
+      <div class="pill" onclick="toggleComcat(this,'vg_accessories')">vg_accessories</div>
+      <div class="pill" onclick="toggleComcat(this,'grocery')">grocery</div>
+      <div class="pill" onclick="toggleComcat(this,'sports_outdoor')">sports_outdoor</div>
+      <div class="pill" onclick="toggleComcat(this,'books_media')">books_media</div>
+      <div class="pill" onclick="toggleComcat(this,'vg_consoles')">vg_consoles</div>
+      <div class="pill" onclick="toggleComcat(this,'watches')">watches</div>
+      <div class="pill" onclick="toggleComcat(this,'stationery_office_supplies')">stationery_office_supplies</div>
+      <div class="pill" onclick="toggleComcat(this,'wearables')">wearables</div>
+      <div class="pill" onclick="toggleComcat(this,'eyewear')">eyewear</div>
+      <div class="pill" onclick="toggleComcat(this,'toys')">toys</div>
+      <div class="pill" onclick="toggleComcat(this,'health_nutrition')">health_nutrition</div>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn pri" onclick="nav(2)">Next: Objective →</button></div>
+</div>
+
+<!-- P2: Objective -->
+<div class="panel" id="p2">
+  <div class="card">
+    <div class="card-hd">Campaign objective</div>
+    <div class="obj-grid">
+      <div class="obj-card" id="ob-reach" onclick="setObj('reach')">
+        <div class="obj-icon" style="background:var(--purple-bg)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#6B3FD4" stroke-width="1.4"/><circle cx="9" cy="9" r="4" stroke="#6B3FD4" stroke-width="1.4"/><circle cx="9" cy="9" r="1.5" fill="#6B3FD4"/></svg></div>
+        <div class="obj-title">Reach &amp; visibility</div>
+        <div class="obj-desc">Hero Slider, Top Fold Unit — maximise impressions and brand awareness</div>
+      </div>
+      <div class="obj-card" id="ob-roas" onclick="setObj('roas')">
+        <div class="obj-icon" style="background:var(--amber-bg)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="2,14 6,8 10,11 16,4" stroke="#C47A1A" stroke-width="1.5" fill="none" stroke-linejoin="round"/><polyline points="12,4 16,4 16,8" stroke="#C47A1A" stroke-width="1.5" fill="none"/></svg></div>
+        <div class="obj-title">ROAS / conversion</div>
+        <div class="obj-desc">CLP ATF, Brand Carousel — drive purchase intent and returns</div>
+      </div>
+      <div class="obj-card" id="ob-both" onclick="setObj('both')">
+        <div class="obj-icon" style="background:var(--blue-bg)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="10" width="4" height="6" rx="1" fill="#1A5FD4" opacity=".4"/><rect x="7" y="7" width="4" height="9" rx="1" fill="#1A5FD4" opacity=".65"/><rect x="12" y="3" width="4" height="13" rx="1" fill="#1A5FD4"/></svg></div>
+        <div class="obj-title">Balanced</div>
+        <div class="obj-desc">Split budget across reach and conversion by custom weightage</div>
+      </div>
+    </div>
+    <div id="wBlock" class="w-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Budget split</div>
+      <div class="w-row"><span class="w-lbl">Reach</span><input type="range" min="10" max="90" step="5" value="60" id="rW" oninput="syncW(this,'reach')"/><span class="w-val" id="rWv">60%</span></div>
+      <div class="w-row"><span class="w-lbl">ROAS</span><input type="range" min="10" max="90" step="5" value="40" id="oW" oninput="syncW(this,'roas')"/><span class="w-val" id="oWv">40%</span></div>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Budget →</button></div>
+</div>
+
+<!-- P3: Budget & Scheduling -->
+<div class="panel" id="p3">
+  <div class="card">
+    <div class="card-hd">Budget</div>
+    <div class="fg fg-4" style="margin-bottom:14px">
+      <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter budget" oninput="updateBudgetBar()"/></div>
+      <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
+      <div class="field"><label>Conversion currency</label><select id="bCur"><option value="">Select currency</option><option>USD</option><option>AED</option><option>SAR</option><option>EGP</option></select></div>
+      <div class="field"><label>LE code</label><input id="leCode" type="text" placeholder="e.g. LE-UAE-2026-001"/></div>
+      <div class="field"><label>Budget confirmation type</label><div class="pill-group" style="margin-top:4px"><div class="pill" id="budgetLock" onclick="toggleBudgetLock()">Unlocked</div></div></div>
+    </div>
+    <div class="bbar-wrap">
+      <div class="bbar-labels"><span id="bbarLeft">No budget entered</span><span id="bbarRight">$0 allocated</span></div>
+      <div class="bbar-track"><div class="bbar-fill" id="bbarFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">Flight window</div>
+    <div class="fg fg-3">
+      <div class="field"><label>Start date</label><input id="bStart" type="date" onchange="onDatesChange()"/></div>
+      <div class="field"><label>End date</label><input id="bEnd" type="date" onchange="onDatesChange()"/></div>
+      <div class="field"><label>Duration</label><div id="durBadge" style="font-size:16px;font-weight:600;margin-top:6px;color:var(--blue)">-</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">Scheduling phases</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your full flight window is shown below. Click <strong>+ Add phase</strong>, then click a <strong>start</strong> and <strong>end</strong> date on the calendar to mark a phase. Rename each phase and add as many as you need.</p>
+
+    <!-- Calendar nav -->
+    <div class="cal-nav-row">
+      <button class="cal-nav" id="calPrev" onclick="calNav(-1)">&#8249;</button>
+      <span class="cal-window-lbl" id="calWindowLbl"></span>
+      <button class="cal-nav" id="calNext" onclick="calNav(1)">&#8250;</button>
+    </div>
+    <div class="cal-scroll"><div class="cal-months-row" id="calMonthsRow"></div></div>
+
+    <!-- Segment overview bar -->
+    <div class="seg-bar" id="segBar" style="display:none"></div>
+
+    <!-- Hint -->
+    <div class="hint-bar" id="hintBar"></div>
+
+    <!-- Phase list -->
+    <div class="phase-list" id="phaseList"></div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn ghost" id="addPhBtn" style="font-size:12px;padding:6px 14px" onclick="startPick()">+ Add phase</button>
+    </div>
+
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <div class="field"><label>Notes / remarks</label>
+      <textarea id="bNotes" placeholder="LP link, creative JIRA, special instructions..."></textarea></div>
+    </div>
+  </div>
+
+  <div class="btn-row"><button class="btn" onclick="nav(2)">← Back</button><button class="btn pri" onclick="openPreselection()">Next: Slot preselection →</button></div>
+</div>
+
+<!-- P4: Slot preselection -->
+<div class="panel" id="p4">
+  <div class="card">
+    <div class="card-hd">Suggested slots</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">We suggest a country x marketplace mix with at least 6 slots per country below USD 10,000 and at least 10 slots per country above that when inventory exists. Suggestions already avoid repeating the same category and zone combination.</p>
+    <div class="fg fg-3" style="margin-bottom:14px">
+      <div class="field"><label>Country filter</label><select id="slotFilterCountry" onchange="renderSlotPreselection()"><option value="">All countries</option></select></div>
+      <div class="field"><label>Marketplace filter</label><select id="slotFilterMarketplace" onchange="renderSlotPreselection()"><option value="">All marketplaces</option><option value="core">Core</option><option value="supermall">Supermall</option></select></div>
+      <div class="field"><label>Page filter</label><select id="slotFilterPage" onchange="renderSlotPreselection()"><option value="">All pages</option></select></div>
+    </div>
+    <div id="slotSuggestionGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"></div>
+  </div>
+  <div class="card">
+    <div class="card-hd">Selected slots</div>
+    <div id="selectedSlotList"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <div class="fg fg-4">
+        <div class="field">
+          <label>Page filter</label>
+          <select id="manualSlotPage" onchange="renderManualSlotOptions()">
+            <option value="">All pages</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <select id="manualSlotCountry" onchange="renderManualSlotOptions()">
+            <option value="">Select country</option>
+            <option value="ae">AE</option>
+            <option value="sa">SA</option>
+            <option value="eg">EG</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Marketplace</label>
+          <select id="manualSlotMarketplace" onchange="renderManualSlotOptions()">
+            <option value="">All marketplaces</option>
+            <option value="core">Core</option>
+            <option value="supermall">Supermall</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Slot</label>
+          <select id="manualSlotCode">
+            <option value="">Select slot</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>FOC</label>
+          <div class="pill-group" style="margin-top:4px">
+            <div class="pill" id="manualFocToggle" onclick="toggleManualFoc()">No</div>
+          </div>
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn ghost" type="button" onclick="addManualSelectedSlot()">+ Add slot</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn" onclick="nav(3)">← Back</button><button class="btn pri" onclick="buildPlan()">Generate plan →</button></div>
+</div>
+
+<!-- P5: Plan -->
+<div class="panel" id="p5">
+  <div class="brand-header">
+    <div>
+      <div class="brand-title" id="planBrandTitle">Media plan</div>
+      <div class="plan-toolbar-note" id="planToolbarNote">Country-slot draft with editable notes and slot swaps.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="nav(4)">← Edit inputs</button>
+      <button class="btn ghost" onclick="addRow()">+ Add line</button>
+      <button class="btn ghost" onclick="regeneratePlan()">Regenerate plan</button>
+      <button class="btn ghost" onclick="copyPlanUiLink()">Copy plan link</button>
+      <button class="btn ghost" onclick="exportCsv()">Export CSV</button>
+      <button class="btn ghost" onclick="printPlan('executive')">Executive summary</button>
+      <button class="btn pri" onclick="printPlan('detailed')">Detailed summary</button>
+    </div>
+  </div>
+  <div class="metric-grid" id="metricGrid"></div>
+  <div class="hint-bar" id="overBudgetBar" style="display:none;background:var(--red-bg);border-color:rgba(196,53,53,.25);color:var(--red-text)"></div>
+  <div class="bbar-wrap" style="margin-bottom:14px">
+    <div class="bbar-labels"><span id="pBarLeft">$0 allocated</span><span id="pBarRight" style="color:var(--text2)">0%</span></div>
+    <div class="bbar-track"><div class="bbar-fill" id="pBarFill" style="width:0%"></div></div>
+  </div>
+  <div class="tl-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase" id="tlTitle">Flight timeline</div>
+      <div style="display:flex;gap:10px">
+        <span style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#1A5FD4;border-radius:2px;display:inline-block"></span>Reach</span>
+        <span style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#C47A1A;border-radius:2px;display:inline-block"></span>Conversion</span>
+      </div>
+    </div>
+    <div id="tlWrap"></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:16px 16px 0">
+      <div class="tab-bar">
+        <div class="tab on" onclick="setTab('all',this)">All line items</div>
+        <div class="tab" onclick="setTab('reach',this)">Reach slots</div>
+        <div class="tab" onclick="setTab('conv',this)">Conversion slots</div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-lbl">Phase:</span>
+        <div id="phFilters" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+    <div class="tbl-container">
+      <table><thead><tr>
+        <th style="width:110px">From</th><th style="width:110px">To</th>
+        <th style="width:88px">Country</th><th style="width:110px">Marketplace</th><th style="width:110px">Page</th><th style="width:120px">Zone</th><th style="width:140px">Dimension</th><th style="min-width:300px">Asset / slot</th>
+        <th style="width:56px;text-align:center">Days</th>
+        <th style="width:98px">Buy type</th>
+        <th style="width:86px;text-align:right">Net rate</th>
+        <th style="width:92px;text-align:right">Gross CPM</th>
+        <th style="width:92px;text-align:right">Net CPM</th>
+        <th style="width:110px;text-align:right">Est. views</th>
+        <th style="width:110px;text-align:right">Gross USD</th>
+        <th style="width:110px;text-align:right">Net USD</th>
+        <th style="width:130px;text-align:right">Net local</th>
+        <th style="width:120px">Phase</th>
+        <th style="width:96px">Brand</th>
+        <th style="min-width:220px">Note</th>
+        <th style="width:36px"></th>
+      </tr></thead><tbody id="planBody"></tbody></table>
+    </div>
+    <div style="padding:0 16px 14px">
+      <div class="tot-row">
+        <span class="tot-lbl">Total excl. VAT</span>
+        <span class="tot-val" id="totVal">$0</span>
+        <span class="rem-badge rem-ok" id="remBadge">$0 remaining</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script>
+const PHASE_COLORS=['#1A5FD4','#1A8F5A','#D43F8A','#6B3FD4','#C47A1A','#1A8FA0','#C43535','#888780'];
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MNS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW=['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+// Budget is entered in USD. We also display an approximate local-currency view for convenience.
+const FX={USD:1,AED:3.6725,SAR:3.75,EGP:50};
+const CURRENCY_SYMBOL={USD:'$',AED:'AED ',SAR:'SAR ',EGP:'EGP '};
+function fxRate(cur){ return FX[String(cur||'USD').toUpperCase()]||1; }
+function currencySymbol(cur){ return CURRENCY_SYMBOL[String(cur||'USD').toUpperCase()]||((cur||'USD')+' '); }
+function roundToNearestTen(v){ const n=Number(v)||0; return Math.round(n/10)*10; }
+function number10(v){ return roundToNearestTen(v).toLocaleString(undefined,{maximumFractionDigits:0}); }
+function money2(v,cur){ return currencySymbol(cur)+number10(v); }
+function views10(v){ return number10(v); }
+function compactViews(v){
+  const rounded=roundToNearestTen(v);
+  if(Math.abs(rounded)>=1000000) return (rounded/1000000).toFixed(1)+'M';
+  if(Math.abs(rounded)>=1000) return (rounded/1000).toFixed(1)+'K';
+  return String(rounded);
+}
+function appPlanUrl(target){
+  const ref=(S.planCode||S.planId||'').trim();
+  if(!ref) return '';
+  const url=new URL(window.location.origin+window.location.pathname);
+  url.searchParams.set('plan',ref);
+  url.searchParams.set('view',target||'start');
+  return url.toString();
+}
+function titleCaseWords(value){
+  return String(value||'')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(word=>word.charAt(0).toUpperCase()+word.slice(1).toLowerCase())
+    .join(' ');
+}
+function displayBrandName(value){
+  return titleCaseWords(value||'Brand') || 'Brand';
+}
+function displayCountries(){
+  return (S.countries||[]).map(country=>String(country||'').toUpperCase()).join(', ');
+}
+function displayCountryCode(value){
+  return String(value||'').toUpperCase();
+}
+function displayFlightRange(){
+  if(!S.flightStart||!S.flightEnd) return '-';
+  return `${S.flightStart} to ${S.flightEnd}`;
+}
+async function copyPlanUiLink(){
+  const url=appPlanUrl('start');
+  if(!url){ alert('Generate or load a saved plan first.'); return; }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+    }else{
+      const input=document.createElement('input');
+      input.value=url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    }
+    alert('Plan link copied.');
+  }catch(_){
+    alert(url);
+  }
+}
+function campaignDurationDays(){
+  if(!S.flightStart||!S.flightEnd) return 0;
+  const start=new Date(S.flightStart+'T00:00:00');
+  const end=new Date(S.flightEnd+'T00:00:00');
+  return Math.max(Math.round((end-start)/86400000)+1,0);
+}
+function blendedCpm(rows){
+  const totalNet=rows.reduce((sum,row)=>sum+netAmount(row),0);
+  const totalViews=rows.reduce((sum,row)=>sum+Number(row.views||0),0);
+  if(totalViews<=0) return 0;
+  return (totalNet*1000)/totalViews;
+}
+function netAmount(row){ return Number((row&&row.net_amount)!=null?row.net_amount:row?.cost)||0; }
+function grossAmount(row){ return Number((row&&row.gross_amount)!=null?row.gross_amount:row?.cost)||0; }
+function grossCpm(row){ return Number((row&&row.gross_cpm)!=null?row.gross_cpm:0)||0; }
+function netCpm(row){ return Number((row&&row.net_cpm)!=null?row.net_cpm:(row?.rate||0))||0; }
+
+const S={
+  bTag:'', comcats:[], countries:[], marketplace:'both', subBrands:[], obj:'', rW:60, oW:40,
+  phases:[],
+  rows:[], budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
+  flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
+  availableSlotCatalog:[],
+  slotSuggestions:[], selectedSlots:[], manualFoc:false,
+  calPage:0,
+  picking:false, pickFrom:null,
+};
+
+function setLoadStatus(message,tone){
+  const el=document.getElementById('loadPlanStatus');
+  if(!el) return;
+  el.textContent=message||'';
+  el.className='hint-bar show';
+  if(tone==='error'){
+    el.style.background='var(--red-bg)';
+    el.style.borderColor='rgba(196,53,53,.25)';
+    el.style.color='var(--red-text)';
+  }else if(tone==='success'){
+    el.style.background='var(--green-bg)';
+    el.style.borderColor='rgba(23,138,87,.25)';
+    el.style.color='var(--green-text)';
+  }else{
+    el.style.background='';
+    el.style.borderColor='';
+    el.style.color='';
+  }
+}
+
+function syncCountryPills(){
+  document.querySelectorAll('#bCountryGroup .pill').forEach(pill=>{
+    const value=(pill.textContent||'').trim().toLowerCase();
+    pill.className='pill'+(S.countries.includes(value)?' on':'');
+  });
+}
+
+function syncComcatPills(){
+  document.querySelectorAll('#comcatGroup .pill').forEach(pill=>{
+    const value=(pill.textContent||'').trim();
+    pill.className='pill'+(S.comcats.includes(value)?' on':'');
+  });
+}
+
+function syncObjectiveUi(){
+  ['reach','roas','both'].forEach(type=>{
+    const el=document.getElementById('ob-'+type);
+    if(el) el.className='obj-card'+(S.obj===type?' on':'');
+  });
+  const weights=document.getElementById('wBlock');
+  if(weights) weights.style.display=S.obj==='both'?'block':'none';
+  const rW=document.getElementById('rW');
+  const oW=document.getElementById('oW');
+  const rWv=document.getElementById('rWv');
+  const oWv=document.getElementById('oWv');
+  if(rW) rW.value=String(S.rW||60);
+  if(oW) oW.value=String(S.oW||40);
+  if(rWv) rWv.textContent=(S.rW||60)+'%';
+  if(oWv) oWv.textContent=(S.oW||40)+'%';
+}
+
+function syncBudgetLockUi(){
+  const pill=document.getElementById('budgetLock');
+  if(pill){
+    pill.textContent=S.budgetLocked?'Locked':'Unlocked';
+    pill.className='pill'+(S.budgetLocked?' on':'');
+  }
+  const budget=document.getElementById('bBudget');
+  if(budget) budget.disabled=!!S.budgetLocked;
+}
+
+function applyRequestToState(request){
+  const req=request||{};
+  S.countries=(req.countries||[]).map(v=>String(v).toLowerCase());
+  S.comcats=[...(req.comcats||[])];
+  S.marketplace=req.marketplace||'both';
+  S.subBrands=[...(req.sub_brands||[])];
+  S.obj=req.objective||'';
+  S.rW=Number(req.reach_weight||60)||60;
+  S.oW=Number(req.roas_weight||40)||40;
+  S.budget=Number(req.budget||0)||0;
+  S.discountPct=Number(req.discount_pct||0)||0;
+  S.currency=req.currency||'USD';
+  S.budgetLocked=!!req.budget_locked;
+  S.flightStart=req.start_date||'';
+  S.flightEnd=req.end_date||'';
+  S.phases=(req.phases||[]).map((phase,index)=>({
+    name:phase.name||('Phase '+(index+1)),
+    from:phase.from,
+    to:phase.to,
+    color:PHASE_COLORS[index%PHASE_COLORS.length]
+  }));
+}
+
+function hydrateFormFromState(){
+  document.getElementById('bName').value=document.getElementById('bName').value||'';
+  document.getElementById('bBudget').value=S.budget||'';
+  document.getElementById('bDiscount').value=Number(S.discountPct||0)||'';
+  document.getElementById('bCur').value=S.currency||'USD';
+  document.getElementById('bStart').value=S.flightStart||'';
+  document.getElementById('bEnd').value=S.flightEnd||'';
+  document.getElementById('leCode').value=document.getElementById('leCode').value||'';
+  if(document.getElementById('bNotes')) document.getElementById('bNotes').value=document.getElementById('bNotes').value||'';
+  syncCountryPills();
+  syncComcatPills();
+  setMarketplace(S.marketplace||'both');
+  renderSubBrands();
+  syncObjectiveUi();
+  syncBudgetLockUi();
+  updateBudgetBar();
+  onDatesChange();
+}
+
+function normalizeLoadedRows(rows){
+  return (rows||[]).map((row,index)=>({
+    ...row,
+    id:Number(row.id||index+1),
+    from:row.from,
+    to:row.to,
+    rate:Number(row.rate||0)||0,
+    gross_cpm:Number(row.gross_cpm||0)||0,
+    net_cpm:Number(row.net_cpm||row.rate||0)||0,
+    views:row.views==null?0:Number(row.views)||0,
+    cost:netAmount(row),
+    gross_amount:Number(row.gross_amount||0)||0,
+    net_amount:netAmount(row),
+    discount_pct:Number((row&&row.discount_pct)!=null?row.discount_pct:S.discountPct)||0,
+    days:Number(row.days||0)||0,
+    marketplace:row.marketplace||'',
+    category:row.category||'',
+    zone:row.zone||'',
+    dimension:row.dimension||'',
+    slot_name:row.slot_name||row.asset||row.slot_code||'',
+    score:Number(row.score||0)||0,
+    available_views:Number(row.available_views||0)||0,
+    note:row.note||'',
+    manual:!!row.manual,
+    locked:!!row.locked
+  }));
+}
+
+function displaySlotName(row){
+  const meta=findSlotMeta(row&&row.country,row&&row.slot_code)||{};
+  return (row&&row.slot_name)||meta.slot_name||row.asset||row.slot_code||'';
+}
+
+function buildSavedSelectedSlots(saved){
+  const request=saved.request||{};
+  const rows=saved.rows||[];
+  const focKeys=new Set((request.foc_slot_keys||[]).map(String));
+  const allKeys=[...(request.selected_slot_keys||[])];
+  rows.forEach(row=>{
+    if(row.country&&row.slot_code){
+      const key=slotKey(row.country,row.slot_code);
+      if(!allKeys.includes(key)) allKeys.push(key);
+    }
+  });
+  return allKeys.map(key=>{
+    const [country,slotCode]=String(key).split('|');
+    if(!country||!slotCode) return null;
+    const meta=findSlotMeta(country,slotCode)||{};
+    const row=rows.find(item=>item.country===country && item.slot_code===slotCode)||{};
+    return {
+      slot_key:key,
+      country,
+      slot_code:slotCode,
+      slot_name:row.slot_name||meta.slot_name||row.asset||slotCode,
+      page:row.page||meta.page||meta.publisher||'',
+      marketplace:row.marketplace||meta.marketplace||getSlotMarketplace(meta.slot_code?meta:row),
+      category:row.category||meta.category||meta.page||'',
+      zone:row.zone||meta.zone||'',
+      dimension:row.dimension||meta.dimension||'',
+      pricing_model:row.buyType||meta.pricing_model||'CPM',
+      gross_cpm:Number((row&&row.gross_cpm)!=null?row.gross_cpm:meta.rate)||0,
+      net_cpm:Number((row&&row.net_cpm)!=null?row.net_cpm:row.rate)||0,
+      available_views:Number(row.available_views||0)||0,
+      historical_cpm:row.historical_cpm??null,
+      historical_ctr:row.historical_ctr??null,
+      historical_roas:row.historical_roas??null,
+      score:Number(row.score||0)||0,
+      foc:focKeys.has(key)
+    };
+  }).filter(Boolean);
+}
+
+async function fetchSavedPreselection(saved){
+  const response=await fetch('/api/slot-preselection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(saved.request||{})});
+  const raw=await response.text();
+    const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
+    if(!response.ok){
+      const detail=data.detail;
+      throw new Error((detail&&detail.message)||detail||'Unable to fetch slot suggestions');
+    }
+    S.slotSuggestions=(data.suggestions||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    S.availableSlotCatalog=(data.available_slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    const selected=buildSavedSelectedSlots(saved);
+    S.selectedSlots=selected.length?selected:S.slotSuggestions.map(slot=>({...slot,foc:false}));
+  S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
+}
+
+async function loadSavedPlan(target, reference){
+  const manualRef=document.getElementById('loadPlanRef');
+  const ref=((reference!=null?reference:(manualRef&&manualRef.value))||'').trim();
+  if(!ref){ alert('Enter a media code or plan ID.'); return; }
+  setLoadStatus('Loading saved plan...', 'info');
+  document.getElementById('navChip').textContent='Loading saved plan...';
+  try{
+    if(!S.slotCatalog.length) await loadOptions();
+    const res=await fetch(`/api/media-plan/${encodeURIComponent(ref)}`);
+    const raw=await res.text();
+    const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
+    if(!res.ok){
+      const detail=data.detail;
+      throw new Error((detail&&detail.message)||detail||'Unable to load saved plan');
+    }
+    const request=data.request||{};
+    applyRequestToState(request);
+    document.getElementById('bName').value=request.brand||'';
+    document.getElementById('leCode').value=request.le_code||'';
+    if(document.getElementById('bNotes')) document.getElementById('bNotes').value=request.notes||'';
+    if(manualRef) manualRef.value=(data.summary&&data.summary.sheet_plan_code)||data.plan_id||ref;
+    S.planId=(data.plan_id||(data.summary&&data.summary.plan_id)||'').trim();
+    S.planCode=((data.summary&&data.summary.sheet_plan_code)||'').trim();
+    S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||request.brand_tag||'';
+    S.rows=normalizeLoadedRows(data.rows||[]);
+    S.selectedSlots=buildSavedSelectedSlots(data);
+    S.excludedSlotKeys=[];
+    S.phFilter='All';
+    S.tabFilter='all';
+    hydrateFormFromState();
+    if(target==='preselection'){
+      await fetchSavedPreselection(data);
+      nav(4);
+      setLoadStatus(`Loaded ${S.planCode||S.planId||ref} into slot preselection.`, 'success');
+      document.getElementById('navChip').textContent='Loaded '+(S.planCode||S.planId||ref);
+      return;
+    }
+    if(target==='start'){
+      nav(1);
+      setLoadStatus(`Loaded ${S.planCode||S.planId||ref} into the planner from the start.`, 'success');
+      document.getElementById('navChip').textContent='Loaded '+(S.planCode||S.planId||ref);
+      return;
+    }
+    nav(5);
+    setLoadStatus(`Loaded ${S.planCode||S.planId||ref} into the editable final plan.`, 'success');
+    document.getElementById('navChip').textContent='Loaded '+(S.planCode||S.planId||ref);
+  }catch(e){
+    setLoadStatus(e.message||'Unable to load saved plan.', 'error');
+    document.getElementById('navChip').textContent='Load failed';
+    alert(e.message||'Unable to load saved plan');
+  }
+}
+
+function nav(n){
+  [1,2,3,4,5].forEach(i=>{
+    document.getElementById('p'+i).classList.remove('show');
+    document.getElementById('sn'+i).className='np'+(i===n?' active':i<n?' done':'');
+  });
+  document.getElementById('p'+n).classList.add('show');
+  if(n===3) buildCalendar();
+  if(n===4) renderSlotPreselection();
+  if(n===5) renderAll();
+}
+
+function setMarketplace(v){
+  S.marketplace=v;
+  const both=document.getElementById('mk-both');
+  const core=document.getElementById('mk-core');
+  const sm=document.getElementById('mk-supermall');
+  if(both) both.className='pill'+(v==='both'?' on':'');
+  if(core) core.className='pill'+(v==='core'?' on':'');
+  if(sm) sm.className='pill'+(v==='supermall'?' on':'');
+}
+
+function addSubBrand(){
+  const inp=document.getElementById('subBrandInput');
+  const v=((inp&&inp.value)||'').trim();
+  if(!v) return;
+  if(!S.subBrands.includes(v)) S.subBrands.push(v);
+  if(inp) inp.value='';
+  renderSubBrands();
+}
+function removeSubBrand(v){
+  S.subBrands=S.subBrands.filter(x=>x!==v);
+  renderSubBrands();
+}
+function renderSubBrands(){
+  const wrap=document.getElementById('subBrandChips');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  S.subBrands.forEach(s=>{
+    const pill=document.createElement('div');
+    pill.className='pill on';
+    pill.style.display='flex';
+    pill.style.gap='6px';
+    pill.style.alignItems='center';
+    pill.textContent=s;
+    const x=document.createElement('span');
+    x.textContent='×';
+    x.style.cursor='pointer';
+    x.style.color='var(--text2)';
+    x.onclick=()=>removeSubBrand(s);
+    pill.appendChild(x);
+    wrap.appendChild(pill);
+  });
+}
+
+function toggleBudgetLock(){
+  S.budgetLocked=!S.budgetLocked;
+  const pill=document.getElementById('budgetLock');
+  if(pill){
+    pill.textContent=S.budgetLocked?'Locked':'Unlocked';
+    pill.className='pill'+(S.budgetLocked?' on':'');
+  }
+  const b=document.getElementById('bBudget');
+  if(b) b.disabled=S.budgetLocked;
+}
+
+function toggleCountry(el,v){
+  if(S.countries.includes(v)){
+    S.countries=S.countries.filter(x=>x!==v);
+    el.className='pill';
+  }else{
+    S.countries.push(v);
+    el.className='pill on';
+  }
+}
+function toggleComcat(el,v){
+  if(S.comcats.includes(v)){
+    S.comcats=S.comcats.filter(x=>x!==v);
+    el.className='pill';
+  }else{
+    S.comcats.push(v);
+    el.className='pill on';
+  }
+}
+function setObj(type){
+  S.obj=type;
+  ['reach','roas','both'].forEach(t=>document.getElementById('ob-'+t).className='obj-card');
+  document.getElementById('ob-'+type).className='obj-card on';
+  document.getElementById('wBlock').style.display=type==='both'?'block':'none';
+}
+function syncW(el,which){
+  const v=parseInt(el.value,10);
+  if(which==='reach'){
+    S.rW=v; S.oW=100-v; document.getElementById('oW').value=S.oW;
+  }else{
+    S.oW=v; S.rW=100-v; document.getElementById('rW').value=S.rW;
+  }
+  document.getElementById('rWv').textContent=S.rW+'%';
+  document.getElementById('oWv').textContent=S.oW+'%';
+}
+function updateBudgetBar(){
+  const v=parseFloat(document.getElementById('bBudget').value)||0;
+  const discount=parseFloat(document.getElementById('bDiscount').value)||0;
+  const cur=document.getElementById('bCur').value||'USD';
+  document.getElementById('bbarLeft').textContent=v?('USD '+number10(v)+' net budget'):'No budget entered';
+  if(v){
+    const local=roundToNearestTen(v*fxRate(cur));
+    document.getElementById('bbarRight').textContent=(discount?(`${Math.round(discount)}% discount · `):'')+(cur==='USD'?'USD view':(cur+' ≈ '+number10(local)));
+  }else{
+    document.getElementById('bbarRight').textContent='$0 allocated';
+  }
+}
+
+function collectPlanningPayload(){
+  S.budget=parseFloat(document.getElementById('bBudget').value)||0;
+  S.discountPct=parseFloat(document.getElementById('bDiscount').value)||0;
+  S.currency=document.getElementById('bCur').value;
+  S.flightStart=document.getElementById('bStart').value;
+  S.flightEnd=document.getElementById('bEnd').value;
+  const brand=(document.getElementById('bName').value||'').trim();
+  if(!brand){ throw new Error('Enter brand name.'); }
+  if(!S.countries.length){ throw new Error('Select at least one country.'); }
+  if(!S.comcats.length){ throw new Error('Select at least one comcat.'); }
+  if(!S.obj){ throw new Error('Select campaign objective.'); }
+  if(!S.budget){ throw new Error('Enter total budget.'); }
+  if(!S.currency){ throw new Error('Select currency.'); }
+  if(!S.flightStart||!S.flightEnd){ throw new Error('Select start and end dates.'); }
+  if(S.flightStart<todayStr()||S.flightEnd<S.flightStart){ throw new Error('Flight dates must be today or later, and end date must be after start date.'); }
+  return {
+    brand,
+    brand_tag:null,
+    comcats:S.comcats,
+    countries:S.countries,
+    start_date:S.flightStart,
+    end_date:S.flightEnd,
+    budget:S.budget,
+    discount_pct:S.discountPct,
+    currency:S.currency,
+    objective:S.obj,
+    reach_weight:S.rW,
+    roas_weight:S.oW,
+    phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})),
+    marketplace:S.marketplace,
+    sub_brands:S.subBrands,
+    le_code:(document.getElementById('leCode').value||'').trim(),
+    notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'',
+    budget_locked:!!S.budgetLocked
+  };
+}
+
+function getSlotMarketplace(slot){
+  const text=((slot&&((slot.slot_name||'')+' '+(slot.slot_code||'')))||'').toLowerCase();
+  return (text.includes('supermall')||text.includes('super_mall'))?'supermall':'core';
+}
+
+function manualSlotsForCountry(country){
+  return S.availableSlotCatalog.filter(slot=>{
+    if(!country || slot.country!==country) return false;
+    const selectedMarketplace=document.getElementById('manualSlotMarketplace')?.value||S.marketplace||'';
+    const pageFilter=document.getElementById('manualSlotPage')?.value||'';
+    const slotMarketplace=getSlotMarketplace(slot);
+    if(selectedMarketplace && selectedMarketplace!=='both' && slotMarketplace!==selectedMarketplace) return false;
+    if(pageFilter && (slot.page||'')!==pageFilter) return false;
+    if(Number(slot.available_views||0) <= 0) return false;
+    return true;
+  });
+}
+
+function renderManualSlotOptions(){
+  const country=document.getElementById('manualSlotCountry')?.value||'';
+  const select=document.getElementById('manualSlotCode');
+  if(!select) return;
+  const options=manualSlotsForCountry(country);
+  select.innerHTML='<option value="">Select slot</option>'+options.map(slot=>`<option value="${slot.slot_code}">${slot.slot_name} (${slot.slot_code}) · ${views10(slot.available_views||0)} views</option>`).join('');
+}
+
+function toggleManualFoc(){
+  S.manualFoc=!S.manualFoc;
+  const pill=document.getElementById('manualFocToggle');
+  if(pill){
+    pill.textContent=S.manualFoc?'Yes':'No';
+    pill.className='pill'+(S.manualFoc?' on':'');
+  }
+}
+
+function slotKey(country,slotCode){ return `${country}|${slotCode}`; }
+
+function upsertSelectedSlot(slot){
+  const key=slot.slot_key||slotKey(slot.country,slot.slot_code);
+  const idx=S.selectedSlots.findIndex(item=>item.slot_key===key);
+  const next={...slot,slot_key:key,foc:!!slot.foc};
+  if(idx>=0) S.selectedSlots[idx]=next;
+  else S.selectedSlots.push(next);
+}
+
+function removeSelectedSlot(key){
+  S.selectedSlots=S.selectedSlots.filter(slot=>slot.slot_key!==key);
+  renderSlotPreselection();
+}
+
+function toggleSelectedSuggestion(key){
+  const existing=S.selectedSlots.find(slot=>slot.slot_key===key);
+  if(existing){
+    removeSelectedSlot(key);
+    return;
+  }
+  const suggestion=S.slotSuggestions.find(slot=>slot.slot_key===key);
+  if(suggestion) upsertSelectedSlot({...suggestion,foc:false});
+  renderSlotPreselection();
+}
+
+function toggleSelectedFoc(key){
+  S.selectedSlots=S.selectedSlots.map(slot=>slot.slot_key===key?{...slot,foc:!slot.foc}:slot);
+  renderSlotPreselection();
+}
+
+function addManualSelectedSlot(){
+  const country=document.getElementById('manualSlotCountry')?.value||'';
+  const slotCode=document.getElementById('manualSlotCode')?.value||'';
+  if(!country || !slotCode){ alert('Select a country and slot.'); return; }
+  const slot=S.availableSlotCatalog.find(item=>item.country===country && item.slot_code===slotCode);
+  if(!slot){ alert('Selected slot is not available.'); return; }
+  upsertSelectedSlot({
+    slot_key:slotKey(country,slotCode),
+    country,
+    slot_code:slotCode,
+    slot_name:slot.slot_name,
+    page:slot.page||slot.publisher||'',
+    marketplace:getSlotMarketplace(slot),
+    category:slot.category||slot.page||'',
+    zone:slot.zone||'',
+    dimension:slot.dimension||'',
+    pricing_model:slot.pricing_model||'cpm',
+    gross_cpm:Number(slot.rate||0)||0,
+    net_cpm:Math.round((Number(slot.rate||0)||0)*Math.max(1-(Number(S.discountPct||0)/100),0)*10000)/10000,
+    available_views:Number(slot.available_views||0)||0,
+    historical_cpm:null,
+    historical_ctr:null,
+    historical_roas:null,
+    score:0,
+    foc:S.manualFoc
+  });
+  S.manualFoc=false;
+  toggleManualFoc();
+  document.getElementById('manualSlotCode').value='';
+  renderSlotPreselection();
+}
+
+function refreshSlotFilters(){
+  const countrySel=document.getElementById('slotFilterCountry');
+  const pageSel=document.getElementById('slotFilterPage');
+  const manualPageSel=document.getElementById('manualSlotPage');
+  if(countrySel){
+    const countries=[...new Set(S.slotSuggestions.map(s=>s.country).filter(Boolean))];
+    const current=countrySel.value;
+    countrySel.innerHTML='<option value="">All countries</option>'+countries.map(v=>`<option value="${v}">${displayCountryCode(v)}</option>`).join('');
+    countrySel.value=countries.includes(current)?current:'';
+  }
+  if(pageSel){
+    const pages=[...new Set(S.slotCatalog.map(s=>s.page).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    const current=pageSel.value;
+    pageSel.innerHTML='<option value="">All pages</option>'+pages.map(v=>`<option value="${v}">${v}</option>`).join('');
+    pageSel.value=pages.includes(current)?current:'';
+  }
+  if(manualPageSel){
+    const manualPages=[...new Set(S.availableSlotCatalog.map(s=>s.page).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    const current=manualPageSel.value;
+    manualPageSel.innerHTML='<option value="">All pages</option>'+manualPages.map(v=>`<option value="${v}">${v}</option>`).join('');
+    manualPageSel.value=manualPages.includes(current)?current:'';
+  }
+}
+
+function renderSlotPreselection(){
+  const suggestionWrap=document.getElementById('slotSuggestionGrid');
+  const selectedWrap=document.getElementById('selectedSlotList');
+  if(!suggestionWrap||!selectedWrap) return;
+  refreshSlotFilters();
+  const filterCountry=document.getElementById('slotFilterCountry')?.value||'';
+  const filterMarketplace=document.getElementById('slotFilterMarketplace')?.value||'';
+  const filterPage=document.getElementById('slotFilterPage')?.value||'';
+  const visibleSuggestions=(S.slotSuggestions||[]).filter(slot=>{
+    if(filterCountry && slot.country!==filterCountry) return false;
+    if(filterMarketplace && (slot.marketplace||getSlotMarketplace(slot))!==filterMarketplace) return false;
+    if(filterPage && (slot.page||'')!==filterPage) return false;
+    return true;
+  });
+  suggestionWrap.innerHTML=visibleSuggestions.map(slot=>{
+    const picked=S.selectedSlots.some(item=>item.slot_key===slot.slot_key);
+    return `<div class="card" style="margin:0;padding:14px;border-color:${picked?'var(--blue)':'var(--border)'}">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div>
+          <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${slot.slot_name}</div>
+          <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'} · ${String(slot.pricing_model||'CPM').toUpperCase()}</div>
+          <div class="slot-meta">${slot.category||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
+          <div class="slot-meta">Avail. views ${views10(slot.available_views||0)}${slot.gross_cpm?` · Gross CPM ${number10(slot.gross_cpm)}`:''}${slot.net_cpm?` · Net CPM ${number10(slot.net_cpm)}`:''}${slot.historical_roas?` · ROAS ${Number(slot.historical_roas).toFixed(1)}`:''}</div>
+        </div>
+        <button class="btn ${picked?'pri':'ghost'}" type="button" style="padding:7px 12px;font-size:12px" onclick="toggleSelectedSuggestion('${slot.slot_key}')">${picked?'Selected':'Select'}</button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty" style="grid-column:1/-1">No suggestions match the selected filters.</div>';
+
+  selectedWrap.innerHTML=(S.selectedSlots||[]).map(slot=>`<div class="phase-item" style="justify-content:space-between">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="phase-dot" style="background:${slot.foc?'var(--green)':'var(--blue)'}"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${slot.slot_name||slot.slot_code}</div>
+          <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'}${slot.available_views?` · Avail. views ${views10(slot.available_views)}`:''}${slot.gross_cpm?` · Gross CPM ${number10(slot.gross_cpm)}`:''}${slot.net_cpm?` · Net CPM ${number10(slot.net_cpm)}`:''}</div>
+          <div class="slot-meta">${slot.category||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="pill${slot.foc?' on':''}" onclick="toggleSelectedFoc('${slot.slot_key}')" style="font-size:11px;padding:4px 10px">FOC ${slot.foc?'Yes':'No'}</div>
+        <button class="del-btn" type="button" onclick="removeSelectedSlot('${slot.slot_key}')">×</button>
+      </div>
+    </div>`).join('')||'<div class="empty">No selected slots yet.</div>';
+  renderManualSlotOptions();
+}
+
+async function openPreselection(){
+  try{
+    const payload=collectPlanningPayload();
+    document.getElementById('navChip').textContent='Fetching slot suggestions...';
+    const res=await fetch('/api/slot-preselection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const raw=await res.text();
+    const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
+    if(!res.ok){
+      const detail=data.detail;
+      throw new Error((detail&&detail.message)||detail||'Unable to fetch slot suggestions');
+    }
+    S.slotSuggestions=(data.suggestions||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    S.availableSlotCatalog=(data.available_slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    if(!S.selectedSlots.length) S.selectedSlots=S.slotSuggestions.map(slot=>({...slot,foc:false}));
+    S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
+    nav(4);
+  }catch(e){
+    alert(e.message||'Unable to open slot preselection');
+  }
+}
+
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayStr(){ return ymd(new Date()); }
+function dFmt(s){ if(!s) return ''; const p=s.split('-'); return p[2]+' '+MNS[parseInt(p[1],10)-1]; }
+function dFmtSh(s){ if(!s) return ''; const p=s.split('-'); return p[2]+' '+MNS[parseInt(p[1],10)-1]+' '+p[0].slice(2); }
+function hex2rgba(h,a){ const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; }
+
+function setupDateLimits(){
+  const t=todayStr();
+  document.getElementById('bStart').min=t;
+  document.getElementById('bEnd').min=t;
+}
+
+async function loadOptions(){
+  try{
+    const res=await fetch('/api/options');
+    if(!res.ok) return;
+    const raw=await res.text();
+    const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
+    S.slotCatalog=(data.slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''}));
+    if(data.comcats&&data.comcats.length){
+      const group=document.getElementById('comcatGroup');
+      group.innerHTML='';
+      data.comcats.forEach(c=>{
+        const pill=document.createElement('div');
+        pill.className='pill';
+        pill.textContent=c;
+        pill.onclick=()=>toggleComcat(pill,c);
+        group.appendChild(pill);
+      });
+      syncComcatPills();
+    }
+    syncCountryPills();
+  }catch(e){}
+}
+
+function getFlightMonths(){
+  if(!S.flightStart||!S.flightEnd) return [];
+  const s=new Date(S.flightStart+'T00:00:00'), e=new Date(S.flightEnd+'T00:00:00');
+  const res=[]; let y=s.getFullYear(), m=s.getMonth();
+  while(res.length<24){
+    res.push({y,m});
+    if(y===e.getFullYear()&&m===e.getMonth()) break;
+    m++; if(m>11){m=0; y++;}
+  }
+  return res;
+}
+
+function onDatesChange(){
+  S.flightStart=document.getElementById('bStart').value;
+  S.flightEnd=document.getElementById('bEnd').value;
+  document.getElementById('bEnd').min=S.flightStart||todayStr();
+  if(S.flightStart&&S.flightEnd&&S.flightEnd<S.flightStart){
+    document.getElementById('bEnd').value='';
+    S.flightEnd='';
+  }
+  S.calPage=0;
+  const s=new Date(S.flightStart+'T00:00:00'), e=new Date(S.flightEnd+'T00:00:00');
+  const d=Math.round((e-s)/86400000)+1;
+  document.getElementById('durBadge').textContent=isNaN(d)||d<0?'-':d+' days';
+  S.phases=S.phases.filter(p=>(!S.flightStart||p.from>=S.flightStart)&&(!S.flightEnd||p.to<=S.flightEnd));
+  buildCalendar();
+}
+
+function calNav(dir){
+  const all=getFlightMonths();
+  const next=S.calPage+dir*3;
+  if(next<0||next>=all.length) return;
+  S.calPage=Math.min(next,all.length-1);
+  buildCalendar();
+}
+
+function buildCalendar(){
+  const all=getFlightMonths();
+  if(!all.length){
+    document.getElementById('calMonthsRow').innerHTML='<p style="font-size:12px;color:var(--text3)">Set flight dates above.</p>';
+    return;
+  }
+  const page=Math.min(S.calPage,all.length-1);
+  const visible=all.slice(page,page+3);
+  const first=all[page];
+  const last=all[Math.min(page+2,all.length-1)];
+  document.getElementById('calWindowLbl').textContent=MN[first.m]+' '+first.y+(last&&(last.m!==first.m||last.y!==first.y)?(' — '+MN[last.m]+' '+last.y):'');
+  document.getElementById('calPrev').disabled=page===0;
+  document.getElementById('calNext').disabled=page+3>=all.length;
+  const row=document.getElementById('calMonthsRow');
+  row.innerHTML='';
+  visible.forEach(({y,m})=>row.appendChild(buildMonthBlock(y,m)));
+  renderSegBar();
+  renderPhaseList();
+}
+
+function buildMonthBlock(year,month){
+  const wrap=document.createElement('div');
+  wrap.className='cal-month-block';
+  const hd=document.createElement('div');
+  hd.className='cal-month-name';
+  hd.textContent=MN[month]+' '+year;
+  wrap.appendChild(hd);
+  const grid=document.createElement('div');
+  grid.className='cal-grid';
+  DOW.forEach(d=>{const c=document.createElement('div');c.className='cal-dow';c.textContent=d;grid.appendChild(c);});
+  const firstDow=new Date(year,month,1).getDay();
+  for(let i=0;i<firstDow;i++){const b=document.createElement('div');b.className='cal-day cal-out';b.textContent=' ';grid.appendChild(b);}
+  const days=new Date(year,month+1,0).getDate();
+  const fs=S.flightStart?new Date(S.flightStart+'T00:00:00'):null;
+  const fe=S.flightEnd?new Date(S.flightEnd+'T00:00:00'):null;
+  for(let d=1;d<=days;d++){
+    const dt=new Date(year,month,d);
+    const ds=ymd(dt);
+    const el=document.createElement('div');
+    el.className='cal-day';
+    el.textContent=d;
+    if((fs&&dt<fs)||(fe&&dt>fe)) el.classList.add('cal-off');
+    else{
+      const ph=S.phases.find(p=>ds>=p.from&&ds<=p.to);
+      if(ph){ el.style.background=hex2rgba(ph.color,.18); el.style.color=ph.color; el.style.fontWeight='500'; }
+      if(S.picking&&S.pickFrom){
+        const pf=new Date(S.pickFrom+'T00:00:00');
+        if(ds===S.pickFrom) el.classList.add('cal-rangesel');
+        else if(dt>pf) el.classList.add('cal-inrange');
+      }
+      el.onclick=()=>calDayClick(ds);
+    }
+    grid.appendChild(el);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function calDayClick(ds){
+  if(!S.picking) return;
+  if(!S.pickFrom){
+    S.pickFrom=ds;
+    setHint('Now click the <strong>end date</strong> for this phase.');
+    buildCalendar();
+  }else{
+    if(ds<S.pickFrom){ S.pickFrom=ds; buildCalendar(); return; }
+    const color=PHASE_COLORS[S.phases.length%PHASE_COLORS.length];
+    S.phases.push({name:'Phase '+(S.phases.length+1),from:S.pickFrom,to:ds,color});
+    S.picking=false; S.pickFrom=null;
+    document.getElementById('addPhBtn').textContent='+ Add phase';
+    document.getElementById('addPhBtn').onclick=startPick;
+    setHint('');
+    buildCalendar();
+  }
+}
+function startPick(){
+  if(!S.flightStart||!S.flightEnd){ alert('Select a valid flight window first.'); return; }
+  S.picking=true; S.pickFrom=null;
+  document.getElementById('addPhBtn').textContent='Cancel';
+  document.getElementById('addPhBtn').onclick=cancelPick;
+  setHint('Click the <strong>start date</strong> for this phase on the calendar below.');
+  buildCalendar();
+}
+function cancelPick(){
+  S.picking=false; S.pickFrom=null;
+  document.getElementById('addPhBtn').textContent='+ Add phase';
+  document.getElementById('addPhBtn').onclick=startPick;
+  setHint('');
+  buildCalendar();
+}
+function setHint(msg){
+  const h=document.getElementById('hintBar');
+  if(msg){ h.innerHTML=msg; h.className='hint-bar show'; }
+  else h.className='hint-bar';
+}
+
+function renderSegBar(){
+  const bar=document.getElementById('segBar');
+  if(!S.flightStart||!S.flightEnd||!S.phases.length){ bar.style.display='none'; return; }
+  bar.style.display='block';
+  const origin=new Date(S.flightStart+'T00:00:00');
+  const total=Math.round((new Date(S.flightEnd+'T00:00:00')-origin)/86400000)+1;
+  if(total<=0){ bar.style.display='none'; return; }
+  bar.innerHTML=S.phases.map(ph=>{
+    const s=new Date(ph.from+'T00:00:00'),e=new Date(ph.to+'T00:00:00');
+    const left=Math.max(0,Math.round((s-origin)/86400000/total*100));
+    const width=Math.max(1,Math.round(((e-s)/86400000+1)/total*100));
+    return `<div class="seg-chunk" style="left:${left}%;width:${width}%;background:${ph.color}" title="${ph.name}: ${dFmtSh(ph.from)} – ${dFmtSh(ph.to)}">${ph.name}</div>`;
+  }).join('');
+}
+function renderPhaseList(){
+  const list=document.getElementById('phaseList');
+  if(!S.phases.length){ list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">No phases yet. Click "+ Add phase" to mark segments on the calendar.</div>'; return; }
+  list.innerHTML=S.phases.map((ph,i)=>`<div class="phase-item"><div class="phase-dot" style="background:${ph.color}"></div><div class="phase-dates">${dFmtSh(ph.from)} &ndash; ${dFmtSh(ph.to)}</div><input class="phase-name-inp" value="${ph.name}" oninput="updatePhName(${i},this.value)" placeholder="Phase name"/><button class="phase-del" onclick="delPhase(${i})" title="Remove">×</button></div>`).join('');
+}
+function updatePhName(i,v){ S.phases[i].name=v; renderSegBar(); }
+function delPhase(i){ S.phases.splice(i,1); buildCalendar(); }
+
+async function buildPlan(){
+  let payload;
+  try{
+    payload=collectPlanningPayload();
+  }catch(e){
+    alert(e.message||'Check inputs before generating the plan.');
+    return;
+  }
+  if(!S.selectedSlots.length){
+    alert('Select at least one slot in slot preselection.');
+    return;
+  }
+  payload.selected_slot_keys=S.selectedSlots.map(slot=>slot.slot_key);
+  payload.foc_slot_keys=S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key);
+  document.getElementById('navChip').textContent='Generating plan...';
+  try{
+    const res=await fetch('/api/media-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const raw=await res.text();
+    const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
+    if(!res.ok){
+      const detail=data.detail;
+      throw new Error((detail&&detail.message)||detail||'Unable to create media plan');
+    }
+    if(!data.rows||!data.rows.length){
+      const d=data.diagnostics||{};
+      const msg=d.reason||`No plan rows generated. historical_rows=${d.historical_rows||0}, inventory_rows=${d.inventory_rows||0}, available=${d.inventory_total_available||0}`;
+      throw new Error(msg);
+    }
+    S.planId=(data.summary&&data.summary.plan_id)||S.planId;
+    S.planCode=(data.summary&&data.summary.sheet_plan_code)||S.planCode||S.planId;
+    S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
+    S.excludedSlotKeys=[];
+    S.rows=(data.rows||[]).map(r=>({...r, from:r.from, to:r.to}));
+    S.phFilter='All';
+    nav(5);
+  }catch(e){
+    document.getElementById('navChip').textContent='Plan failed';
+    alert(e.message||'Unable to create media plan');
+  }
+}
+
+function phClass(ph){ if(!ph) return 'ph-custom'; const l=ph.toLowerCase(); if(l.includes('jan')) return 'ph-jan'; if(l.includes('feb')) return 'ph-feb'; if(l.includes('mar')) return 'ph-mar'; if(l.includes('eid')) return 'ph-eid'; if(l.includes('ram')) return 'ph-ram'; return 'ph-custom'; }
+
+function renderAll(){
+  const brand=displayBrandName(document.getElementById('bName').value||'Brand');
+  const countries=displayCountries()||'Countries';
+  document.getElementById('planBrandTitle').textContent=brand+' — '+countries+' plan';
+  const perCountryMin=(S.budget<=10000?6:10);
+  const totalMin=perCountryMin*Math.max(S.countries.length,1);
+  document.getElementById('planToolbarNote').textContent=(S.rows.length||0)+' editable country-slot lines. Target: '+perCountryMin+'+ per country ('+totalMin+' total) when inventory exists.'+(S.planCode?(' Media code: '+S.planCode+'.'):'');
+  const total=S.rows.reduce((a,r)=>a+netAmount(r),0);
+  const grossTotal=S.rows.reduce((a,r)=>a+grossAmount(r),0);
+  const totalViews=S.rows.filter(r=>r.views).reduce((a,r)=>a+Number(r.views||0),0);
+  const rC=S.rows.filter(r=>r.stype==='reach').reduce((a,r)=>a+netAmount(r),0);
+  const cC=S.rows.filter(r=>r.stype==='conv').reduce((a,r)=>a+netAmount(r),0);
+  const pct=S.budget?Math.min(Math.round(total/S.budget*100),100):0;
+  document.getElementById('metricGrid').innerHTML=`
+    <div class="metric accent"><div class="ml">Net budget</div><div class="mv">${money2(S.budget,'USD')}</div><div class="ms">${(S.currency&&S.currency!=='USD')?(money2(Math.round(S.budget*fxRate(S.currency)),S.currency)+' est.'):currencySymbol('USD').trim()+' · excl. VAT'}</div></div>
+    <div class="metric"><div class="ml">Net allocated</div><div class="mv">${money2(total,'USD')}</div><div class="ms">${pct}% of budget</div></div>
+    <div class="metric"><div class="ml">Gross value</div><div class="mv">${money2(grossTotal,'USD')}</div><div class="ms">${Math.round(Number(S.discountPct||0))}% discount applied</div></div>
+    <div class="metric"><div class="ml">Reach spend</div><div class="mv">${money2(rC,'USD')}</div><div class="ms">${total?Math.round(rC/total*100):0}% of alloc.</div></div>
+    <div class="metric"><div class="ml">Conversion spend</div><div class="mv">${money2(cC,'USD')}</div><div class="ms">${total?Math.round(cC/total*100):0}% of alloc.</div></div>
+    <div class="metric"><div class="ml">Est. impressions</div><div class="mv">${compactViews(totalViews)}</div><div class="ms">CPM slots only</div></div>`;
+  const cur=S.currency||'USD';
+  const localTotal=Math.round(total*fxRate(cur));
+  const localBudget=Math.round(S.budget*fxRate(cur));
+  document.getElementById('pBarLeft').textContent=money2(total,'USD')+' of '+money2(S.budget,'USD')+(cur!=='USD'?('  |  '+money2(localTotal,cur)+' of '+money2(localBudget,cur)+' est.'):'' );
+  document.getElementById('pBarRight').textContent=pct+'%';
+  const fill=document.getElementById('pBarFill'); fill.style.width=pct+'%';
+  fill.className='bbar-fill'+(pct>100?' over':pct>85?' warn':'');
+  document.getElementById('navChip').textContent=brand+' · '+money2(total,'USD');
+  renderTimeline(); renderPhaseFilters(); renderTable();
+}
+
+function renderTimeline(){
+  const groups=[...new Set(S.rows.map(r=>`${displayBrandName(r.brand)} · ${displayCountryCode(r.country)}`))];
+  const fs=new Date(S.flightStart+'T00:00:00'),fe=new Date(S.flightEnd+'T00:00:00');
+  const totalDays=Math.max(Math.round((fe-fs)/86400000)+1,1);
+  const months=getFlightMonths();
+  let h=`<div class="tl-months">`;
+  months.forEach(({y,m})=>{h+=`<div class="tl-month">${MNS[m]} ${y}</div>`;});
+  h+='</div>';
+  document.getElementById('tlTitle').textContent='Flight timeline — '+dFmtSh(S.flightStart)+' to '+dFmtSh(S.flightEnd);
+  groups.forEach(br=>{
+    const rows=S.rows.filter(r=>`${displayBrandName(r.brand)} · ${displayCountryCode(r.country)}`===br);
+    h+=`<div class="tl-row"><div class="tl-label" title="${br}">${br}</div><div class="tl-track">`;
+    rows.forEach(r=>{
+      const s=new Date(r.from+'T00:00:00'),e=new Date(r.to+'T00:00:00');
+      const sd=Math.round((s-fs)/86400000);
+      const dur=Math.max(Math.round((e-s)/86400000)+1,1);
+      const left=Math.max(0,Math.round(sd/totalDays*100));
+      const width=Math.max(1,Math.round(dur/totalDays*100));
+      const col=r.stype==='reach'?'#1A5FD4':'#C47A1A';
+      h+=`<div class="tl-bar" style="left:${left}%;width:${width}%;background:${col};color:rgba(255,255,255,.9)" title="${displayCountryCode(r.country)} · ${r.asset} · ${r.phase} · ${money2(netAmount(r),S.currency||'USD')}">${r.days}d</div>`;
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('tlWrap').innerHTML=h;
+}
+
+function renderPhaseFilters(){
+  const phases=['All',...new Set(S.rows.map(r=>r.phase))];
+  document.getElementById('phFilters').innerHTML=phases.map(p=>`<div class="pill${p===S.phFilter?' on':''}" onclick="setPh('${p}',this)" style="font-size:11px;padding:4px 10px">${p}</div>`).join('');
+}
+function setPh(ph,el){ S.phFilter=ph; document.querySelectorAll('#phFilters .pill').forEach(p=>p.className='pill'); el.className='pill on'; renderTable(); }
+function setTab(t,el){ S.tabFilter=t; document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); el.classList.add('on'); renderTable(); }
+
+function isSupermall(slot){
+  const t=((slot&&((slot.slot_name||'')+' '+(slot.slot_code||'')))||'').toLowerCase();
+  return t.includes('supermall')||t.includes('super_mall');
+}
+function findSlotMeta(country,slotCode){ return S.slotCatalog.find(s=>s.country===country && s.slot_code===slotCode); }
+function slotSelectHtml(id,row){
+  const mk=S.marketplace;
+  const options=S.slotCatalog.filter(s=>{
+    if(row.country && s.country!==row.country) return false;
+    if(!mk || mk==='both') return true;
+    const sm=isSupermall(s);
+    return mk==='supermall'?sm:!sm;
+  });
+  return `<select class="plan-cell-select" onchange="updateRowField(${id},'slot_code',this.value)"><option value="">Select slot</option>${options.map(s=>`<option value="${s.slot_code}" ${s.slot_code===row.slot_code?'selected':''}>${s.slot_name} (${s.slot_code})</option>`).join('')}</select>`;
+}
+
+function renderTable(){
+  let rows=S.rows;
+  if(S.tabFilter==='reach') rows=rows.filter(r=>r.stype==='reach');
+  if(S.tabFilter==='conv') rows=rows.filter(r=>r.stype==='conv');
+  if(S.phFilter&&S.phFilter!=='All') rows=rows.filter(r=>r.phase===S.phFilter);
+  const total=S.rows.reduce((a,r)=>a+netAmount(r),0);
+  const rem=S.budget-total;
+  const cur=S.currency||'USD';
+  document.getElementById('totVal').textContent=money2(total,'USD')+(cur!=='USD'?('  |  '+money2(Math.round(total*fxRate(cur)),cur)+' est.'):'' );
+  const rb=document.getElementById('remBadge');
+  rb.textContent=rem>=0?money2(rem,S.currency||'USD')+' remaining':money2(Math.abs(rem),S.currency||'USD')+' over budget';
+  rb.className='rem-badge '+(rem>=0?'rem-ok':'rem-over');
+  const ob=document.getElementById('overBudgetBar');
+  if(ob){
+    if(rem<0){
+      const cur=S.currency||'USD';
+      const over=Math.abs(rem);
+      ob.style.display='block';
+      ob.innerHTML=`Over budget by <strong>${money2(over,'USD')}</strong>${cur!=='USD'?(' (≈ '+money2(Math.round(over*fxRate(cur)),cur)+')'):''}. Adjust line costs or increase budget.`;
+    }else{
+      ob.style.display='none';
+    }
+  }
+  if(!rows.length){ document.getElementById('planBody').innerHTML='<tr><td colspan="21"><div class="empty">No items match this filter.</div></td></tr>'; return; }
+  document.getElementById('planBody').innerHTML=rows.map(r=>`<tr>
+    <td><input class="plan-cell-input" type="date" value="${r.from||''}" onchange="updateRowField(${r.id},'from',this.value)"></td>
+    <td><input class="plan-cell-input" type="date" value="${r.to||''}" onchange="updateRowField(${r.id},'to',this.value)"></td>
+    <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'country',this.value)"><option value="ae" ${r.country==='ae'?'selected':''}>AE</option><option value="sa" ${r.country==='sa'?'selected':''}>SA</option><option value="eg" ${r.country==='eg'?'selected':''}>EG</option></select></td>
+    <td>${(r.marketplace||getSlotMarketplace(r)||'').toUpperCase()}</td>
+    <td><input class="plan-cell-input" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value)"></td>
+    <td>${r.zone||''}</td>
+    <td>${r.dimension||''}</td>
+    <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${r.category}`:''}</div></td>
+    <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
+    <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='Cost Per Day'?'selected':''}>Cost Per Day</option></select></td>
+    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(r.rate||0)}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(grossCpm(r),'USD')}</div></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(netCpm(r),'USD')}</div></td>
+    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)"></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(grossAmount(r),'USD')}</div></td>
+    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(netAmount(r)*fxRate(S.currency||'USD'),S.currency||'USD')}</div></td>
+    <td><input class="plan-cell-input" value="${r.phase||''}" oninput="updateRowField(${r.id},'phase',this.value)"></td>
+    <td><input class="plan-cell-input" value="${r.brand||''}" oninput="updateRowField(${r.id},'brand',this.value)"></td>
+    <td><input class="plan-cell-note" value="${r.note||''}" oninput="updateRowField(${r.id},'note',this.value)" placeholder="Add note"></td>
+    <td><button class="del-btn" onclick="delRow(${r.id})">×</button></td>
+  </tr>`).join('');
+}
+
+function updateRowField(id,key,value){
+  const row=S.rows.find(r=>r.id===id); if(!row) return;
+  row[key]=value;
+  if(key==='country'){
+    const meta=findSlotMeta(row.country,row.slot_code);
+    if(!meta){ row.slot_code=''; row.asset=''; row.slot_name=''; row.page=''; row.marketplace=''; row.category=''; row.zone=''; row.dimension=''; }
+  }
+  if(key==='slot_code'){
+    const meta=findSlotMeta(row.country,row.slot_code);
+    if(meta){
+      row.slot_name=meta.slot_name||row.slot_name||row.asset;
+      row.asset=row.slot_name||row.asset;
+      row.page=meta.page||meta.publisher||row.page;
+      row.buyType=(String(meta.pricing_model||'').toLowerCase().includes('day'))?'Cost Per Day':'CPM';
+      row.marketplace=getSlotMarketplace(meta);
+      row.category=meta.category||meta.page||'';
+      row.zone=meta.zone||'';
+      row.dimension=meta.dimension||'';
+      if(row.buyType==='CPM'){
+        row.gross_cpm=Number(meta.rate||0)||0;
+        row.net_cpm=Math.round(row.gross_cpm*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
+        row.rate=row.net_cpm;
+      }else{
+        row.gross_cpm=0;
+        row.net_cpm=0;
+      }
+    }else{
+      row.slot_name=row.asset||'';
+    }
+  }
+  if(key==='from'||key==='to'){
+    const s=new Date(row.from+'T00:00:00'), e=new Date(row.to+'T00:00:00');
+    row.days=Math.max(Math.round((e-s)/86400000)+1,1);
+  }
+  if(key==='rate'||key==='views'||key==='cost'||key==='net_amount'){
+    row[key]=value===''?0:Number(value);
+    if((key==='rate'||key==='views') && row.buyType==='CPM'){
+      row.net_amount=Math.round(((Number(row.views)||0)*(Number(row.rate)||0)/1000)*100)/100;
+      row.net_cpm=Number(row.rate)||0;
+      const discountFactor=Math.max(1-((Number(row.discount_pct??S.discountPct)||0)/100),0.0001);
+      row.gross_cpm=Math.round((row.net_cpm/discountFactor)*10000)/10000;
+    }
+    if(key==='net_amount'){
+      row.cost=Number(row.net_amount)||0;
+    }
+    const discount=Number(((row&&row.discount_pct)!=null?row.discount_pct:S.discountPct))||0;
+    row.cost=netAmount(row);
+    row.gross_amount=discount>=100?row.cost:Math.round((row.cost/Math.max(1-(discount/100),0.0001))*100)/100;
+    if(row.buyType==='CPM' && !['rate','views'].includes(key)){
+      row.net_cpm=Number(row.rate||0)||0;
+      row.gross_cpm=discount>=100?row.net_cpm:Math.round((row.net_cpm/Math.max(1-(discount/100),0.0001))*10000)/10000;
+    }else if(row.buyType!=='CPM'){
+      row.net_cpm=0;
+      row.gross_cpm=0;
+    }
+  }
+  renderAll();
+}
+function serializeRows(){
+  return S.rows
+    .filter(r=>r.locked||r.manual)
+    .map(r=>({
+      id:r.id,
+      from:r.from,
+      to:r.to,
+      country:r.country||'',
+      page:r.page,
+      asset:r.asset,
+      slot_name:r.slot_name||r.asset||r.slot_code||'',
+      days:r.days,
+      buyType:r.buyType,
+      rate:Number(r.rate)||0,
+      gross_cpm:grossCpm(r),
+      net_cpm:netCpm(r),
+      views:r.views==null?null:Number(r.views),
+      cost:netAmount(r),
+      gross_amount:grossAmount(r),
+      net_amount:netAmount(r),
+      discount_pct:Number(((r&&r.discount_pct)!=null?r.discount_pct:S.discountPct))||0,
+      phase:r.phase,
+      brand:r.brand,
+      marketplace:r.marketplace||'',
+      category:r.category||'',
+      zone:r.zone||'',
+      dimension:r.dimension||'',
+      stype:r.stype,
+      slot_code:r.slot_code||'',
+      score:Number(r.score)||0,
+      available_views:Number(r.available_views)||0,
+      historical_ctr:r.historical_ctr,
+      historical_roas:r.historical_roas,
+      historical_cpm:r.historical_cpm,
+      note:r.note||'',
+      manual:!!r.manual,
+      locked:!!r.locked
+    }));
+}
+async function regeneratePlan(){
+  if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
+  const payload={ brand:(document.getElementById('bName').value||'').trim(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj, reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked };
+  try{
+    document.getElementById('navChip').textContent='Regenerating...';
+    const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const raw=await res.text();
+    const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
+    if(!res.ok){ const detail=data.detail; throw new Error((detail&&detail.message)||detail||'Unable to regenerate plan'); }
+    S.planCode=(data.summary&&data.summary.sheet_plan_code)||S.planCode||S.planId;
+    S.rows=(data.rows||[]).map(r=>({...r, from:r.from, to:r.to}));
+    S.excludedSlotKeys=[];
+    renderAll();
+  }catch(e){ alert(e.message||'Unable to regenerate plan'); }
+}
+function delRow(id){
+  const row=S.rows.find(r=>r.id===id);
+  if(row && !row.manual && row.slot_code) S.excludedSlotKeys.push(`${row.country}|${row.slot_code}`);
+  S.rows=S.rows.filter(r=>r.id!==id);
+  renderAll();
+}
+function addRow(){
+  const maxId=Math.max(...S.rows.map(r=>r.id),0);
+  const country=S.countries[0]||'ae';
+  S.rows.push({id:maxId+1,from:S.flightStart||todayStr(),to:S.flightEnd||todayStr(),country:country,marketplace:'',category:'',zone:'',dimension:'',page:'',asset:'',slot_name:'',days:1,buyType:'CPM',rate:0,gross_cpm:0,net_cpm:0,views:0,cost:0,gross_amount:0,net_amount:0,discount_pct:S.discountPct,phase:S.phases[0]?.name||'Full flight',brand:document.getElementById('bName').value||'',stype:'reach',slot_code:'',score:0,available_views:0,note:'',manual:true,locked:true});
+  renderAll();
+}
+
+function printPlan(mode='detailed'){
+  const cur=S.currency||'USD';
+  const brand=displayBrandName(document.getElementById('bName').value||'Brand');
+  const countries=displayCountries()||'-';
+  const total=S.rows.reduce((sum,row)=>sum+netAmount(row),0);
+  const grossTotal=S.rows.reduce((sum,row)=>sum+grossAmount(row),0);
+  const totalViews=S.rows.reduce((sum,row)=>sum+Number(row.views||0),0);
+  const duration=campaignDurationDays();
+  const flightRange=displayFlightRange();
+  const campaignCpm=blendedCpm(S.rows);
+  const mediaCode=S.planCode||S.planId||'-';
+  const detailedRows=S.rows.map(row=>`<tr>
+    <td>${row.from||''}</td>
+    <td>${row.to||''}</td>
+    <td>${displayCountryCode(row.country)}</td>
+    <td>${(row.marketplace||'').toUpperCase()}</td>
+    <td>${row.page||''}</td>
+    <td>${row.zone||''}</td>
+    <td>${row.dimension||''}</td>
+    <td>${displaySlotName(row)}<div style="font-size:10px;color:#666">${row.slot_code||''}</div></td>
+    <td style="text-align:center">${row.days||0}</td>
+    <td>${row.buyType||''}</td>
+    <td style="text-align:right">${number10(row.rate||0)}</td>
+    <td style="text-align:right">${money2(grossCpm(row),'USD')}</td>
+    <td style="text-align:right">${money2(netCpm(row),'USD')}</td>
+    <td style="text-align:right">${views10(row.views||0)}</td>
+    <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
+    <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
+    <td style="text-align:right">${money2(netAmount(row)*fxRate(cur),cur)}</td>
+    <td>${row.phase||''}</td>
+    <td>${row.brand||''}</td>
+    <td>${row.note||''}</td>
+  </tr>`).join('');
+  const executiveRows=S.rows.map(row=>`<tr>
+    <td>${displaySlotName(row)}</td>
+    <td>${row.page||''}</td>
+    <td>${(row.marketplace||'').toUpperCase()}</td>
+    <td>${displayCountryCode(row.country)}</td>
+    <td style="text-align:right">${number10(row.rate||0)}</td>
+    <td style="text-align:right">${views10(row.views||0)}</td>
+    <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
+    <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
+  </tr>`).join('');
+  const tableHead=mode==='executive'
+    ? `<tr><th>Asset / Slot</th><th>Page</th><th>Marketplace</th><th>Country</th><th>Net Rate</th><th>Est. views</th><th>Gross Cost</th><th>Net Cost</th></tr>`
+    : `<tr><th>From</th><th>To</th><th>Country</th><th>Marketplace</th><th>Page</th><th>Zone</th><th>Dimension</th><th>Asset / Slot</th><th>Days</th><th>Buy type</th><th>Net Rate</th><th>Gross CPM</th><th>Net CPM</th><th>Est. views</th><th>Gross $</th><th>Net $</th><th>Net ${currencySymbol(cur).trim()}</th><th>Phase</th><th>Brand</th><th>Note</th></tr>`;
+  const tableRows=mode==='executive'?executiveRows:detailedRows;
+  const summaryCards=mode==='executive'
+    ? `
+      <div class="sumcard"><div class="sumlabel">Total CPM</div><div class="sumvalue">${money2(campaignCpm,'USD')}</div><div class="sumsub">Blended net CPM</div></div>
+      <div class="sumcard"><div class="sumlabel">Campaign Duration</div><div class="sumvalue">${duration} days</div><div class="sumsub">${S.flightStart||'-'} to ${S.flightEnd||'-'}</div></div>
+      <div class="sumcard"><div class="sumlabel">Est. Views</div><div class="sumvalue">${compactViews(totalViews)}</div><div class="sumsub">Rounded to nearest 10</div></div>
+      <div class="sumcard"><div class="sumlabel">Gross Cost</div><div class="sumvalue">${money2(grossTotal,'USD')}</div><div class="sumsub">Before discounting</div></div>
+      <div class="sumcard"><div class="sumlabel">Net Cost</div><div class="sumvalue">${money2(total,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(total*fxRate(cur),cur):'USD view'}</div></div>
+    `
+    : `
+      <div class="sumcard"><div class="sumlabel">Media Code</div><div class="sumvalue" style="font-size:18px">${mediaCode}</div><div class="sumsub">Generated reference</div></div>
+      <div class="sumcard"><div class="sumlabel">Net Budget</div><div class="sumvalue">${money2(S.budget,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(S.budget*fxRate(cur),cur):'USD view'}</div></div>
+      <div class="sumcard"><div class="sumlabel">Discount</div><div class="sumvalue">${Math.round(Number(S.discountPct||0))}%</div><div class="sumsub">Applied on slot-data rates</div></div>
+      <div class="sumcard"><div class="sumlabel">Gross Value</div><div class="sumvalue">${money2(grossTotal,'USD')}</div><div class="sumsub">Before discounting</div></div>
+      <div class="sumcard"><div class="sumlabel">Net Value</div><div class="sumvalue">${money2(total,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(total*fxRate(cur),cur):'Aligned to budget'}</div></div>
+    `;
+  const win=window.open('','_blank','width=1280,height=900');
+  if(!win) return;
+  win.document.write(`<!DOCTYPE html><html><head><title>${mode==='executive'?'Executive Summary':'Detailed Summary'}</title><style>
+    :root{--ink:#1f2128;--muted:#636875;--gold:#ffcf33;--line:#e7dba9}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{font-family:'DM Sans',sans-serif;padding:28px;color:var(--ink);background:#fffef9}
+    .printbrand{display:flex;align-items:center;justify-content:center;margin-bottom:16px;padding:10px 18px}
+    .printbrand img{display:block;max-height:56px;max-width:240px;object-fit:contain}
+    .header{margin-bottom:20px;padding:22px 24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,#1f2128 0,#343946 100%);box-shadow:0 18px 40px rgba(31,33,40,.12);color:#fff}
+    h1{font-size:30px;margin:0 0 10px;color:#fff;letter-spacing:-.03em}
+    .meta-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}
+    .meta-item{padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+    .meta-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.65);font-weight:700;margin-bottom:4px}
+    .meta-value{font-size:16px;font-weight:700;color:#fff}
+    .summary{display:grid;grid-template-columns:repeat(${mode==='executive'?5:5},1fr);gap:12px;margin:18px 0 20px}
+    .sumcard{border:1px solid var(--line);border-radius:18px;padding:14px 16px;background:#fff;box-shadow:0 6px 18px rgba(31,33,40,.05)}
+    .sumlabel{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:6px}
+    .sumvalue{font-size:22px;font-weight:700;color:var(--ink)}
+    .sumsub{font-size:12px;color:var(--muted);margin-top:3px}
+    table{width:100%;border-collapse:separate;border-spacing:0;font-size:${mode==='executive'?'12px':'11px'};border:1px solid var(--line);border-radius:18px;overflow:hidden}
+    th,td{padding:9px 10px;vertical-align:top;border-bottom:1px solid #eee7cb}
+    th{background:linear-gradient(180deg,#fff4c0,#ffefaa);text-align:left;color:#2f333e;font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+    tbody tr:nth-child(even) td{background:#fffdf6}
+    tbody tr:nth-child(odd) td{background:#fff}
+    tbody tr:last-child td{border-bottom:none}
+  </style></head><body>
+    <div class="printbrand"><img src="/static/logo.png" alt="noon ads logo"></div>
+    <div class="header">
+      <h1>${brand}</h1>
+      <div class="meta-grid">
+        <div class="meta-item"><div class="meta-label">Brand</div><div class="meta-value">${brand}</div></div>
+        <div class="meta-item"><div class="meta-label">Countries</div><div class="meta-value">${countries||'-'}</div></div>
+        <div class="meta-item"><div class="meta-label">Campaign Duration</div><div class="meta-value">${duration} days</div><div style="font-size:12px;color:rgba(255,255,255,.72);margin-top:4px">${flightRange}</div></div>
+        <div class="meta-item"><div class="meta-label">Marketplace</div><div class="meta-value">${(S.marketplace||'both').toUpperCase()}</div></div>
+        <div class="meta-item"><div class="meta-label">Discount</div><div class="meta-value">${Math.round(Number(S.discountPct||0))}%</div></div>
+      </div>
+    </div>
+    <div class="summary">${summaryCards}</div>
+    <table><thead>${tableHead}</thead><tbody>${tableRows}</tbody></table>
+  </body></html>`);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+function exportCsv(){
+  const headers=['from','to','country','marketplace','page','category','zone','dimension','asset','slot_code','days','buy_type','net_rate','gross_cpm','net_cpm','views','gross_amount_usd','net_amount_usd','phase','brand','note'];
+  const rows=S.rows.map(row=>[
+    row.from||'',
+    row.to||'',
+    displayCountryCode(row.country),
+    row.marketplace||'',
+    row.page||'',
+    row.category||'',
+    row.zone||'',
+    row.dimension||'',
+    row.asset||'',
+    row.slot_code||'',
+    row.days||0,
+    row.buyType||'',
+    roundToNearestTen(row.rate||0),
+    roundToNearestTen(grossCpm(row)),
+    roundToNearestTen(netCpm(row)),
+    roundToNearestTen(row.views||0),
+    roundToNearestTen(grossAmount(row)),
+    roundToNearestTen(netAmount(row)),
+    row.phase||'',
+    row.brand||'',
+    row.note||''
+  ]);
+  const csv=[headers,...rows].map(cols=>cols.map(value=>`"${String(value??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const codeSuffix=S.planCode?('_'+S.planCode.replace(/[^A-Za-z0-9_-]/g,'')):'';
+  a.download=((document.getElementById('bName').value||'media_plan').trim().replace(/\s+/g,'_')||'media_plan')+codeSuffix+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function autoLoadPlanFromUrl(){
+  const params=new URLSearchParams(window.location.search);
+  const ref=(params.get('plan')||'').trim();
+  if(!ref) return;
+  const target=(params.get('view')||'start').trim().toLowerCase();
+  const allowed=new Set(['start','preselection','plan']);
+  const mode=allowed.has(target)?target:'start';
+  await loadSavedPlan(mode, ref);
+}
+
+S.rows=[];
+setupDateLimits();
+(async function initPlanner(){
+  await loadOptions();
+  nav(1);
+  await autoLoadPlanFromUrl();
+})();
+</script>
+</body>
+</html>
