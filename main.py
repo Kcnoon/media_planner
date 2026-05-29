@@ -45,10 +45,23 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
         "estimated_views": views,
         "line_count": len(rows),
     }
-    sheet_plan_code, sheet_plan_link = repo.save_plan(req, rows, summary, diagnostics, plan_code=plan_id)
-    summary["sheet_plan_code"] = sheet_plan_code
-    summary["sheet_plan_link"] = sheet_plan_link
-    summary["plan_id"] = sheet_plan_code
+
+    # BigQuery plan persistence is intentionally disabled for now.
+    # Re-enable the block below when media plan runs/lines should be stored again.
+    #
+    # sheet_plan_code, sheet_plan_link = repo.save_plan(
+    #     req,
+    #     rows,
+    #     summary,
+    #     diagnostics,
+    #     plan_code=plan_id,
+    # )
+    # summary["sheet_plan_code"] = sheet_plan_code
+    # summary["sheet_plan_link"] = sheet_plan_link
+    # summary["plan_id"] = sheet_plan_code
+    summary["sheet_plan_code"] = ""
+    summary["sheet_plan_link"] = ""
+    summary["plan_id"] = plan_id or ""
     return {"rows": rows, "summary": summary, "diagnostics": diagnostics}
 
 

@@ -3,42 +3,16 @@ steps:
     args:
       - build
       - -t
-      - ${_IMAGE}
+      - asia-south1-docker.pkg.dev/noonprd-biadmon/cloud-run-source-deploy/bq-test-app
       - .
 
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - ${_IMAGE}
+      - asia-south1-docker.pkg.dev/noonprd-biadmon/cloud-run-source-deploy/bq-test-app
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      - run
-      - deploy
-      - ${_SERVICE_NAME}
-      - --image
-      - ${_IMAGE}
-      - --region
-      - ${_REGION}
-      - --platform
-      - managed
-      - --allow-unauthenticated
-      - --set-env-vars
-      - BIGQUERY_PROJECT=${_BIGQUERY_PROJECT},BOOKING_TABLE=${_BOOKING_TABLE},DELIVERY_TABLE=${_DELIVERY_TABLE},FORECAST_TABLE=${_FORECAST_TABLE},SLOT_DATA_TABLE=${_SLOT_DATA_TABLE},PLAN_RUNS_TABLE=${_PLAN_RUNS_TABLE},PLAN_LINES_TABLE=${_PLAN_LINES_TABLE},PUBLIC_APP_URL=${_PUBLIC_APP_URL}
-      - --service-account
-      - ${_RUNTIME_SERVICE_ACCOUNT}
+options:
+  logging: CLOUD_LOGGING_ONLY
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
 
-substitutions:
-  _SERVICE_NAME: noon-media-planner
-  _REGION: europe-west1
-  _IMAGE: asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/noon-media-planner
-  _BIGQUERY_PROJECT: noonbiadmon
-  _BOOKING_TABLE: noonbiadmon.admon_business_analytics.campaign_booking_data_past
-  _DELIVERY_TABLE: noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance
-  _FORECAST_TABLE: noonbiadmon.admon_business_analytics.forecasting
-  _SLOT_DATA_TABLE: noonbiadmon.admon_business_analytics.slot_base_data
-  _PLAN_RUNS_TABLE: noonbiadmon.admon_business_analytics.media_plan_runs
-  _PLAN_LINES_TABLE: noonbiadmon.admon_business_analytics.media_plan_lines
-  _PUBLIC_APP_URL: ""
-  _RUNTIME_SERVICE_ACCOUNT: admon-analytics@$PROJECT_ID.iam.gserviceaccount.com
+serviceAccount: projects/noonprd-biadmon/serviceAccounts/admon-analytics@noonprd-biadmon.iam.gserviceaccount.com
