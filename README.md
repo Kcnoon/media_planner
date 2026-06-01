@@ -7,6 +7,7 @@ This app now reads source data from BigQuery and writes generated plans back to 
 Source tables:
 
 - `noonbiadmon.admon_business_analytics.slot_base_data`
+- `noonbiadmon.admon_business_analytics.slot_rate_card_base`
 - `noonbiadmon.admon_business_analytics.campaign_booking_data_past`
 - `noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance`
 - `noonbiadmon.admon_business_analytics.forecasting`
@@ -37,6 +38,7 @@ export BOOKING_TABLE=noonbiadmon.admon_business_analytics.campaign_booking_data_
 export DELIVERY_TABLE=noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance
 export FORECAST_TABLE=noonbiadmon.admon_business_analytics.forecasting
 export SLOT_DATA_TABLE=noonbiadmon.admon_business_analytics.slot_base_data
+export SLOT_RATE_CARD_TABLE=noonbiadmon.admon_business_analytics.slot_rate_card_base
 export PLAN_RUNS_TABLE=noonbiadmon.admon_business_analytics.media_plan_runs
 export PLAN_LINES_TABLE=noonbiadmon.admon_business_analytics.media_plan_lines
 export PUBLIC_APP_URL=http://127.0.0.1:8000
@@ -131,7 +133,7 @@ From the repo root:
 ```bash
 gcloud builds submit \
   --config cloudbuild.yaml \
-  --substitutions=_SERVICE_NAME=noon-media-planner,_REGION=europe-west1,_IMAGE=asia-south1-docker.pkg.dev/noonprd-biadmon/cloud-run-source-deploy/noon-media-planner,_BIGQUERY_PROJECT=noonbiadmon,_BOOKING_TABLE=noonbiadmon.admon_business_analytics.campaign_booking_data_past,_DELIVERY_TABLE=noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance,_FORECAST_TABLE=noonbiadmon.admon_business_analytics.forecasting,_SLOT_DATA_TABLE=noonbiadmon.admon_business_analytics.slot_base_data,_PLAN_RUNS_TABLE=noonbiadmon.admon_business_analytics.media_plan_runs,_PLAN_LINES_TABLE=noonbiadmon.admon_business_analytics.media_plan_lines,_PUBLIC_APP_URL=https://YOUR_CLOUD_RUN_URL,_RUNTIME_SERVICE_ACCOUNT=admon-analytics@noonprd-biadmon.iam.gserviceaccount.com
+  --substitutions=_SERVICE_NAME=noon-media-planner,_REGION=europe-west1,_IMAGE=asia-south1-docker.pkg.dev/noonprd-biadmon/cloud-run-source-deploy/noon-media-planner,_BIGQUERY_PROJECT=noonbiadmon,_BOOKING_TABLE=noonbiadmon.admon_business_analytics.campaign_booking_data_past,_DELIVERY_TABLE=noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance,_FORECAST_TABLE=noonbiadmon.admon_business_analytics.forecasting,_SLOT_DATA_TABLE=noonbiadmon.admon_business_analytics.slot_base_data,_SLOT_RATE_CARD_TABLE=noonbiadmon.admon_business_analytics.slot_rate_card_base,_PLAN_RUNS_TABLE=noonbiadmon.admon_business_analytics.media_plan_runs,_PLAN_LINES_TABLE=noonbiadmon.admon_business_analytics.media_plan_lines,_PUBLIC_APP_URL=https://YOUR_CLOUD_RUN_URL,_RUNTIME_SERVICE_ACCOUNT=admon-analytics@noonprd-biadmon.iam.gserviceaccount.com
 ```
 
 For the first deploy, `_PUBLIC_APP_URL` can be left empty. After Cloud Run gives you the live URL, redeploy once with `_PUBLIC_APP_URL=https://...` so copied plan links open the hosted app directly.
@@ -147,7 +149,7 @@ gcloud run deploy noon-media-planner \
   --platform managed \
   --allow-unauthenticated \
   --service-account admon-analytics@noonprd-biadmon.iam.gserviceaccount.com \
-  --set-env-vars BIGQUERY_PROJECT=noonbiadmon,BOOKING_TABLE=noonbiadmon.admon_business_analytics.campaign_booking_data_past,DELIVERY_TABLE=noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance,FORECAST_TABLE=noonbiadmon.admon_business_analytics.forecasting,SLOT_DATA_TABLE=noonbiadmon.admon_business_analytics.slot_base_data,PLAN_RUNS_TABLE=noonbiadmon.admon_business_analytics.media_plan_runs,PLAN_LINES_TABLE=noonbiadmon.admon_business_analytics.media_plan_lines
+  --set-env-vars BIGQUERY_PROJECT=noonbiadmon,BOOKING_TABLE=noonbiadmon.admon_business_analytics.campaign_booking_data_past,DELIVERY_TABLE=noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance,FORECAST_TABLE=noonbiadmon.admon_business_analytics.forecasting,SLOT_DATA_TABLE=noonbiadmon.admon_business_analytics.slot_base_data,SLOT_RATE_CARD_TABLE=noonbiadmon.admon_business_analytics.slot_rate_card_base,PLAN_RUNS_TABLE=noonbiadmon.admon_business_analytics.media_plan_runs,PLAN_LINES_TABLE=noonbiadmon.admon_business_analytics.media_plan_lines
 ```
 
 ## Notes

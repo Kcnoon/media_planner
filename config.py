@@ -20,6 +20,10 @@ class Settings(BaseSettings):
         "noonbiadmon.admon_business_analytics.slot_base_data",
         validation_alias="SLOT_DATA_TABLE",
     )
+    slot_rate_card_table: str = Field(
+        "noonbiadmon.admon_business_analytics.slot_rate_card_base",
+        validation_alias="SLOT_RATE_CARD_TABLE",
+    )
     plan_runs_table: str = Field(
         "noonbiadmon.admon_business_analytics.media_plan_runs",
         validation_alias="PLAN_RUNS_TABLE",
@@ -30,7 +34,10 @@ class Settings(BaseSettings):
     )
     bigquery_project: str = Field("noonbiadmon", validation_alias="BIGQUERY_PROJECT")
     bigquery_location: str = Field("", validation_alias="BIGQUERY_LOCATION")
-    public_app_url: str = Field("", validation_alias="PUBLIC_APP_URL")
+    public_app_url: str = Field(
+        "https://bq-test-app-464570346642.europe-west1.run.app/",
+        validation_alias="PUBLIC_APP_URL",
+    )
     historical_lookback_days: int = Field(365, validation_alias="HISTORICAL_LOOKBACK_DAYS")
     min_slot_views: int = Field(1000, validation_alias="MIN_SLOT_VIEWS")
     default_cpm: float = Field(12.0, validation_alias="DEFAULT_CPM")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from math import isfinite
 import re
 
@@ -172,6 +172,51 @@ def floor_views_to_block(views: int, block_size: int = 100) -> int:
     if views <= 0:
         return 0
     return int(views // block_size) * block_size
+
+
+def iter_dates(start: date, end: date):
+    current = start
+    while current <= end:
+        yield current
+        current += timedelta(days=1)
+
+
+def _distributed_daily_views(total_views: int, day_count: int) -> list[int]:
+    if day_count <= 0:
+        return []
+    base = total_views // day_count
+    remainder = total_views % day_count
+    return [base + (1 if idx < remainder else 0) for idx in range(day_count)]
+
+
+def _cpm_row_pricing(
+    meta: dict,
+    candidate: Candidate,
+    start: date,
+    end: date,
+    planned_views: int,
+    discount_pct: float,
+    default_cpm: float,
+) -> tuple[float, float, float, float]:
+    gross_fallback = float(meta.get("rate") or candidate.slot_rate or candidate.cpm or default_cpm)
+    rate_schedule = meta.get("rate_schedule") or {}
+    days = list(iter_dates(start, end))
+    daily_views = _distributed_daily_views(planned_views, len(days))
+    gross_total = 0.0
+    net_total = 0.0
+    for idx, dt in enumerate(days):
+        daily_rate = float(rate_schedule.get(dt.isoformat()) or gross_fallback)
+        daily_net_rate = discounted_rate(daily_rate, discount_pct)
+        views = daily_views[idx]
+        gross_total += views * daily_rate / 1000
+        net_total += views * daily_net_rate / 1000
+    if planned_views <= 0:
+        gross_avg = gross_fallback
+        net_avg = discounted_rate(gross_fallback, discount_pct)
+    else:
+        gross_avg = gross_total * 1000 / planned_views
+        net_avg = net_total * 1000 / planned_views
+    return round(gross_total, 2), round(net_total, 2), round(gross_avg, 4), round(net_avg, 4)
 
 
 def default_phases(req: MediaPlanRequest) -> list[Phase]:
@@ -740,10 +785,11 @@ def plan_media(
 
         buy_type = "Cost Per Day" if candidate.pricing_model == "CPD" else "CPM"
         is_foc = slot_key in foc_slot_keys
+        meta = slot_meta.get((candidate.country, candidate.slot_code), {})
         if buy_type == "Cost Per Day":
             gross_rate = round(candidate.slot_rate or candidate.cpd or settings.default_cpd, 4)
         else:
-            gross_rate = round(candidate.slot_rate or candidate.cpm or settings.default_cpm, 4)
+            gross_rate = round(float(meta.get("rate") or candidate.slot_rate or candidate.cpm or settings.default_cpm), 4)
         rate = discounted_rate(gross_rate, req.discount_pct)
 
         remaining_budget = max(req.budget - spent_total, 0)
@@ -766,8 +812,21 @@ def plan_media(
                 planned_views = floor_views_to_block(available)
             if planned_views < settings.min_slot_views:
                 return False
-            net_amount = 0.0 if is_foc else round(planned_views * rate / 1000, 2)
-            gross_amount = 0.0 if is_foc else gross_from_net(net_amount, req.discount_pct)
+            if is_foc:
+                net_amount = 0.0
+                gross_amount = 0.0
+                gross_rate_avg = gross_rate
+                net_rate_avg = rate
+            else:
+                gross_amount, net_amount, gross_rate_avg, net_rate_avg = _cpm_row_pricing(
+                    meta,
+                    candidate,
+                    row_from,
+                    row_to,
+                    planned_views,
+                    req.discount_pct,
+                    settings.default_cpm,
+                )
         else:
             max_days = min(days, max(int(max(working_budget, max(rate, 0.01)) // max(rate, 0.01)), 1))
             net_amount = 0.0 if is_foc else round(rate * max_days, 2)
@@ -775,6 +834,8 @@ def plan_media(
             planned_views = min(available, int(candidate.views / max(candidate.active_days, 1) * max_days)) or None
             row_to = row_from.fromordinal(row_from.toordinal() + max_days - 1)
             days = inclusive_days(row_from, row_to)
+            gross_rate_avg = gross_rate
+            net_rate_avg = rate
 
         if not is_foc and spent_total + net_amount > req.budget:
             remaining_budget = round(max(req.budget - spent_total, 0), 2)
@@ -786,12 +847,26 @@ def plan_media(
                 if capped_views < settings.min_slot_views:
                     return False
                 planned_views = capped_views
-                net_amount = round(planned_views * rate / 1000, 2)
-                gross_amount = gross_from_net(net_amount, req.discount_pct)
+                gross_amount, net_amount, gross_rate_avg, net_rate_avg = _cpm_row_pricing(
+                    meta,
+                    candidate,
+                    row_from,
+                    row_to,
+                    planned_views,
+                    req.discount_pct,
+                    settings.default_cpm,
+                )
                 while planned_views >= settings.min_slot_views and spent_total + net_amount > req.budget:
                     planned_views -= 100
-                    net_amount = round(planned_views * rate / 1000, 2)
-                    gross_amount = gross_from_net(net_amount, req.discount_pct)
+                    gross_amount, net_amount, gross_rate_avg, net_rate_avg = _cpm_row_pricing(
+                        meta,
+                        candidate,
+                        row_from,
+                        row_to,
+                        planned_views,
+                        req.discount_pct,
+                        settings.default_cpm,
+                    )
                 if planned_views < settings.min_slot_views or spent_total + net_amount > req.budget:
                     return False
             else:
@@ -816,9 +891,9 @@ def plan_media(
                     "slot_name": candidate.slot_name or asset_from_slot(candidate.slot_code, candidate.slot_name),
                     "days": days,
                     "buyType": buy_type,
-                    "rate": round(rate, 4),
-                    "gross_cpm": round(gross_rate if buy_type == "CPM" else 0.0, 4),
-                    "net_cpm": round(rate if buy_type == "CPM" else 0.0, 4),
+                    "rate": round(net_rate_avg if buy_type == "CPM" else rate, 4),
+                    "gross_cpm": round(gross_rate_avg if buy_type == "CPM" else 0.0, 4),
+                    "net_cpm": round(net_rate_avg if buy_type == "CPM" else 0.0, 4),
                     "views": planned_views,
                     "cost": round(net_amount, 2),
                     "gross_amount": round(gross_amount, 2),

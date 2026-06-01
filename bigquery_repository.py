@@ -307,15 +307,70 @@ class BigQueryRepository:
             self.client.update_table(table, ["schema"])
             self._schema_cache.pop(table_id, None)
 
-    def fetch_slot_catalog(self) -> list[dict]:
+    def _fetch_rate_card_map(
+        self,
+        start: date,
+        end: date,
+    ) -> tuple[dict[tuple[str, str], float], dict[str, float], dict[tuple[str, str], dict[str, float]], dict[str, dict[str, float]]]:
+        rows = self._table_records_for_window(
+            self.settings.slot_rate_card_table,
+            start,
+            end,
+            "date",
+            "dt",
+        )
+        by_country_slot: dict[tuple[str, str], list[float]] = defaultdict(list)
+        by_slot: dict[str, list[float]] = defaultdict(list)
+        schedule_by_country_slot: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
+        schedule_by_slot: dict[str, dict[str, float]] = defaultdict(dict)
+        for row in rows:
+            slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
+            if not slot_code:
+                continue
+            country = infer_country(row)
+            dt = parse_date(get_first(row, "date", "dt"))
+            rate = parse_number(get_first(row, "rate_usd", "rate", "usd_rate", "cpm", "price"))
+            if rate <= 0:
+                continue
+            by_slot[slot_code].append(rate)
+            if dt:
+                schedule_by_slot[slot_code][dt.isoformat()] = rate
+            if country:
+                by_country_slot[(country, slot_code)].append(rate)
+                if dt:
+                    schedule_by_country_slot[(country, slot_code)][dt.isoformat()] = rate
+        averaged_country_slot = {
+            key: round(sum(values) / len(values), 4)
+            for key, values in by_country_slot.items()
+            if values
+        }
+        averaged_slot = {
+            key: round(sum(values) / len(values), 4)
+            for key, values in by_slot.items()
+            if values
+        }
+        return averaged_country_slot, averaged_slot, dict(schedule_by_country_slot), dict(schedule_by_slot)
+
+    def fetch_slot_catalog(self, req: MediaPlanRequest | None = None) -> list[dict]:
         rows = self._query_records(f"SELECT * FROM `{self.settings.slot_data_table}`")
+        rate_by_country_slot: dict[tuple[str, str], float] = {}
+        rate_by_slot: dict[str, float] = {}
+        schedule_by_country_slot: dict[tuple[str, str], dict[str, float]] = {}
+        schedule_by_slot: dict[str, dict[str, float]] = {}
+        if req is not None:
+            rate_by_country_slot, rate_by_slot, schedule_by_country_slot, schedule_by_slot = self._fetch_rate_card_map(req.start_date, req.end_date)
         catalog = []
         for row in rows:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
             if not slot_code:
                 continue
             country = infer_country(row)
-            rate = parse_number(get_first(row, "cpm", "rate", "gross_cpm", "price"))
+            rate_schedule = schedule_by_country_slot.get((country, slot_code)) or schedule_by_slot.get(slot_code) or {}
+            rate = (
+                rate_by_country_slot.get((country, slot_code))
+                or rate_by_slot.get(slot_code)
+                or parse_number(get_first(row, "cpm", "rate", "gross_cpm", "price"))
+            )
             catalog.append(
                 {
                     "country": country,
@@ -328,12 +383,13 @@ class BigQueryRepository:
                     "publisher": str(get_first(row, "publisher") or "").strip(),
                     "pricing_model": str(get_first(row, "pricing_model", "buy_type") or "cpm").strip(),
                     "rate": rate if rate > 0 else 10.0,
+                    "rate_schedule": rate_schedule,
                 }
             )
         return catalog
 
-    def fetch_slot_meta(self) -> dict[tuple[str, str], dict]:
-        return {(row["country"], row["slot_code"]): row for row in self.fetch_slot_catalog()}
+    def fetch_slot_meta(self, req: MediaPlanRequest | None = None) -> dict[tuple[str, str], dict]:
+        return {(row["country"], row["slot_code"]): row for row in self.fetch_slot_catalog(req)}
 
     def fetch_historical_performance(self, req: MediaPlanRequest) -> list[dict]:
         start = req.start_date - timedelta(days=self.settings.historical_lookback_days)

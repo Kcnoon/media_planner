@@ -46,22 +46,16 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
         "line_count": len(rows),
     }
 
-    # BigQuery plan persistence is intentionally disabled for now.
-    # Re-enable the block below when media plan runs/lines should be stored again.
-    #
-    # sheet_plan_code, sheet_plan_link = repo.save_plan(
-    #     req,
-    #     rows,
-    #     summary,
-    #     diagnostics,
-    #     plan_code=plan_id,
-    # )
-    # summary["sheet_plan_code"] = sheet_plan_code
-    # summary["sheet_plan_link"] = sheet_plan_link
-    # summary["plan_id"] = sheet_plan_code
-    summary["sheet_plan_code"] = ""
-    summary["sheet_plan_link"] = ""
-    summary["plan_id"] = plan_id or ""
+    sheet_plan_code, sheet_plan_link = repo.save_plan(
+        req,
+        rows,
+        summary,
+        diagnostics,
+        plan_code=plan_id,
+    )
+    summary["sheet_plan_code"] = sheet_plan_code
+    summary["sheet_plan_link"] = sheet_plan_link
+    summary["plan_id"] = sheet_plan_code
     return {"rows": rows, "summary": summary, "diagnostics": diagnostics}
 
 
@@ -123,7 +117,7 @@ def slot_preselection(req: MediaPlanRequest, settings: Settings = Depends(get_se
     req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)
-    slot_meta = repo.fetch_slot_meta()
+    slot_meta = repo.fetch_slot_meta(req)
     suggestions = suggest_slots(req, historical_rows, inventory_rows, slot_meta, settings, limit=max(len(req.countries), 1) * (6 if req.budget <= 10000 else 10))
     available_slots = build_available_slots(req, inventory_rows, slot_meta)
     return {
@@ -157,7 +151,7 @@ def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_se
     req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)
-    slot_meta = repo.fetch_slot_meta()
+    slot_meta = repo.fetch_slot_meta(req)
     rows, diagnostics = plan_media(req, historical_rows, inventory_rows, slot_meta, settings)
     diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag})
     if not rows:
@@ -170,7 +164,7 @@ def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, settings: Setting
     req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)
-    slot_meta = repo.fetch_slot_meta()
+    slot_meta = repo.fetch_slot_meta(req)
     rows, diagnostics = plan_media(req, historical_rows, inventory_rows, slot_meta, settings)
     diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "regenerated": True})
     if not rows:

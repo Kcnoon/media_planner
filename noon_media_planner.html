@@ -23,9 +23,8 @@
 body{font-family:var(--font);background:radial-gradient(circle at top left,#fff7d8 0,#fbfaf6 36%,#f3f4f7 100%);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 .shell{display:flex;flex-direction:column;min-height:100vh}
 .topnav{background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 10px 30px rgba(31,33,40,.05)}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-mark{background:linear-gradient(135deg,var(--noon),#ffdf70);border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#111;box-shadow:0 8px 18px rgba(255,207,51,.35)}
-.logo-name{font-size:16px;font-weight:700;letter-spacing:-.4px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-img{display:block;height:38px;width:auto;object-fit:contain}
 .logo-sep{color:var(--border2);margin:0 6px}
 .logo-sub{font-size:13px;color:var(--text2)}
 .nav-pills{display:flex;gap:2px}
@@ -77,6 +76,10 @@ input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--noon)}
 .btn.pri:hover{background:#111319}
 .btn.ghost{color:var(--ink);border-color:var(--border2);background:#fffced}
 .btn.ghost:hover{background:var(--noon-soft)}
+.lock-switch{display:inline-flex;align-items:center;gap:0;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
+.lock-switch button{border:none;background:transparent;color:var(--text2);padding:7px 16px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--font)}
+.lock-switch button.active{background:var(--ink);color:var(--noon);box-shadow:0 6px 14px rgba(31,33,40,.18)}
+.lock-switch button:not(.active):hover{color:var(--text)}
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
 .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px}
 .metric .ml{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
@@ -193,8 +196,8 @@ td.mono{font-family:var(--mono);font-size:11px}
 <div class="shell">
 <nav class="topnav">
   <div class="logo">
-    <div class="logo-mark">n</div>
-    <div><span class="logo-name">noon ads</span><span class="logo-sep">/</span><span class="logo-sub">Media Planner</span></div>
+    <img class="logo-img" src="/static/logo.png" alt="noon ads logo"/>
+    <div><span class="logo-sub">Media Planner</span></div>
   </div>
   <div class="nav-pills">
     <div class="np active" id="sn1" onclick="nav(1)">1 · Brand</div>
@@ -325,7 +328,7 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Conversion currency</label><select id="bCur"><option value="">Select currency</option><option>USD</option><option>AED</option><option>SAR</option><option>EGP</option></select></div>
       <div class="field"><label>LE code</label><input id="leCode" type="text" placeholder="e.g. LE-UAE-2026-001"/></div>
-      <div class="field"><label>Budget confirmation type</label><div class="pill-group" style="margin-top:4px"><div class="pill" id="budgetLock" onclick="toggleBudgetLock()">Unlocked</div></div></div>
+      <div class="field"><label>Plan status</label><div class="lock-switch" style="margin-top:4px" id="budgetLock"><button type="button" id="budgetDraftBtn" onclick="setBudgetLock(false)">Draft</button><button type="button" id="budgetLockedBtn" onclick="setBudgetLock(true)">Locked</button></div></div>
     </div>
     <div class="bbar-wrap">
       <div class="bbar-labels"><span id="bbarLeft">No budget entered</span><span id="bbarRight">$0 allocated</span></div>
@@ -630,6 +633,22 @@ function setLoadStatus(message,tone){
   }
 }
 
+function mergeRuntimeSlotCatalog(slots){
+  const incoming=(slots||[]).map(slot=>({
+    ...slot,
+    marketplace:slot.marketplace||getSlotMarketplace(slot),
+    category:slot.category||slot.page||'',
+    zone:slot.zone||'',
+    dimension:slot.dimension||''
+  }));
+  const byKey=new Map(S.slotCatalog.map(slot=>[`${slot.country}|${slot.slot_code}`,slot]));
+  incoming.forEach(slot=>{
+    const key=`${slot.country}|${slot.slot_code}`;
+    byKey.set(key,{...(byKey.get(key)||{}),...slot});
+  });
+  S.slotCatalog=[...byKey.values()];
+}
+
 function syncCountryPills(){
   document.querySelectorAll('#bCountryGroup .pill').forEach(pill=>{
     const value=(pill.textContent||'').trim().toLowerCase();
@@ -662,11 +681,10 @@ function syncObjectiveUi(){
 }
 
 function syncBudgetLockUi(){
-  const pill=document.getElementById('budgetLock');
-  if(pill){
-    pill.textContent=S.budgetLocked?'Locked':'Unlocked';
-    pill.className='pill'+(S.budgetLocked?' on':'');
-  }
+  const draftBtn=document.getElementById('budgetDraftBtn');
+  const lockedBtn=document.getElementById('budgetLockedBtn');
+  if(draftBtn) draftBtn.className=S.budgetLocked?'':'active';
+  if(lockedBtn) lockedBtn.className=S.budgetLocked?'active':'';
   const budget=document.getElementById('bBudget');
   if(budget) budget.disabled=!!S.budgetLocked;
 }
@@ -795,6 +813,7 @@ async function fetchSavedPreselection(saved){
     }
     S.slotSuggestions=(data.suggestions||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
     S.availableSlotCatalog=(data.available_slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     const selected=buildSavedSelectedSlots(saved);
     S.selectedSlots=selected.length?selected:S.slotSuggestions.map(slot=>({...slot,foc:false}));
   S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
@@ -907,15 +926,9 @@ function renderSubBrands(){
   });
 }
 
-function toggleBudgetLock(){
-  S.budgetLocked=!S.budgetLocked;
-  const pill=document.getElementById('budgetLock');
-  if(pill){
-    pill.textContent=S.budgetLocked?'Locked':'Unlocked';
-    pill.className='pill'+(S.budgetLocked?' on':'');
-  }
-  const b=document.getElementById('bBudget');
-  if(b) b.disabled=S.budgetLocked;
+function setBudgetLock(locked){
+  S.budgetLocked=!!locked;
+  syncBudgetLockUi();
 }
 
 function toggleCountry(el,v){
@@ -1183,6 +1196,7 @@ async function openPreselection(){
     }
     S.slotSuggestions=(data.suggestions||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
     S.availableSlotCatalog=(data.available_slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     if(!S.selectedSlots.length) S.selectedSlots=S.slotSuggestions.map(slot=>({...slot,foc:false}));
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
     nav(4);
@@ -1491,7 +1505,10 @@ function isSupermall(slot){
   const t=((slot&&((slot.slot_name||'')+' '+(slot.slot_code||'')))||'').toLowerCase();
   return t.includes('supermall')||t.includes('super_mall');
 }
-function findSlotMeta(country,slotCode){ return S.slotCatalog.find(s=>s.country===country && s.slot_code===slotCode); }
+function findSlotMeta(country,slotCode){
+  return S.availableSlotCatalog.find(s=>s.country===country && s.slot_code===slotCode)
+    || S.slotCatalog.find(s=>s.country===country && s.slot_code===slotCode);
+}
 function slotSelectHtml(id,row){
   const mk=S.marketplace;
   const options=S.slotCatalog.filter(s=>{
