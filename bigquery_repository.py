@@ -236,6 +236,47 @@ def parse_bool(value) -> bool:
     return norm(value) in {"1", "true", "yes", "y"}
 
 
+def normalize_pricing_model(value) -> str:
+    raw = norm(value)
+    if raw in {"cpd", "cost per day", "cost_per_day", "day"}:
+        return "CPD"
+    return "CPM"
+
+
+def pricing_options_from_values(cpm_value, cpd_value) -> list[str]:
+    options = []
+    if parse_number(cpm_value) > 0:
+        options.append("CPM")
+    if parse_number(cpd_value) > 0:
+        options.append("CPD")
+    if "CPM" in options:
+        options = ["CPM"] + [option for option in options if option != "CPM"]
+    return list(dict.fromkeys(options))
+
+
+def combined_dimension(row: dict) -> str:
+    app_dimension = str(get_first(row, "app_dimension", "app dimension") or "").strip()
+    web_dimension = str(get_first(row, "web_dimension", "web dimension") or "").strip()
+    if app_dimension and web_dimension:
+        return f"App: {app_dimension} | Web: {web_dimension}"
+    if app_dimension:
+        return f"App: {app_dimension}"
+    if web_dimension:
+        return f"Web: {web_dimension}"
+    return str(
+        get_first(
+            row,
+            "dimension",
+            "dimensions",
+            "size",
+            "ad_size",
+            "creative_dimension",
+            "dimension information",
+        )
+        or ""
+    ).strip()
+
+
 class BigQueryRepository:
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -311,7 +352,7 @@ class BigQueryRepository:
         self,
         start: date,
         end: date,
-    ) -> tuple[dict[tuple[str, str], float], dict[str, float], dict[tuple[str, str], dict[str, float]], dict[str, dict[str, float]]]:
+    ) -> tuple[dict[tuple[str, str], dict], dict[str, dict]]:
         rows = self._table_records_for_window(
             self.settings.slot_rate_card_table,
             start,
@@ -319,58 +360,85 @@ class BigQueryRepository:
             "date",
             "dt",
         )
-        by_country_slot: dict[tuple[str, str], list[float]] = defaultdict(list)
-        by_slot: dict[str, list[float]] = defaultdict(list)
-        schedule_by_country_slot: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
-        schedule_by_slot: dict[str, dict[str, float]] = defaultdict(dict)
+
+        def bucket():
+            return {
+                "cpm_rates": [],
+                "cpd_rates": [],
+                "cpm_rate_schedule": {},
+                "cpd_rate_schedule": {},
+            }
+
+        by_country_slot: dict[tuple[str, str], dict] = defaultdict(bucket)
+        by_slot: dict[str, dict] = defaultdict(bucket)
         for row in rows:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
             if not slot_code:
                 continue
             country = infer_country(row)
             dt = parse_date(get_first(row, "date", "dt"))
-            rate = parse_number(get_first(row, "rate_usd", "rate", "usd_rate", "cpm", "price"))
-            if rate <= 0:
-                continue
-            by_slot[slot_code].append(rate)
-            if dt:
-                schedule_by_slot[slot_code][dt.isoformat()] = rate
-            if country:
-                by_country_slot[(country, slot_code)].append(rate)
+            cpm_rate = parse_number(get_first(row, "cpm_rate", "rate_usd", "rate", "usd_rate", "cpm", "price"))
+            cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
+            target_slot = by_slot[slot_code]
+            if cpm_rate > 0:
+                target_slot["cpm_rates"].append(cpm_rate)
                 if dt:
-                    schedule_by_country_slot[(country, slot_code)][dt.isoformat()] = rate
-        averaged_country_slot = {
-            key: round(sum(values) / len(values), 4)
-            for key, values in by_country_slot.items()
-            if values
-        }
-        averaged_slot = {
-            key: round(sum(values) / len(values), 4)
-            for key, values in by_slot.items()
-            if values
-        }
-        return averaged_country_slot, averaged_slot, dict(schedule_by_country_slot), dict(schedule_by_slot)
+                    target_slot["cpm_rate_schedule"][dt.isoformat()] = cpm_rate
+            if cpd_rate > 0:
+                target_slot["cpd_rates"].append(cpd_rate)
+                if dt:
+                    target_slot["cpd_rate_schedule"][dt.isoformat()] = cpd_rate
+            if country:
+                target_country_slot = by_country_slot[(country, slot_code)]
+                if cpm_rate > 0:
+                    target_country_slot["cpm_rates"].append(cpm_rate)
+                    if dt:
+                        target_country_slot["cpm_rate_schedule"][dt.isoformat()] = cpm_rate
+                if cpd_rate > 0:
+                    target_country_slot["cpd_rates"].append(cpd_rate)
+                    if dt:
+                        target_country_slot["cpd_rate_schedule"][dt.isoformat()] = cpd_rate
+
+        def finalize(raw_map: dict) -> dict:
+            finalized = {}
+            for key, payload in raw_map.items():
+                cpm_rates = payload.get("cpm_rates") or []
+                cpd_rates = payload.get("cpd_rates") or []
+                cpm_rate = round(sum(cpm_rates) / len(cpm_rates), 4) if cpm_rates else 0.0
+                cpd_rate = round(sum(cpd_rates) / len(cpd_rates), 4) if cpd_rates else 0.0
+                finalized[key] = {
+                    "cpm_rate": cpm_rate,
+                    "cpd_rate": cpd_rate,
+                    "cpm_rate_schedule": dict(payload.get("cpm_rate_schedule") or {}),
+                    "cpd_rate_schedule": dict(payload.get("cpd_rate_schedule") or {}),
+                    "pricing_options": pricing_options_from_values(cpm_rate, cpd_rate),
+                }
+            return finalized
+
+        return finalize(dict(by_country_slot)), finalize(dict(by_slot))
 
     def fetch_slot_catalog(self, req: MediaPlanRequest | None = None) -> list[dict]:
         rows = self._query_records(f"SELECT * FROM `{self.settings.slot_data_table}`")
-        rate_by_country_slot: dict[tuple[str, str], float] = {}
-        rate_by_slot: dict[str, float] = {}
-        schedule_by_country_slot: dict[tuple[str, str], dict[str, float]] = {}
-        schedule_by_slot: dict[str, dict[str, float]] = {}
+        rate_by_country_slot: dict[tuple[str, str], dict] = {}
+        rate_by_slot: dict[str, dict] = {}
         if req is not None:
-            rate_by_country_slot, rate_by_slot, schedule_by_country_slot, schedule_by_slot = self._fetch_rate_card_map(req.start_date, req.end_date)
+            rate_by_country_slot, rate_by_slot = self._fetch_rate_card_map(req.start_date, req.end_date)
         catalog = []
         for row in rows:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
             if not slot_code:
                 continue
             country = infer_country(row)
-            rate_schedule = schedule_by_country_slot.get((country, slot_code)) or schedule_by_slot.get(slot_code) or {}
-            rate = (
-                rate_by_country_slot.get((country, slot_code))
-                or rate_by_slot.get(slot_code)
-                or parse_number(get_first(row, "cpm", "rate", "gross_cpm", "price"))
-            )
+            rate_meta = rate_by_country_slot.get((country, slot_code)) or rate_by_slot.get(slot_code) or {}
+            fallback_cpm_rate = parse_number(get_first(row, "cpm_rate", "cpm", "rate", "gross_cpm", "price"))
+            fallback_cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
+            cpm_rate = float(rate_meta.get("cpm_rate") or fallback_cpm_rate or 0.0)
+            cpd_rate = float(rate_meta.get("cpd_rate") or fallback_cpd_rate or 0.0)
+            pricing_options = rate_meta.get("pricing_options") or pricing_options_from_values(cpm_rate, cpd_rate)
+            if not pricing_options:
+                pricing_options = [normalize_pricing_model(get_first(row, "pricing_model", "buy_type") or "cpm")]
+            pricing_model = "CPM" if "CPM" in pricing_options else pricing_options[0]
+            default_rate = cpm_rate or cpd_rate or 10.0
             catalog.append(
                 {
                     "country": country,
@@ -379,11 +447,16 @@ class BigQueryRepository:
                     "page": str(get_first(row, "category", "page", "publisher") or "").strip(),
                     "category": str(get_first(row, "category", "page", "publisher") or "").strip(),
                     "zone": str(get_first(row, "zone") or "").strip(),
-                    "dimension": str(get_first(row, "dimension", "dimensions", "size", "ad_size", "creative_dimension", "dimension information") or "").strip(),
+                    "dimension": combined_dimension(row),
                     "publisher": str(get_first(row, "publisher") or "").strip(),
-                    "pricing_model": str(get_first(row, "pricing_model", "buy_type") or "cpm").strip(),
-                    "rate": rate if rate > 0 else 10.0,
-                    "rate_schedule": rate_schedule,
+                    "pricing_model": pricing_model,
+                    "pricing_options": pricing_options,
+                    "cpm_rate": cpm_rate,
+                    "cpd_rate": cpd_rate,
+                    "rate": default_rate,
+                    "rate_schedule": dict(rate_meta.get("cpm_rate_schedule") or {}),
+                    "cpm_rate_schedule": dict(rate_meta.get("cpm_rate_schedule") or {}),
+                    "cpd_rate_schedule": dict(rate_meta.get("cpd_rate_schedule") or {}),
                 }
             )
         return catalog

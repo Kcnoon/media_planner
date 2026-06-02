@@ -49,6 +49,61 @@ def normalize_pricing_model(value: str | None) -> str:
     return "CPM"
 
 
+def pricing_options_for_meta(meta: dict | None) -> list[str]:
+    meta = meta or {}
+    raw_options = meta.get("pricing_options") or []
+    options = [normalize_pricing_model(option) for option in raw_options if str(option or "").strip()]
+    if not options:
+        if float(meta.get("cpm_rate") or meta.get("rate") or 0) > 0:
+            options.append("CPM")
+        if float(meta.get("cpd_rate") or 0) > 0:
+            options.append("CPD")
+    if not options:
+        options = [normalize_pricing_model(meta.get("pricing_model"))]
+    if "CPM" in options:
+        options = ["CPM"] + [option for option in options if option != "CPM"]
+    return list(dict.fromkeys(options))
+
+
+def slot_key(country: str, slot_code: str) -> str:
+    return f"{country}|{slot_code}"
+
+
+def selected_slot_pricing(req: MediaPlanRequest) -> dict[str, str]:
+    return {
+        str(key): normalize_pricing_model(value)
+        for key, value in (req.selected_slot_pricing or {}).items()
+        if str(key).strip() and str(value).strip()
+    }
+
+
+def slot_rate_for_model(meta: dict | None, model: str, fallback_rate: float | None = None) -> float | None:
+    meta = meta or {}
+    model = normalize_pricing_model(model)
+    if model == "CPD":
+        value = float(meta.get("cpd_rate") or 0) or fallback_rate
+    else:
+        value = float(meta.get("cpm_rate") or meta.get("rate") or 0) or fallback_rate
+    return float(value) if value and value > 0 else None
+
+
+def preferred_candidate_for_slot(candidates: list[Candidate], preferred_model: str | None, objective: str) -> Candidate | None:
+    if not candidates:
+        return None
+    normalized_preference = normalize_pricing_model(preferred_model) if preferred_model else None
+    preferred = [candidate for candidate in candidates if not normalized_preference or candidate.pricing_model == normalized_preference]
+    pool = preferred or candidates
+    return max(
+        pool,
+        key=lambda candidate: (
+            1 if candidate.pricing_model == "CPM" else 0,
+            _candidate_score(candidate, objective),
+            candidate.brand_specific,
+            candidate.views,
+        ),
+    )
+
+
 def is_supermall(slot_code: str, slot_name: str | None) -> bool:
     text = f"{slot_name or ''} {slot_code}".lower()
     return "supermall" in text or "super_mall" in text
@@ -198,8 +253,8 @@ def _cpm_row_pricing(
     discount_pct: float,
     default_cpm: float,
 ) -> tuple[float, float, float, float]:
-    gross_fallback = float(meta.get("rate") or candidate.slot_rate or candidate.cpm or default_cpm)
-    rate_schedule = meta.get("rate_schedule") or {}
+    gross_fallback = float(meta.get("cpm_rate") or meta.get("rate") or candidate.slot_rate or candidate.cpm or default_cpm)
+    rate_schedule = meta.get("cpm_rate_schedule") or meta.get("rate_schedule") or {}
     days = list(iter_dates(start, end))
     daily_views = _distributed_daily_views(planned_views, len(days))
     gross_total = 0.0
@@ -217,6 +272,22 @@ def _cpm_row_pricing(
         gross_avg = gross_total * 1000 / planned_views
         net_avg = net_total * 1000 / planned_views
     return round(gross_total, 2), round(net_total, 2), round(gross_avg, 4), round(net_avg, 4)
+
+
+def _cpd_daily_rates(
+    meta: dict,
+    candidate: Candidate,
+    start: date,
+    end: date,
+    default_cpd: float,
+) -> list[tuple[date, float, float]]:
+    schedule = meta.get("cpd_rate_schedule") or {}
+    gross_fallback = float(meta.get("cpd_rate") or candidate.slot_rate or candidate.cpd or default_cpd)
+    rates = []
+    for dt in iter_dates(start, end):
+        gross_rate = float(schedule.get(dt.isoformat()) or gross_fallback)
+        rates.append((dt, gross_rate, gross_rate))
+    return rates
 
 
 def default_phases(req: MediaPlanRequest) -> list[Phase]:
@@ -267,44 +338,55 @@ def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str
         roas = revenue / spends if spends > 0 else None
         cpd = spends / active_days if active_days > 0 and spends > 0 else None
 
-        safe_cpm = candidate_slot_rate = float(meta.get("rate") or 0) or None
-        if not safe_cpm:
-            safe_cpm = cpm if cpm and isfinite(cpm) and cpm > 0 else settings.default_cpm
-        reach_score = views / safe_cpm
-        conv_score = (roas or 0) * 100000 + (ctr or 0) * 1000 + revenue / max(spends, 1)
+        scoring_cpm = cpm if cpm and isfinite(cpm) and cpm > 0 else settings.default_cpm
+        base_reach_score = views / max(scoring_cpm, 0.01)
+        base_conv_score = (roas or 0) * 100000 + (ctr or 0) * 1000 + revenue / max(spends, 1)
         if row.get("brand_specific"):
-            reach_score *= 1.15
-            conv_score *= 1.2
+            base_reach_score *= 1.15
+            base_conv_score *= 1.2
 
-        candidates.append(
-            Candidate(
-                country=country,
-                slot_code=slot_code,
-                slot_name=slot_name,
-                page=meta.get("page"),
-                category=meta.get("category") or meta.get("page"),
-                zone=meta.get("zone"),
-                dimension=meta.get("dimension"),
-                marketplace=marketplace_from_slot(slot_code, slot_name),
-                publisher=meta.get("publisher") or row.get("publisher"),
-                pricing_model=normalize_pricing_model(meta.get("pricing_model") or row.get("pricing_model")),
-                slot_rate=candidate_slot_rate,
-                views=views,
-                clicks=clicks,
-                revenue=revenue,
-                spends=spends,
-                active_days=active_days,
-                brand_specific=bool(row.get("brand_specific")),
-                reach_score=reach_score,
-                conv_score=conv_score,
-                cpm=cpm,
-                cpd=cpd,
-                ctr=ctr,
-                roas=roas,
-                source_country=country,
-                synthetic=False,
+        pricing_options = pricing_options_for_meta(meta)
+        if not pricing_options:
+            pricing_options = [normalize_pricing_model(meta.get("pricing_model") or row.get("pricing_model"))]
+
+        for pricing_model in pricing_options:
+            candidate_slot_rate = slot_rate_for_model(
+                meta,
+                pricing_model,
+                cpd if pricing_model == "CPD" else cpm,
             )
-        )
+            if not candidate_slot_rate:
+                candidate_slot_rate = settings.default_cpd if pricing_model == "CPD" else settings.default_cpm
+            pricing_bias = 1.02 if pricing_model == "CPM" else 1.0
+            candidates.append(
+                Candidate(
+                    country=country,
+                    slot_code=slot_code,
+                    slot_name=slot_name,
+                    page=meta.get("page"),
+                    category=meta.get("category") or meta.get("page"),
+                    zone=meta.get("zone"),
+                    dimension=meta.get("dimension"),
+                    marketplace=marketplace_from_slot(slot_code, slot_name),
+                    publisher=meta.get("publisher") or row.get("publisher"),
+                    pricing_model=pricing_model,
+                    slot_rate=candidate_slot_rate,
+                    views=views,
+                    clicks=clicks,
+                    revenue=revenue,
+                    spends=spends,
+                    active_days=active_days,
+                    brand_specific=bool(row.get("brand_specific")),
+                    reach_score=base_reach_score * pricing_bias,
+                    conv_score=base_conv_score * pricing_bias,
+                    cpm=cpm,
+                    cpd=cpd,
+                    ctr=ctr,
+                    roas=roas,
+                    source_country=country,
+                    synthetic=False,
+                )
+            )
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
     for candidate in sorted(candidates, key=lambda c: (c.brand_specific, c.views), reverse=True):
@@ -392,35 +474,36 @@ def expand_candidates_for_countries(
             if not source_candidates:
                 continue
             source = max(source_candidates, key=lambda candidate: (candidate.brand_specific, max(candidate.reach_score, candidate.conv_score), candidate.views))
-            expanded.append(
-                Candidate(
-                    country=country,
-                    slot_code=slot_code,
-                    slot_name=slot_name,
-                    page=meta.get("page"),
-                    category=meta.get("category") or meta.get("page"),
-                    zone=meta.get("zone"),
-                    dimension=meta.get("dimension"),
-                    marketplace=marketplace_from_slot(slot_code, slot_name),
-                    publisher=meta.get("publisher"),
-                    pricing_model=normalize_pricing_model(meta.get("pricing_model") or source.pricing_model),
-                    slot_rate=float(meta.get("rate") or source.slot_rate or 0) or source.slot_rate,
-                    views=source.views,
-                    clicks=source.clicks,
-                    revenue=source.revenue,
-                    spends=source.spends,
-                    active_days=source.active_days,
-                    brand_specific=source.brand_specific,
-                    reach_score=source.reach_score,
-                    conv_score=source.conv_score,
-                    cpm=source.cpm,
-                    cpd=source.cpd,
-                    ctr=source.ctr,
-                    roas=source.roas,
-                    source_country=source.country,
-                    synthetic=True,
+            for pricing_model in pricing_options_for_meta(meta):
+                expanded.append(
+                    Candidate(
+                        country=country,
+                        slot_code=slot_code,
+                        slot_name=slot_name,
+                        page=meta.get("page"),
+                        category=meta.get("category") or meta.get("page"),
+                        zone=meta.get("zone"),
+                        dimension=meta.get("dimension"),
+                        marketplace=marketplace_from_slot(slot_code, slot_name),
+                        publisher=meta.get("publisher"),
+                        pricing_model=pricing_model,
+                        slot_rate=slot_rate_for_model(meta, pricing_model, source.slot_rate) or source.slot_rate,
+                        views=source.views,
+                        clicks=source.clicks,
+                        revenue=source.revenue,
+                        spends=source.spends,
+                        active_days=source.active_days,
+                        brand_specific=source.brand_specific,
+                        reach_score=source.reach_score * (1.02 if pricing_model == "CPM" else 1.0),
+                        conv_score=source.conv_score * (1.02 if pricing_model == "CPM" else 1.0),
+                        cpm=source.cpm,
+                        cpd=source.cpd,
+                        ctr=source.ctr,
+                        roas=source.roas,
+                        source_country=source.country,
+                        synthetic=True,
+                    )
                 )
-            )
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
     for candidate in sorted(expanded, key=lambda item: (not item.synthetic, item.brand_specific, max(item.reach_score, item.conv_score), item.views), reverse=True):
@@ -431,6 +514,7 @@ def expand_candidates_for_countries(
 def ensure_selected_slot_candidates(
     req: MediaPlanRequest,
     selected_slot_keys: set[str],
+    selected_slot_pricing_map: dict[str, str],
     candidates: list[Candidate],
     slot_meta: dict[tuple[str, str], dict],
     settings,
@@ -438,12 +522,13 @@ def ensure_selected_slot_candidates(
     if not selected_slot_keys:
         return candidates
 
-    candidate_by_slot_key = {f"{candidate.country}|{candidate.slot_code}": candidate for candidate in candidates}
+    candidate_by_slot_model = {
+        (slot_key(candidate.country, candidate.slot_code), candidate.pricing_model): candidate
+        for candidate in candidates
+    }
     ensured = list(candidates)
 
     for slot_key in selected_slot_keys:
-        if slot_key in candidate_by_slot_key:
-            continue
         country, _, slot_code = slot_key.partition("|")
         if not country or not slot_code:
             continue
@@ -471,13 +556,20 @@ def ensure_selected_slot_candidates(
             key=lambda candidate: (candidate.brand_specific, max(candidate.reach_score, candidate.conv_score), candidate.views),
             default=None,
         )
-
-        rate = float(meta.get("rate") or 0) or settings.default_cpm
-        reach_score = source.reach_score if source else max(settings.min_slot_views / max(rate, 0.01), 1.0)
-        conv_score = source.conv_score if source else reach_score
-
-        ensured.append(
-            Candidate(
+        requested_model = selected_slot_pricing_map.get(slot_key)
+        pricing_models = [requested_model] if requested_model else pricing_options_for_meta(meta)
+        for pricing_model in pricing_models:
+            normalized_model = normalize_pricing_model(pricing_model)
+            if (slot_key, normalized_model) in candidate_by_slot_model:
+                continue
+            rate = slot_rate_for_model(
+                meta,
+                normalized_model,
+                source.cpd if source and normalized_model == "CPD" else source.cpm if source else None,
+            ) or (settings.default_cpd if normalized_model == "CPD" else settings.default_cpm)
+            reach_score = source.reach_score if source else max(settings.min_slot_views / max(rate, 0.01), 1.0)
+            conv_score = source.conv_score if source else reach_score
+            candidate = Candidate(
                 country=country,
                 slot_code=slot_code,
                 slot_name=slot_name,
@@ -487,7 +579,7 @@ def ensure_selected_slot_candidates(
                 dimension=meta.get("dimension"),
                 marketplace=marketplace,
                 publisher=meta.get("publisher"),
-                pricing_model=normalize_pricing_model(meta.get("pricing_model") or "cpm"),
+                pricing_model=normalized_model,
                 slot_rate=rate,
                 views=source.views if source else settings.min_slot_views,
                 clicks=source.clicks if source else 0,
@@ -495,8 +587,8 @@ def ensure_selected_slot_candidates(
                 spends=source.spends if source else 0.0,
                 active_days=source.active_days if source else 1,
                 brand_specific=source.brand_specific if source else False,
-                reach_score=reach_score,
-                conv_score=conv_score,
+                reach_score=reach_score * (1.02 if normalized_model == "CPM" else 1.0),
+                conv_score=conv_score * (1.02 if normalized_model == "CPM" else 1.0),
                 cpm=source.cpm if source else None,
                 cpd=source.cpd if source else None,
                 ctr=source.ctr if source else None,
@@ -504,7 +596,8 @@ def ensure_selected_slot_candidates(
                 source_country=source.country if source else country,
                 synthetic=True,
             )
-        )
+            ensured.append(candidate)
+            candidate_by_slot_model[(slot_key, normalized_model)] = candidate
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
     for candidate in sorted(ensured, key=lambda item: (not item.synthetic, item.brand_specific, max(item.reach_score, item.conv_score), item.views), reverse=True):
@@ -657,28 +750,47 @@ def suggest_slots(
 ) -> list[dict]:
     base_candidates = build_candidates(historical_rows, slot_meta, settings, req.marketplace)
     selected_slot_keys = {value for value in req.selected_slot_keys if value}
+    selected_slot_pricing_map = selected_slot_pricing(req)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta)
-    candidates = ensure_selected_slot_candidates(req, selected_slot_keys, candidates, slot_meta, settings)
+    candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
     inventory = _inventory_by_slot_phase(req, inventory_rows)
     phases = default_phases(req)
     seen: set[str] = set()
     seen_zone_category: set[tuple[str, str, str, str]] = set()
     suggestions: list[dict] = []
 
-    ranked = sorted(candidates, key=lambda candidate: _candidate_score(candidate, req.objective), reverse=True)
-    ordered_candidates: list[Candidate] = []
-    for country in [country for country in req.countries if country]:
-        country_ranked = [candidate for candidate in ranked if candidate.country == country]
-        for candidate in country_ranked:
-            available = sum(inventory.get((candidate.country, candidate.slot_code, phase.name), 0) for phase in phases)
-            if available > 0:
-                ordered_candidates.append(candidate)
-                break
-    ordered_candidates.extend(ranked)
+    candidates_by_slot: dict[str, list[Candidate]] = defaultdict(list)
+    for candidate in candidates:
+        candidates_by_slot[slot_key(candidate.country, candidate.slot_code)].append(candidate)
 
-    for candidate in ordered_candidates:
-        slot_key = f"{candidate.country}|{candidate.slot_code}"
-        if slot_key in seen:
+    ranked_slot_keys = sorted(
+        candidates_by_slot.keys(),
+        key=lambda key: _candidate_score(
+            preferred_candidate_for_slot(candidates_by_slot[key], selected_slot_pricing_map.get(key), req.objective),
+            req.objective,
+        ),
+        reverse=True,
+    )
+    ordered_slot_keys: list[str] = []
+    for country in [country for country in req.countries if country]:
+        country_slot_keys = [key for key in ranked_slot_keys if key.startswith(f"{country}|")]
+        for key in country_slot_keys:
+            candidate = preferred_candidate_for_slot(candidates_by_slot[key], selected_slot_pricing_map.get(key), req.objective)
+            available = sum(inventory.get((candidate.country, candidate.slot_code, phase.name), 0) for phase in phases) if candidate else 0
+            if available > 0:
+                ordered_slot_keys.append(key)
+                break
+    ordered_slot_keys.extend(ranked_slot_keys)
+
+    for key in ordered_slot_keys:
+        candidate = preferred_candidate_for_slot(candidates_by_slot.get(key, []), selected_slot_pricing_map.get(key), req.objective)
+        if not candidate:
+            continue
+        slot_key_value = slot_key(candidate.country, candidate.slot_code)
+        slot_options = candidates_by_slot.get(slot_key_value, [])
+        cpm_candidate = preferred_candidate_for_slot([option for option in slot_options if option.pricing_model == "CPM"], "CPM", req.objective)
+        cpd_candidate = preferred_candidate_for_slot([option for option in slot_options if option.pricing_model == "CPD"], "CPD", req.objective)
+        if slot_key_value in seen:
             continue
         available = sum(inventory.get((candidate.country, candidate.slot_code, phase.name), 0) for phase in phases)
         if available <= 0:
@@ -691,11 +803,11 @@ def suggest_slots(
         )
         if (candidate.category or candidate.zone) and zone_category_key in seen_zone_category:
             continue
-        seen.add(slot_key)
+        seen.add(slot_key_value)
         seen_zone_category.add(zone_category_key)
         suggestions.append(
             {
-                "slot_key": slot_key,
+                "slot_key": slot_key_value,
                 "country": candidate.country,
                 "slot_code": candidate.slot_code,
                 "slot_name": candidate.slot_name or asset_from_slot(candidate.slot_code, candidate.slot_name),
@@ -704,9 +816,13 @@ def suggest_slots(
                 "category": candidate.category or "",
                 "zone": candidate.zone or "",
                 "dimension": candidate.dimension or "",
+                "pricing_options": list(dict.fromkeys([option.pricing_model for option in slot_options] or [candidate.pricing_model])),
                 "pricing_model": candidate.pricing_model,
-                "gross_cpm": round(candidate.slot_rate or 0.0, 4) if candidate.pricing_model == "CPM" else 0.0,
-                "net_cpm": round(discounted_rate(candidate.slot_rate or 0.0, req.discount_pct), 4) if candidate.pricing_model == "CPM" else 0.0,
+                "cpm_rate": round(cpm_candidate.slot_rate or 0.0, 4) if cpm_candidate else 0.0,
+                "net_cpm": round(discounted_rate(cpm_candidate.slot_rate or 0.0, req.discount_pct), 4) if cpm_candidate else 0.0,
+                "gross_cpm": round(cpm_candidate.slot_rate or 0.0, 4) if cpm_candidate else 0.0,
+                "cpd_rate": round(cpd_candidate.slot_rate or 0.0, 4) if cpd_candidate else 0.0,
+                "net_cpd": round(discounted_rate(cpd_candidate.slot_rate or 0.0, req.discount_pct), 4) if cpd_candidate else 0.0,
                 "available_views": available,
                 "historical_cpm": candidate.cpm,
                 "historical_ctr": candidate.ctr,
@@ -728,8 +844,9 @@ def plan_media(
 ) -> tuple[list[EditablePlanLine], dict]:
     base_candidates = build_candidates(historical_rows, slot_meta, settings, req.marketplace)
     selected_slot_keys = {value for value in req.selected_slot_keys if value}
+    selected_slot_pricing_map = selected_slot_pricing(req)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta)
-    candidates = ensure_selected_slot_candidates(req, selected_slot_keys, candidates, slot_meta, settings)
+    candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
     if not candidates:
         return [], {"reason": "No historical delivery rows found for the selected brand/comcat/countries."}
 
@@ -756,8 +873,8 @@ def plan_media(
 
     def append_row(candidate: Candidate, phase: Phase, stype: str, score_value: float, target_budget: float, force: bool = False) -> bool:
         nonlocal line_id, spent_total
-        slot_key = f"{candidate.country}|{candidate.slot_code}"
-        if not force and slot_key in excluded_slot_keys:
+        slot_key_value = slot_key(candidate.country, candidate.slot_code)
+        if not force and slot_key_value in excluded_slot_keys:
             return False
 
         exact_inventory_key = (candidate.country, candidate.slot_code, phase.name)
@@ -784,12 +901,12 @@ def plan_media(
         row_from, row_to, days = slot_window
 
         buy_type = "Cost Per Day" if candidate.pricing_model == "CPD" else "CPM"
-        is_foc = slot_key in foc_slot_keys
+        is_foc = slot_key_value in foc_slot_keys
         meta = slot_meta.get((candidate.country, candidate.slot_code), {})
         if buy_type == "Cost Per Day":
-            gross_rate = round(candidate.slot_rate or candidate.cpd or settings.default_cpd, 4)
+            gross_rate = round(float(meta.get("cpd_rate") or candidate.slot_rate or candidate.cpd or settings.default_cpd), 4)
         else:
-            gross_rate = round(float(meta.get("rate") or candidate.slot_rate or candidate.cpm or settings.default_cpm), 4)
+            gross_rate = round(float(meta.get("cpm_rate") or meta.get("rate") or candidate.slot_rate or candidate.cpm or settings.default_cpm), 4)
         rate = discounted_rate(gross_rate, req.discount_pct)
 
         remaining_budget = max(req.budget - spent_total, 0)
@@ -828,14 +945,35 @@ def plan_media(
                     settings.default_cpm,
                 )
         else:
-            max_days = min(days, max(int(max(working_budget, max(rate, 0.01)) // max(rate, 0.01)), 1))
-            net_amount = 0.0 if is_foc else round(rate * max_days, 2)
-            gross_amount = 0.0 if is_foc else gross_from_net(net_amount, req.discount_pct)
+            cpd_days = list(iter_dates(row_from, row_to))
+            scheduled_daily_rates = [
+                float((meta.get("cpd_rate_schedule") or {}).get(day.isoformat()) or gross_rate)
+                for day in cpd_days
+            ]
+            if is_foc:
+                max_days = len(cpd_days)
+                gross_amount = 0.0
+                net_amount = 0.0
+            else:
+                gross_amount = 0.0
+                net_amount = 0.0
+                max_days = 0
+                for daily_rate in scheduled_daily_rates:
+                    daily_net_rate = discounted_rate(daily_rate, req.discount_pct)
+                    if net_amount + daily_net_rate > working_budget + 1e-9:
+                        break
+                    gross_amount += daily_rate
+                    net_amount += daily_net_rate
+                    max_days += 1
+                gross_amount = round(gross_amount, 2)
+                net_amount = round(net_amount, 2)
+                if max_days <= 0:
+                    return False
             planned_views = min(available, int(candidate.views / max(candidate.active_days, 1) * max_days)) or None
             row_to = row_from.fromordinal(row_from.toordinal() + max_days - 1)
             days = inclusive_days(row_from, row_to)
-            gross_rate_avg = gross_rate
-            net_rate_avg = rate
+            gross_rate_avg = round(gross_amount / max(days, 1), 4) if not is_foc else gross_rate
+            net_rate_avg = round(net_amount / max(days, 1), 4) if not is_foc else rate
 
         if not is_foc and spent_total + net_amount > req.budget:
             remaining_budget = round(max(req.budget - spent_total, 0), 2)
@@ -870,10 +1008,27 @@ def plan_media(
                 if planned_views < settings.min_slot_views or spent_total + net_amount > req.budget:
                     return False
             else:
-                net_amount = remaining_budget
-                if net_amount <= 1 and not force:
+                cpd_days = list(iter_dates(row_from, row_to))
+                gross_amount = 0.0
+                net_amount = 0.0
+                fitted_days = 0
+                for day in cpd_days:
+                    daily_gross_rate = float((meta.get("cpd_rate_schedule") or {}).get(day.isoformat()) or gross_rate)
+                    daily_net_rate = discounted_rate(daily_gross_rate, req.discount_pct)
+                    if net_amount + daily_net_rate > remaining_budget + 1e-9:
+                        break
+                    gross_amount += daily_gross_rate
+                    net_amount += daily_net_rate
+                    fitted_days += 1
+                if fitted_days <= 0:
                     return False
-                gross_amount = gross_from_net(net_amount, req.discount_pct)
+                row_to = row_from.fromordinal(row_from.toordinal() + fitted_days - 1)
+                days = inclusive_days(row_from, row_to)
+                planned_views = min(available, int(candidate.views / max(candidate.active_days, 1) * fitted_days)) or None
+                gross_amount = round(gross_amount, 2)
+                net_amount = round(net_amount, 2)
+                gross_rate_avg = round(gross_amount / max(days, 1), 4)
+                net_rate_avg = round(net_amount / max(days, 1), 4)
 
         rows.append(
             EditablePlanLine.model_validate(
@@ -891,7 +1046,7 @@ def plan_media(
                     "slot_name": candidate.slot_name or asset_from_slot(candidate.slot_code, candidate.slot_name),
                     "days": days,
                     "buyType": buy_type,
-                    "rate": round(net_rate_avg if buy_type == "CPM" else rate, 4),
+                    "rate": round(net_rate_avg, 4),
                     "gross_cpm": round(gross_rate_avg if buy_type == "CPM" else 0.0, 4),
                     "net_cpm": round(net_rate_avg if buy_type == "CPM" else 0.0, 4),
                     "views": planned_views,
@@ -916,7 +1071,7 @@ def plan_media(
         )
         line_id += 1
         spent_total += net_amount
-        excluded_slot_keys.add(slot_key)
+        excluded_slot_keys.add(slot_key_value)
         inventory_by_slot_phase[exact_inventory_key] = max(inventory_by_slot_phase[exact_inventory_key] - int(planned_views or 0), 0)
         return True
 
@@ -924,7 +1079,15 @@ def plan_media(
     for country in countries:
         country_candidates = [c for c in candidates if c.country == country]
         if selected_slot_keys:
-            country_candidates = [candidate for candidate in country_candidates if f"{candidate.country}|{candidate.slot_code}" in selected_slot_keys]
+            country_candidates = [
+                candidate
+                for candidate in country_candidates
+                if slot_key(candidate.country, candidate.slot_code) in selected_slot_keys
+                and (
+                    slot_key(candidate.country, candidate.slot_code) not in selected_slot_pricing_map
+                    or candidate.pricing_model == selected_slot_pricing_map[slot_key(candidate.country, candidate.slot_code)]
+                )
+            ]
         if not country_candidates:
             continue
 
@@ -952,7 +1115,13 @@ def plan_media(
                         remaining_target = max(remaining_target - target_budget, 0)
 
     per_country_min = _per_country_min_lines(req)
-    candidate_by_slot_key = {f"{candidate.country}|{candidate.slot_code}": candidate for candidate in candidates}
+    candidates_by_slot_key: dict[str, list[Candidate]] = defaultdict(list)
+    for candidate in candidates:
+        candidates_by_slot_key[slot_key(candidate.country, candidate.slot_code)].append(candidate)
+    candidate_by_slot_key = {
+        key: preferred_candidate_for_slot(value, selected_slot_pricing_map.get(key), req.objective)
+        for key, value in candidates_by_slot_key.items()
+    }
     for country in countries:
         have = len([r for r in rows if r.country == country and (r.slot_code or "").strip()])
         if have >= per_country_min:
@@ -960,7 +1129,15 @@ def plan_media(
         country_candidates = [c for c in candidates if c.country == country]
         if selected_slot_keys:
             preferred = [candidate_by_slot_key[key] for key in selected_slot_keys if key in candidate_by_slot_key and key.startswith(f"{country}|")]
-            country_candidates = preferred or [candidate for candidate in country_candidates if f"{candidate.country}|{candidate.slot_code}" in selected_slot_keys]
+            country_candidates = preferred or [
+                candidate
+                for candidate in country_candidates
+                if slot_key(candidate.country, candidate.slot_code) in selected_slot_keys
+                and (
+                    slot_key(candidate.country, candidate.slot_code) not in selected_slot_pricing_map
+                    or candidate.pricing_model == selected_slot_pricing_map[slot_key(candidate.country, candidate.slot_code)]
+                )
+            ]
         ranked = sorted(country_candidates, key=lambda c: max(c.reach_score, c.conv_score), reverse=True)
         for idx, candidate in enumerate(ranked):
             if have >= per_country_min or spent_total >= req.budget:
@@ -969,10 +1146,11 @@ def plan_media(
             target_budget = max(req.budget - spent_total, 0) / max(per_country_min - have, 1)
             chosen_type = "reach" if candidate.reach_score >= candidate.conv_score else "conv"
             chosen_score = max(candidate.reach_score, candidate.conv_score)
-            if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=slot_key in selected_slot_keys if (slot_key := f"{candidate.country}|{candidate.slot_code}") else False):
+            key = slot_key(candidate.country, candidate.slot_code)
+            if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=key in selected_slot_keys):
                 have += 1
 
-    existing_slot_keys = {f"{row.country}|{row.slot_code}" for row in rows if row.slot_code}
+    existing_slot_keys = {slot_key(row.country, row.slot_code) for row in rows if row.slot_code}
     missing_selected = [slot_key for slot_key in selected_slot_keys if slot_key not in existing_slot_keys]
     for index, slot_key in enumerate(missing_selected):
         candidate = candidate_by_slot_key.get(slot_key)

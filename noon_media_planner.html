@@ -23,12 +23,13 @@
 body{font-family:var(--font);background:radial-gradient(circle at top left,#fff7d8 0,#fbfaf6 36%,#f3f4f7 100%);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 .shell{display:flex;flex-direction:column;min-height:100vh}
 .topnav{background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 10px 30px rgba(31,33,40,.05)}
-.logo{display:flex;align-items:center;gap:12px}
-.logo-img{display:block;height:38px;width:auto;object-fit:contain}
-.logo-sep{color:var(--border2);margin:0 6px}
-.logo-sub{font-size:13px;color:var(--text2)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-img{display:block;height:42px;width:auto;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(31,33,40,.08))}
+.logo-copy{display:flex;flex-direction:column;gap:1px}
+.logo-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.logo-sub{font-size:12px;color:var(--text2)}
 .nav-pills{display:flex;gap:2px}
-.np{padding:5px 14px;border-radius:var(--r-md);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:.15s}
+.np{padding:5px 14px;border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);transition:.15s}
 .np:hover{background:var(--surface2)}
 .np.active{background:var(--ink);color:var(--noon)}
 .np.done{background:var(--green-bg);color:var(--green-text)}
@@ -40,13 +41,13 @@ body{font-family:var(--font);background:radial-gradient(circle at top left,#fff7
 .panel.show{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .card{background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
-.card-hd{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+.card-hd{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.01em;text-transform:none;margin-bottom:14px}
 .fg{display:grid;gap:12px}
 .fg-2{grid-template-columns:repeat(2,1fr)}
 .fg-3{grid-template-columns:repeat(3,1fr)}
 .fg-4{grid-template-columns:repeat(4,1fr)}
 .field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:.02em}
+.field label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.01em}
 .field input,.field select,.field textarea{padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;background:var(--surface);color:var(--text);font-family:var(--font);transition:.15s;outline:none}
 .field input:focus,.field select:focus{border-color:var(--noon);box-shadow:0 0 0 4px rgba(255,207,51,.2)}
 .field textarea{resize:vertical;min-height:60px}
@@ -77,7 +78,7 @@ input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--noon)}
 .btn.ghost{color:var(--ink);border-color:var(--border2);background:#fffced}
 .btn.ghost:hover{background:var(--noon-soft)}
 .lock-switch{display:inline-flex;align-items:center;gap:0;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
-.lock-switch button{border:none;background:transparent;color:var(--text2);padding:7px 16px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--font)}
+.lock-switch button{border:none;background:transparent;color:var(--text2);padding:7px 16px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--font);white-space:nowrap}
 .lock-switch button.active{background:var(--ink);color:var(--noon);box-shadow:0 6px 14px rgba(31,33,40,.18)}
 .lock-switch button:not(.active):hover{color:var(--text)}
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
@@ -197,18 +198,21 @@ td.mono{font-family:var(--mono);font-size:11px}
 <nav class="topnav">
   <div class="logo">
     <img class="logo-img" src="/static/logo.png" alt="noon ads logo"/>
-    <div><span class="logo-sub">Media Planner</span></div>
+    <div class="logo-copy">
+      <span class="logo-title">Media planner</span>
+      <span class="logo-sub">Partner planning workspace</span>
+    </div>
   </div>
   <div class="nav-pills">
-    <div class="np active" id="sn1" onclick="nav(1)">1 · Brand</div>
+    <div class="np active" id="sn1" onclick="nav(1)">1 · Brand information</div>
     <div class="np" id="sn2" onclick="nav(2)">2 · Objective</div>
-    <div class="np" id="sn3" onclick="nav(3)">3 · Budget</div>
+    <div class="np" id="sn3" onclick="nav(3)">3 · Investment &amp; flighting</div>
     <div class="np" id="sn4" onclick="nav(4)">4 · Slot-preselection</div>
-    <div class="np" id="sn5" onclick="nav(5)">5 · Plan</div>
+    <div class="np" id="sn5" onclick="nav(5)">5 · Final recommendation</div>
   </div>
   <div class="nav-right">
     <span class="chip" id="navChip">No plan generated</span>
-    <button class="btn" onclick="nav(5)" style="font-size:12px;padding:6px 14px">View plan →</button>
+    <button class="btn" onclick="nav(5)" style="font-size:12px;padding:6px 14px">View final plan →</button>
   </div>
 </nav>
 
@@ -222,9 +226,9 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div class="field"><label>Brand name</label><input id="bName" type="text" placeholder="Brand name"/></div>
       <div class="field"><label>Countries</label>
         <div class="pill-group" id="bCountryGroup" style="margin-top:4px">
-          <div class="pill" onclick="toggleCountry(this,'ae')">ae</div>
-          <div class="pill" onclick="toggleCountry(this,'sa')">sa</div>
-          <div class="pill" onclick="toggleCountry(this,'eg')">eg</div>
+          <div class="pill" onclick="toggleCountry(this,'ae')">AE</div>
+          <div class="pill" onclick="toggleCountry(this,'sa')">SA</div>
+          <div class="pill" onclick="toggleCountry(this,'eg')">EG</div>
         </div>
       </div>
       <div class="field">
@@ -246,7 +250,7 @@ td.mono{font-family:var(--mono);font-size:11px}
     </div>
   </div>
   <div class="card">
-    <div class="card-hd">Comcat codes</div>
+    <div class="card-hd">Comcat selection</div>
     <div class="pill-group" id="comcatGroup">
       <div class="pill" onclick="toggleComcat(this,'audio_video')">audio_video</div>
       <div class="pill" onclick="toggleComcat(this,'hair_personal_care')">hair_personal_care</div>
@@ -316,19 +320,19 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div class="w-row"><span class="w-lbl">ROAS</span><input type="range" min="10" max="90" step="5" value="40" id="oW" oninput="syncW(this,'roas')"/><span class="w-val" id="oWv">40%</span></div>
     </div>
   </div>
-  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Budget →</button></div>
+  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Investment &amp; flighting →</button></div>
 </div>
 
 <!-- P3: Budget & Scheduling -->
 <div class="panel" id="p3">
   <div class="card">
-    <div class="card-hd">Budget</div>
+    <div class="card-hd">Investment &amp; flighting</div>
     <div class="fg fg-4" style="margin-bottom:14px">
-      <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter budget" oninput="updateBudgetBar()"/></div>
+      <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter investment" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Conversion currency</label><select id="bCur"><option value="">Select currency</option><option>USD</option><option>AED</option><option>SAR</option><option>EGP</option></select></div>
       <div class="field"><label>LE code</label><input id="leCode" type="text" placeholder="e.g. LE-UAE-2026-001"/></div>
-      <div class="field"><label>Plan status</label><div class="lock-switch" style="margin-top:4px" id="budgetLock"><button type="button" id="budgetDraftBtn" onclick="setBudgetLock(false)">Draft</button><button type="button" id="budgetLockedBtn" onclick="setBudgetLock(true)">Locked</button></div></div>
+      <div class="field"><label>Plan status</label><div class="lock-switch" style="margin-top:4px" id="budgetLock"><button type="button" id="budgetDraftBtn" onclick="setBudgetLock(false)">Draft Plan</button><button type="button" id="budgetLockedBtn" onclick="setBudgetLock(true)">Confirmed Plan</button></div></div>
     </div>
     <div class="bbar-wrap">
       <div class="bbar-labels"><span id="bbarLeft">No budget entered</span><span id="bbarRight">$0 allocated</span></div>
@@ -341,7 +345,7 @@ td.mono{font-family:var(--mono);font-size:11px}
     <div class="fg fg-3">
       <div class="field"><label>Start date</label><input id="bStart" type="date" onchange="onDatesChange()"/></div>
       <div class="field"><label>End date</label><input id="bEnd" type="date" onchange="onDatesChange()"/></div>
-      <div class="field"><label>Duration</label><div id="durBadge" style="font-size:16px;font-weight:600;margin-top:6px;color:var(--blue)">-</div></div>
+      <div class="field"><label>Campaign duration</label><div id="durBadge" style="font-size:16px;font-weight:600;margin-top:6px;color:var(--blue)">-</div></div>
     </div>
   </div>
 
@@ -421,8 +425,14 @@ td.mono{font-family:var(--mono);font-size:11px}
         </div>
         <div class="field">
           <label>Slot</label>
-          <select id="manualSlotCode">
+          <select id="manualSlotCode" onchange="syncManualSlotPricingOptions()">
             <option value="">Select slot</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Buy type</label>
+          <select id="manualSlotPricing">
+            <option value="CPM">CPM</option>
           </select>
         </div>
         <div class="field">
@@ -445,7 +455,7 @@ td.mono{font-family:var(--mono);font-size:11px}
 <div class="panel" id="p5">
   <div class="brand-header">
     <div>
-      <div class="brand-title" id="planBrandTitle">Media plan</div>
+      <div class="brand-title" id="planBrandTitle">Final recommendation</div>
       <div class="plan-toolbar-note" id="planToolbarNote">Country-slot draft with editable notes and slot swaps.</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -525,6 +535,49 @@ const DOW=['Su','Mo','Tu','We','Th','Fr','Sa'];
 // Budget is entered in USD. We also display an approximate local-currency view for convenience.
 const FX={USD:1,AED:3.6725,SAR:3.75,EGP:50};
 const CURRENCY_SYMBOL={USD:'$',AED:'AED ',SAR:'SAR ',EGP:'EGP '};
+const COMCAT_UI_GROUPS=[
+  {key:'admon_suite',label:'Admon & 3rd party',values:['third_party','admon_display','admon_general','admon_streaming']}
+];
+function normalizePricingModel(value){
+  const raw=String(value||'').trim().toLowerCase();
+  return (raw==='cpd' || raw.includes('day')) ? 'CPD' : 'CPM';
+}
+function slotPricingOptions(slot){
+  const options=[...new Set((slot?.pricing_options||[]).map(normalizePricingModel).filter(Boolean))];
+  const currentModel=normalizePricingModel(slot?.pricing_model||slot?.buyType||'CPM');
+  const cpmRate=Number(slot?.cpm_rate ?? slot?.gross_cpm ?? (currentModel==='CPM' ? slot?.rate : 0))||0;
+  const cpdRate=Number(slot?.cpd_rate ?? (currentModel==='CPD' ? slot?.rate : 0))||0;
+  if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
+  if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
+  if(!options.length) options.push(currentModel);
+  return options.includes('CPM') ? ['CPM', ...options.filter(option=>option!=='CPM')] : options;
+}
+function applySlotPricing(slot, preferredModel){
+  const options=slotPricingOptions(slot);
+  const requested=normalizePricingModel(preferredModel||slot?.pricing_model||slot?.buyType||options[0]||'CPM');
+  const pricingModel=options.includes(requested) ? requested : (options.includes('CPM') ? 'CPM' : options[0]);
+  const discountPct=Number((slot&&slot.discount_pct)!=null?slot.discount_pct:S.discountPct)||0;
+  const discountFactor=Math.max(1-(discountPct/100),0);
+  const cpmRate=Number(slot?.cpm_rate ?? slot?.gross_cpm ?? (pricingModel==='CPM' ? slot?.rate : 0))||0;
+  const cpdRate=Number(slot?.cpd_rate ?? (pricingModel==='CPD' ? slot?.rate : 0))||0;
+  const next={...slot,pricing_options:options,pricing_model:pricingModel,cpm_rate:cpmRate,cpd_rate:cpdRate};
+  next.gross_cpm=cpmRate;
+  next.net_cpm=cpmRate?Math.round(cpmRate*discountFactor*10000)/10000:0;
+  next.net_cpd=cpdRate?Math.round(cpdRate*discountFactor*10000)/10000:0;
+  next.current_gross_rate=pricingModel==='CPD'?cpdRate:cpmRate;
+  next.current_net_rate=pricingModel==='CPD'?next.net_cpd:next.net_cpm;
+  return next;
+}
+function pricingOptionsHtml(slot, selected){
+  return slotPricingOptions(slot).map(option=>`<option value="${option}" ${normalizePricingModel(selected)===option?'selected':''}>${option}</option>`).join('');
+}
+function slotRateSummary(slot){
+  const current=applySlotPricing(slot,slot?.pricing_model);
+  if(current.pricing_model==='CPD'){
+    return `${current.cpd_rate?` · Gross CPD ${number10(current.cpd_rate)}`:''}${current.net_cpd?` · Net CPD ${number10(current.net_cpd)}`:''}`;
+  }
+  return `${current.gross_cpm?` · Gross CPM ${number10(current.gross_cpm)}`:''}${current.net_cpm?` · Net CPM ${number10(current.net_cpm)}`:''}`;
+}
 function fxRate(cur){ return FX[String(cur||'USD').toUpperCase()]||1; }
 function currencySymbol(cur){ return CURRENCY_SYMBOL[String(cur||'USD').toUpperCase()]||((cur||'USD')+' '); }
 function roundToNearestTen(v){ const n=Number(v)||0; return Math.round(n/10)*10; }
@@ -555,6 +608,29 @@ function titleCaseWords(value){
 }
 function displayBrandName(value){
   return titleCaseWords(value||'Brand') || 'Brand';
+}
+function displayComcatLabel(value){
+  return titleCaseWords(String(value||'').replace(/_/g,' '));
+}
+function displayCategoryLabel(value){
+  return displayComcatLabel(value||'');
+}
+function comcatUiEntries(values){
+  const raw=[...new Set((values||[]).map(v=>String(v||'').trim()).filter(Boolean))];
+  const consumed=new Set();
+  const entries=[];
+  COMCAT_UI_GROUPS.forEach(group=>{
+    const present=group.values.filter(value=>raw.includes(value));
+    if(present.length){
+      present.forEach(value=>consumed.add(value));
+      entries.push({key:group.key,label:group.label,values:present});
+    }
+  });
+  raw.forEach(value=>{
+    if(consumed.has(value)) return;
+    entries.push({key:value,label:displayComcatLabel(value),values:[value]});
+  });
+  return entries.sort((a,b)=>a.label.localeCompare(b.label));
 }
 function displayCountries(){
   return (S.countries||[]).map(country=>String(country||'').toUpperCase()).join(', ');
@@ -635,7 +711,7 @@ function setLoadStatus(message,tone){
 
 function mergeRuntimeSlotCatalog(slots){
   const incoming=(slots||[]).map(slot=>({
-    ...slot,
+    ...applySlotPricing(slot,slot?.pricing_model),
     marketplace:slot.marketplace||getSlotMarketplace(slot),
     category:slot.category||slot.page||'',
     zone:slot.zone||'',
@@ -658,8 +734,13 @@ function syncCountryPills(){
 
 function syncComcatPills(){
   document.querySelectorAll('#comcatGroup .pill').forEach(pill=>{
-    const value=(pill.textContent||'').trim();
-    pill.className='pill'+(S.comcats.includes(value)?' on':'');
+    const values=String(pill.dataset.comcatValues||'').split(',').map(v=>v.trim()).filter(Boolean);
+    if(!values.length){
+      const fallback=(pill.textContent||'').trim().toLowerCase().replace(/\s+/g,'_');
+      if(fallback) values.push(fallback);
+    }
+    const active=values.length?values.every(value=>S.comcats.includes(value)):false;
+    pill.className='pill'+(active?' on':'');
   });
 }
 
@@ -768,6 +849,7 @@ function buildSavedSelectedSlots(saved){
   const request=saved.request||{};
   const rows=saved.rows||[];
   const focKeys=new Set((request.foc_slot_keys||[]).map(String));
+  const selectedPricing=request.selected_slot_pricing||{};
   const allKeys=[...(request.selected_slot_keys||[])];
   rows.forEach(row=>{
     if(row.country&&row.slot_code){
@@ -780,7 +862,7 @@ function buildSavedSelectedSlots(saved){
     if(!country||!slotCode) return null;
     const meta=findSlotMeta(country,slotCode)||{};
     const row=rows.find(item=>item.country===country && item.slot_code===slotCode)||{};
-    return {
+    return applySlotPricing({
       slot_key:key,
       country,
       slot_code:slotCode,
@@ -790,8 +872,11 @@ function buildSavedSelectedSlots(saved){
       category:row.category||meta.category||meta.page||'',
       zone:row.zone||meta.zone||'',
       dimension:row.dimension||meta.dimension||'',
-      pricing_model:row.buyType||meta.pricing_model||'CPM',
-      gross_cpm:Number((row&&row.gross_cpm)!=null?row.gross_cpm:meta.rate)||0,
+      pricing_model:selectedPricing[key]||row.buyType||meta.pricing_model||'CPM',
+      pricing_options:meta.pricing_options||[],
+      cpm_rate:Number(meta.cpm_rate ?? row.gross_cpm ?? meta.rate)||0,
+      cpd_rate:Number(meta.cpd_rate)||0,
+      gross_cpm:Number((row&&row.gross_cpm)!=null?row.gross_cpm:meta.cpm_rate ?? meta.rate)||0,
       net_cpm:Number((row&&row.net_cpm)!=null?row.net_cpm:row.rate)||0,
       available_views:Number(row.available_views||0)||0,
       historical_cpm:row.historical_cpm??null,
@@ -799,7 +884,7 @@ function buildSavedSelectedSlots(saved){
       historical_roas:row.historical_roas??null,
       score:Number(row.score||0)||0,
       foc:focKeys.has(key)
-    };
+    },selectedPricing[key]||row.buyType||meta.pricing_model||'CPM');
   }).filter(Boolean);
 }
 
@@ -811,11 +896,11 @@ async function fetchSavedPreselection(saved){
       const detail=data.detail;
       throw new Error((detail&&detail.message)||detail||'Unable to fetch slot suggestions');
     }
-    S.slotSuggestions=(data.suggestions||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
-    S.availableSlotCatalog=(data.available_slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    S.slotSuggestions=(data.suggestions||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
+    S.availableSlotCatalog=(data.available_slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     const selected=buildSavedSelectedSlots(saved);
-    S.selectedSlots=selected.length?selected:S.slotSuggestions.map(slot=>({...slot,foc:false}));
+    S.selectedSlots=selected.length?selected:S.slotSuggestions.map(slot=>applySlotPricing({...slot,foc:false},slot.pricing_model));
   S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
 }
 
@@ -941,13 +1026,16 @@ function toggleCountry(el,v){
   }
 }
 function toggleComcat(el,v){
-  if(S.comcats.includes(v)){
-    S.comcats=S.comcats.filter(x=>x!==v);
-    el.className='pill';
+  const values=Array.isArray(v)?v:[v];
+  const active=values.every(value=>S.comcats.includes(value));
+  if(active){
+    S.comcats=S.comcats.filter(x=>!values.includes(x));
   }else{
-    S.comcats.push(v);
-    el.className='pill on';
+    values.forEach(value=>{
+      if(!S.comcats.includes(value)) S.comcats.push(value);
+    });
   }
+  syncComcatPills();
 }
 function setObj(type){
   S.obj=type;
@@ -1033,12 +1121,24 @@ function manualSlotsForCountry(country){
   });
 }
 
+function syncManualSlotPricingOptions(){
+  const country=document.getElementById('manualSlotCountry')?.value||'';
+  const slotCode=document.getElementById('manualSlotCode')?.value||'';
+  const pricing=document.getElementById('manualSlotPricing');
+  if(!pricing) return;
+  const slot=S.availableSlotCatalog.find(item=>item.country===country && item.slot_code===slotCode);
+  const options=slotPricingOptions(slot||{pricing_model:'CPM'});
+  const current=normalizePricingModel(pricing.value||slot?.pricing_model||options[0]||'CPM');
+  pricing.innerHTML=options.map(option=>`<option value="${option}" ${current===option?'selected':''}>${option}</option>`).join('');
+}
+
 function renderManualSlotOptions(){
   const country=document.getElementById('manualSlotCountry')?.value||'';
   const select=document.getElementById('manualSlotCode');
   if(!select) return;
   const options=manualSlotsForCountry(country);
   select.innerHTML='<option value="">Select slot</option>'+options.map(slot=>`<option value="${slot.slot_code}">${slot.slot_name} (${slot.slot_code}) · ${views10(slot.available_views||0)} views</option>`).join('');
+  syncManualSlotPricingOptions();
 }
 
 function toggleManualFoc(){
@@ -1055,7 +1155,7 @@ function slotKey(country,slotCode){ return `${country}|${slotCode}`; }
 function upsertSelectedSlot(slot){
   const key=slot.slot_key||slotKey(slot.country,slot.slot_code);
   const idx=S.selectedSlots.findIndex(item=>item.slot_key===key);
-  const next={...slot,slot_key:key,foc:!!slot.foc};
+  const next=applySlotPricing({...slot,slot_key:key,foc:!!slot.foc},slot.pricing_model);
   if(idx>=0) S.selectedSlots[idx]=next;
   else S.selectedSlots.push(next);
 }
@@ -1076,6 +1176,18 @@ function toggleSelectedSuggestion(key){
   renderSlotPreselection();
 }
 
+function updateSuggestionPricing(key,pricingModel){
+  S.slotSuggestions=S.slotSuggestions.map(slot=>slot.slot_key===key?applySlotPricing(slot,pricingModel):slot);
+  S.selectedSlots=S.selectedSlots.map(slot=>slot.slot_key===key?applySlotPricing(slot,pricingModel):slot);
+  renderSlotPreselection();
+}
+
+function updateSelectedSlotPricing(key,pricingModel){
+  S.selectedSlots=S.selectedSlots.map(slot=>slot.slot_key===key?applySlotPricing(slot,pricingModel):slot);
+  S.slotSuggestions=S.slotSuggestions.map(slot=>slot.slot_key===key?applySlotPricing(slot,pricingModel):slot);
+  renderSlotPreselection();
+}
+
 function toggleSelectedFoc(key){
   S.selectedSlots=S.selectedSlots.map(slot=>slot.slot_key===key?{...slot,foc:!slot.foc}:slot);
   renderSlotPreselection();
@@ -1084,6 +1196,7 @@ function toggleSelectedFoc(key){
 function addManualSelectedSlot(){
   const country=document.getElementById('manualSlotCountry')?.value||'';
   const slotCode=document.getElementById('manualSlotCode')?.value||'';
+  const pricingModel=normalizePricingModel(document.getElementById('manualSlotPricing')?.value||'CPM');
   if(!country || !slotCode){ alert('Select a country and slot.'); return; }
   const slot=S.availableSlotCatalog.find(item=>item.country===country && item.slot_code===slotCode);
   if(!slot){ alert('Selected slot is not available.'); return; }
@@ -1097,9 +1210,10 @@ function addManualSelectedSlot(){
     category:slot.category||slot.page||'',
     zone:slot.zone||'',
     dimension:slot.dimension||'',
-    pricing_model:slot.pricing_model||'cpm',
-    gross_cpm:Number(slot.rate||0)||0,
-    net_cpm:Math.round((Number(slot.rate||0)||0)*Math.max(1-(Number(S.discountPct||0)/100),0)*10000)/10000,
+    pricing_model:pricingModel,
+    pricing_options:slot.pricing_options||[],
+    cpm_rate:Number(slot.cpm_rate||slot.rate||0)||0,
+    cpd_rate:Number(slot.cpd_rate||0)||0,
     available_views:Number(slot.available_views||0)||0,
     historical_cpm:null,
     historical_ctr:null,
@@ -1158,10 +1272,15 @@ function renderSlotPreselection(){
         <div>
           <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${slot.slot_name}</div>
           <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'} · ${String(slot.pricing_model||'CPM').toUpperCase()}</div>
-          <div class="slot-meta">${slot.category||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
-          <div class="slot-meta">Avail. views ${views10(slot.available_views||0)}${slot.gross_cpm?` · Gross CPM ${number10(slot.gross_cpm)}`:''}${slot.net_cpm?` · Net CPM ${number10(slot.net_cpm)}`:''}${slot.historical_roas?` · ROAS ${Number(slot.historical_roas).toFixed(1)}`:''}</div>
+          <div class="slot-meta">${displayCategoryLabel(slot.category)||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
+          <div class="slot-meta">Avail. views ${views10(slot.available_views||0)}${slotRateSummary(slot)}${slot.historical_roas?` · ROAS ${Number(slot.historical_roas).toFixed(1)}`:''}</div>
         </div>
-        <button class="btn ${picked?'pri':'ghost'}" type="button" style="padding:7px 12px;font-size:12px" onclick="toggleSelectedSuggestion('${slot.slot_key}')">${picked?'Selected':'Select'}</button>
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:122px">
+          <select class="plan-cell-select" onchange="updateSuggestionPricing('${slot.slot_key}',this.value)">
+            ${pricingOptionsHtml(slot,slot.pricing_model)}
+          </select>
+          <button class="btn ${picked?'pri':'ghost'}" type="button" style="padding:7px 12px;font-size:12px" onclick="toggleSelectedSuggestion('${slot.slot_key}')">${picked?'Selected':'Select'}</button>
+        </div>
       </div>
     </div>`;
   }).join('')||'<div class="empty" style="grid-column:1/-1">No suggestions match the selected filters.</div>';
@@ -1171,11 +1290,14 @@ function renderSlotPreselection(){
         <div class="phase-dot" style="background:${slot.foc?'var(--green)':'var(--blue)'}"></div>
         <div>
           <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${slot.slot_name||slot.slot_code}</div>
-          <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'}${slot.available_views?` · Avail. views ${views10(slot.available_views)}`:''}${slot.gross_cpm?` · Gross CPM ${number10(slot.gross_cpm)}`:''}${slot.net_cpm?` · Net CPM ${number10(slot.net_cpm)}`:''}</div>
-          <div class="slot-meta">${slot.category||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
+          <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'}${slot.available_views?` · Avail. views ${views10(slot.available_views)}`:''}${slotRateSummary(slot)}</div>
+          <div class="slot-meta">${displayCategoryLabel(slot.category)||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <select class="plan-cell-select" style="min-width:94px" onchange="updateSelectedSlotPricing('${slot.slot_key}',this.value)">
+          ${pricingOptionsHtml(slot,slot.pricing_model)}
+        </select>
         <div class="pill${slot.foc?' on':''}" onclick="toggleSelectedFoc('${slot.slot_key}')" style="font-size:11px;padding:4px 10px">FOC ${slot.foc?'Yes':'No'}</div>
         <button class="del-btn" type="button" onclick="removeSelectedSlot('${slot.slot_key}')">×</button>
       </div>
@@ -1194,10 +1316,10 @@ async function openPreselection(){
       const detail=data.detail;
       throw new Error((detail&&detail.message)||detail||'Unable to fetch slot suggestions');
     }
-    S.slotSuggestions=(data.suggestions||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
-    S.availableSlotCatalog=(data.available_slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)}));
+    S.slotSuggestions=(data.suggestions||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
+    S.availableSlotCatalog=(data.available_slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     mergeRuntimeSlotCatalog(S.availableSlotCatalog);
-    if(!S.selectedSlots.length) S.selectedSlots=S.slotSuggestions.map(slot=>({...slot,foc:false}));
+    if(!S.selectedSlots.length) S.selectedSlots=S.slotSuggestions.map(slot=>applySlotPricing({...slot,foc:false},slot.pricing_model));
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
     nav(4);
   }catch(e){
@@ -1223,15 +1345,16 @@ async function loadOptions(){
     if(!res.ok) return;
     const raw=await res.text();
     const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
-    S.slotCatalog=(data.slots||[]).map(slot=>({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''}));
+    S.slotCatalog=(data.slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''},slot.pricing_model));
     if(data.comcats&&data.comcats.length){
       const group=document.getElementById('comcatGroup');
       group.innerHTML='';
-      data.comcats.forEach(c=>{
+      comcatUiEntries(data.comcats).forEach(entry=>{
         const pill=document.createElement('div');
         pill.className='pill';
-        pill.textContent=c;
-        pill.onclick=()=>toggleComcat(pill,c);
+        pill.textContent=entry.label;
+        pill.dataset.comcatValues=entry.values.join(',');
+        pill.onclick=()=>toggleComcat(pill,entry.values);
         group.appendChild(pill);
       });
       syncComcatPills();
@@ -1407,6 +1530,7 @@ async function buildPlan(){
     return;
   }
   payload.selected_slot_keys=S.selectedSlots.map(slot=>slot.slot_key);
+  payload.selected_slot_pricing=Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)]));
   payload.foc_slot_keys=S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key);
   document.getElementById('navChip').textContent='Generating plan...';
   try{
@@ -1440,10 +1564,10 @@ function phClass(ph){ if(!ph) return 'ph-custom'; const l=ph.toLowerCase(); if(l
 function renderAll(){
   const brand=displayBrandName(document.getElementById('bName').value||'Brand');
   const countries=displayCountries()||'Countries';
-  document.getElementById('planBrandTitle').textContent=brand+' — '+countries+' plan';
+  document.getElementById('planBrandTitle').textContent=brand+' — '+countries+' recommendation';
   const perCountryMin=(S.budget<=10000?6:10);
   const totalMin=perCountryMin*Math.max(S.countries.length,1);
-  document.getElementById('planToolbarNote').textContent=(S.rows.length||0)+' editable country-slot lines. Target: '+perCountryMin+'+ per country ('+totalMin+' total) when inventory exists.'+(S.planCode?(' Media code: '+S.planCode+'.'):'');
+  document.getElementById('planToolbarNote').textContent=(S.rows.length||0)+' editable country-slot recommendations. Target: '+perCountryMin+'+ per country ('+totalMin+' total) when inventory exists.'+(S.planCode?(' Media code: '+S.planCode+'.'):'');
   const total=S.rows.reduce((a,r)=>a+netAmount(r),0);
   const grossTotal=S.rows.reduce((a,r)=>a+grossAmount(r),0);
   const totalViews=S.rows.filter(r=>r.views).reduce((a,r)=>a+Number(r.views||0),0);
@@ -1552,7 +1676,7 @@ function renderTable(){
     <td><input class="plan-cell-input" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value)"></td>
     <td>${r.zone||''}</td>
     <td>${r.dimension||''}</td>
-    <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${r.category}`:''}</div></td>
+    <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
     <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='Cost Per Day'?'selected':''}>Cost Per Day</option></select></td>
     <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(r.rate||0)}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
@@ -1582,26 +1706,46 @@ function updateRowField(id,key,value){
       row.slot_name=meta.slot_name||row.slot_name||row.asset;
       row.asset=row.slot_name||row.asset;
       row.page=meta.page||meta.publisher||row.page;
-      row.buyType=(String(meta.pricing_model||'').toLowerCase().includes('day'))?'Cost Per Day':'CPM';
+      row.buyType=normalizePricingModel(meta.pricing_model)==='CPD'?'Cost Per Day':'CPM';
       row.marketplace=getSlotMarketplace(meta);
       row.category=meta.category||meta.page||'';
       row.zone=meta.zone||'';
       row.dimension=meta.dimension||'';
       if(row.buyType==='CPM'){
-        row.gross_cpm=Number(meta.rate||0)||0;
+        row.gross_cpm=Number(meta.cpm_rate||meta.rate||0)||0;
         row.net_cpm=Math.round(row.gross_cpm*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
         row.rate=row.net_cpm;
       }else{
         row.gross_cpm=0;
         row.net_cpm=0;
+        const grossCpd=Number(meta.cpd_rate||0)||0;
+        row.rate=Math.round(grossCpd*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
       }
     }else{
       row.slot_name=row.asset||'';
     }
   }
+  if(key==='buyType'){
+    const meta=findSlotMeta(row.country,row.slot_code);
+    if(meta){
+      if(value==='CPM'){
+        row.gross_cpm=Number(meta.cpm_rate||meta.rate||0)||0;
+        row.net_cpm=Math.round(row.gross_cpm*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
+        row.rate=row.net_cpm;
+      }else{
+        row.gross_cpm=0;
+        row.net_cpm=0;
+        const grossCpd=Number(meta.cpd_rate||0)||0;
+        row.rate=Math.round(grossCpd*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
+      }
+    }
+  }
   if(key==='from'||key==='to'){
     const s=new Date(row.from+'T00:00:00'), e=new Date(row.to+'T00:00:00');
     row.days=Math.max(Math.round((e-s)/86400000)+1,1);
+    if(row.buyType!=='CPM'){
+      row.net_amount=Math.round((Number(row.rate)||0)*row.days*100)/100;
+    }
   }
   if(key==='rate'||key==='views'||key==='cost'||key==='net_amount'){
     row[key]=value===''?0:Number(value);
@@ -1610,6 +1754,8 @@ function updateRowField(id,key,value){
       row.net_cpm=Number(row.rate)||0;
       const discountFactor=Math.max(1-((Number(row.discount_pct??S.discountPct)||0)/100),0.0001);
       row.gross_cpm=Math.round((row.net_cpm/discountFactor)*10000)/10000;
+    }else if(key==='rate' && row.buyType!=='CPM'){
+      row.net_amount=Math.round((Number(row.rate)||0)*(Number(row.days)||0)*100)/100;
     }
     if(key==='net_amount'){
       row.cost=Number(row.net_amount)||0;
@@ -1668,7 +1814,7 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
-  const payload={ brand:(document.getElementById('bName').value||'').trim(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj, reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked };
+  const payload={ brand:(document.getElementById('bName').value||'').trim(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj, reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
     document.getElementById('navChip').textContent='Regenerating...';
     const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});

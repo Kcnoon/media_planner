@@ -77,6 +77,7 @@ class MediaPlanRequest(BaseModel):
     roas_weight: int = 40
     phases: list[Phase] = Field(default_factory=list)
     selected_slot_keys: list[str] = Field(default_factory=list)
+    selected_slot_pricing: dict[str, str] = Field(default_factory=dict)
     foc_slot_keys: list[str] = Field(default_factory=list)
 
     plan_id: Optional[str] = None

@@ -84,8 +84,11 @@ def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
                 "zone": str(meta.get("zone") or "").strip(),
                 "dimension": str(meta.get("dimension") or "").strip(),
                 "publisher": str(meta.get("publisher") or "").strip(),
-                "pricing_model": str(meta.get("pricing_model") or "cpm").strip(),
+                "pricing_model": str(meta.get("pricing_model") or "CPM").strip(),
+                "pricing_options": list(meta.get("pricing_options") or [str(meta.get("pricing_model") or "CPM").strip()]),
                 "rate": float(meta.get("rate") or 0) or 10.0,
+                "cpm_rate": float(meta.get("cpm_rate") or 0) or 0.0,
+                "cpd_rate": float(meta.get("cpd_rate") or 0) or 0.0,
                 "available_views": available,
             }
         )
