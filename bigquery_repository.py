@@ -430,13 +430,17 @@ class BigQueryRepository:
                 continue
             country = infer_country(row)
             rate_meta = rate_by_country_slot.get((country, slot_code)) or rate_by_slot.get(slot_code) or {}
-            fallback_cpm_rate = parse_number(get_first(row, "cpm_rate", "cpm", "rate", "gross_cpm", "price"))
-            fallback_cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
+            default_pricing_model = normalize_pricing_model(get_first(row, "pricing_model", "buy_type") or "cpm")
+            explicit_cpm_rate = parse_number(get_first(row, "cpm_rate", "cpm", "gross_cpm"))
+            explicit_cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
+            generic_rate = parse_number(get_first(row, "rate", "price"))
+            fallback_cpm_rate = explicit_cpm_rate or (generic_rate if default_pricing_model == "CPM" else 0.0)
+            fallback_cpd_rate = explicit_cpd_rate or (generic_rate if default_pricing_model == "CPD" else 0.0)
             cpm_rate = float(rate_meta.get("cpm_rate") or fallback_cpm_rate or 0.0)
             cpd_rate = float(rate_meta.get("cpd_rate") or fallback_cpd_rate or 0.0)
             pricing_options = rate_meta.get("pricing_options") or pricing_options_from_values(cpm_rate, cpd_rate)
             if not pricing_options:
-                pricing_options = [normalize_pricing_model(get_first(row, "pricing_model", "buy_type") or "cpm")]
+                pricing_options = [default_pricing_model]
             pricing_model = "CPM" if "CPM" in pricing_options else pricing_options[0]
             default_rate = cpm_rate or cpd_rate or 10.0
             catalog.append(

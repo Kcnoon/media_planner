@@ -54,7 +54,7 @@ def pricing_options_for_meta(meta: dict | None) -> list[str]:
     raw_options = meta.get("pricing_options") or []
     options = [normalize_pricing_model(option) for option in raw_options if str(option or "").strip()]
     if not options:
-        if float(meta.get("cpm_rate") or meta.get("rate") or 0) > 0:
+        if float(meta.get("cpm_rate") or 0) > 0:
             options.append("CPM")
         if float(meta.get("cpd_rate") or 0) > 0:
             options.append("CPD")
@@ -528,8 +528,8 @@ def ensure_selected_slot_candidates(
     }
     ensured = list(candidates)
 
-    for slot_key in selected_slot_keys:
-        country, _, slot_code = slot_key.partition("|")
+    for selected_key in selected_slot_keys:
+        country, _, slot_code = selected_key.partition("|")
         if not country or not slot_code:
             continue
         meta = slot_meta.get((country, slot_code))
@@ -556,11 +556,11 @@ def ensure_selected_slot_candidates(
             key=lambda candidate: (candidate.brand_specific, max(candidate.reach_score, candidate.conv_score), candidate.views),
             default=None,
         )
-        requested_model = selected_slot_pricing_map.get(slot_key)
+        requested_model = selected_slot_pricing_map.get(selected_key)
         pricing_models = [requested_model] if requested_model else pricing_options_for_meta(meta)
         for pricing_model in pricing_models:
             normalized_model = normalize_pricing_model(pricing_model)
-            if (slot_key, normalized_model) in candidate_by_slot_model:
+            if (selected_key, normalized_model) in candidate_by_slot_model:
                 continue
             rate = slot_rate_for_model(
                 meta,
@@ -597,7 +597,7 @@ def ensure_selected_slot_candidates(
                 synthetic=True,
             )
             ensured.append(candidate)
-            candidate_by_slot_model[(slot_key, normalized_model)] = candidate
+            candidate_by_slot_model[(selected_key, normalized_model)] = candidate
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
     for candidate in sorted(ensured, key=lambda item: (not item.synthetic, item.brand_specific, max(item.reach_score, item.conv_score), item.views), reverse=True):
@@ -1151,9 +1151,9 @@ def plan_media(
                 have += 1
 
     existing_slot_keys = {slot_key(row.country, row.slot_code) for row in rows if row.slot_code}
-    missing_selected = [slot_key for slot_key in selected_slot_keys if slot_key not in existing_slot_keys]
-    for index, slot_key in enumerate(missing_selected):
-        candidate = candidate_by_slot_key.get(slot_key)
+    missing_selected = [selected_key for selected_key in selected_slot_keys if selected_key not in existing_slot_keys]
+    for index, selected_key in enumerate(missing_selected):
+        candidate = candidate_by_slot_key.get(selected_key)
         if not candidate:
             continue
         phase = phases[index % len(phases)]
