@@ -191,6 +191,10 @@ def infer_country(row: dict) -> str:
     return ""
 
 
+def slot_code_key(value) -> str:
+    return norm(value)
+
+
 def parse_date(value) -> date | None:
     if isinstance(value, date):
         return value
@@ -382,11 +386,12 @@ class BigQueryRepository:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
             if not slot_code:
                 continue
+            slot_key = slot_code_key(slot_code)
             country = infer_country(row)
             dt = parse_date(get_first(row, "date", "dt"))
             cpm_rate = parse_number(get_first(row, "cpm_rate", "rate_usd", "rate", "usd_rate", "cpm", "price"))
             cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
-            target_slot = by_slot[slot_code]
+            target_slot = by_slot[slot_key]
             if cpm_rate > 0:
                 target_slot["cpm_rates"].append(cpm_rate)
                 if dt:
@@ -396,7 +401,7 @@ class BigQueryRepository:
                 if dt:
                     target_slot["cpd_rate_schedule"][dt.isoformat()] = cpd_rate
             if country:
-                target_country_slot = by_country_slot[(country, slot_code)]
+                target_country_slot = by_country_slot[(country, slot_key)]
                 if cpm_rate > 0:
                     target_country_slot["cpm_rates"].append(cpm_rate)
                     if dt:
@@ -437,7 +442,8 @@ class BigQueryRepository:
                 continue
             slot_name = str(get_first(row, "slot_name", "asset", "slot") or slot_code).strip()
             country = infer_country(row)
-            rate_meta = rate_by_country_slot.get((country, slot_code)) or rate_by_slot.get(slot_code) or {}
+            normalized_slot_code = slot_code_key(slot_code)
+            rate_meta = rate_by_country_slot.get((country, normalized_slot_code)) or rate_by_slot.get(normalized_slot_code) or {}
             default_pricing_model = infer_pricing_model_from_slot(
                 slot_code,
                 slot_name,

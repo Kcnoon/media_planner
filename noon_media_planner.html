@@ -208,11 +208,11 @@ td.mono{font-family:var(--mono);font-size:11px}
     <img class="logo-img" src="/static/logo.png" alt="noon ads logo"/>
   </div>
   <div class="nav-pills">
-    <div class="np active" id="sn1" onclick="nav(1)">1 · Brand information</div>
-    <div class="np" id="sn2" onclick="nav(2)">2 · Objective</div>
-    <div class="np" id="sn3" onclick="nav(3)">Budget Formulation</div>
-    <div class="np" id="sn4" onclick="nav(4)">4 · Slot-preselection</div>
-    <div class="np" id="sn5" onclick="nav(5)">5 · Final recommendation</div>
+    <div class="np active" id="sn1" onclick="nav(1)">Plan Initialization</div>
+    <div class="np" id="sn2" onclick="nav(2)">Objective</div>
+    <div class="np" id="sn3" onclick="nav(3)">Budget &amp; Scheduling</div>
+    <div class="np" id="sn4" onclick="nav(4)">Slot Preselection</div>
+    <div class="np" id="sn5" onclick="nav(5)">Final Plan</div>
   </div>
   <div class="nav-right">
     <span class="chip" id="navChip">No plan generated</span>
@@ -225,7 +225,7 @@ td.mono{font-family:var(--mono);font-size:11px}
 <!-- P1: Brand -->
 <div class="panel show" id="p1">
   <div class="card">
-    <div class="card-hd">Brand details</div>
+    <div class="card-hd">Brand Details</div>
     <div class="fg fg-4">
       <div class="field"><label>Brand name</label><input id="bName" type="text" placeholder="Brand name"/></div>
       <div class="field"><label>Countries</label>
@@ -254,45 +254,8 @@ td.mono{font-family:var(--mono);font-size:11px}
     </div>
   </div>
   <div class="card">
-    <div class="card-hd">Comcat selection</div>
-    <div class="pill-group" id="comcatGroup">
-      <div class="pill" onclick="toggleComcat(this,'audio_video')">audio_video</div>
-      <div class="pill" onclick="toggleComcat(this,'hair_personal_care')">hair_personal_care</div>
-      <div class="pill" onclick="toggleComcat(this,'epc')">epc</div>
-      <div class="pill" onclick="toggleComcat(this,'fragrance')">fragrance</div>
-      <div class="pill" onclick="toggleComcat(this,'colour_cosmetics')">colour_cosmetics</div>
-      <div class="pill" onclick="toggleComcat(this,'camera')">camera</div>
-      <div class="pill" onclick="toggleComcat(this,'automotive')">automotive</div>
-      <div class="pill" onclick="toggleComcat(this,'bags_luggage')">bags_luggage</div>
-      <div class="pill" onclick="toggleComcat(this,'jewelry')">jewelry</div>
-      <div class="pill" onclick="toggleComcat(this,'footwear')">footwear</div>
-      <div class="pill" onclick="toggleComcat(this,'apparel')">apparel</div>
-      <div class="pill" onclick="toggleComcat(this,'headsets_headphones')">headsets_headphones</div>
-      <div class="pill" onclick="toggleComcat(this,'baby_consumables')">baby_consumables</div>
-      <div class="pill" onclick="toggleComcat(this,'home_improvement')">home_improvement</div>
-      <div class="pill" onclick="toggleComcat(this,'furniture')">furniture</div>
-      <div class="pill" onclick="toggleComcat(this,'kitchen_dining')">kitchen_dining</div>
-      <div class="pill" onclick="toggleComcat(this,'bath_bedding')">bath_bedding</div>
-      <div class="pill" onclick="toggleComcat(this,'home_decor')">home_decor</div>
-      <div class="pill" onclick="toggleComcat(this,'laptop_accessories')">laptop_accessories</div>
-      <div class="pill" onclick="toggleComcat(this,'laptops')">laptops</div>
-      <div class="pill" onclick="toggleComcat(this,'small_appliances')">small_appliances</div>
-      <div class="pill" onclick="toggleComcat(this,'mobiles')">mobiles</div>
-      <div class="pill" onclick="toggleComcat(this,'large_appliances')">large_appliances</div>
-      <div class="pill" onclick="toggleComcat(this,'mobile_accessories')">mobile_accessories</div>
-      <div class="pill" onclick="toggleComcat(this,'baby_nonconsumables')">baby_nonconsumables</div>
-      <div class="pill" onclick="toggleComcat(this,'vg_accessories')">vg_accessories</div>
-      <div class="pill" onclick="toggleComcat(this,'grocery')">grocery</div>
-      <div class="pill" onclick="toggleComcat(this,'sports_outdoor')">sports_outdoor</div>
-      <div class="pill" onclick="toggleComcat(this,'books_media')">books_media</div>
-      <div class="pill" onclick="toggleComcat(this,'vg_consoles')">vg_consoles</div>
-      <div class="pill" onclick="toggleComcat(this,'watches')">watches</div>
-      <div class="pill" onclick="toggleComcat(this,'stationery_office_supplies')">stationery_office_supplies</div>
-      <div class="pill" onclick="toggleComcat(this,'wearables')">wearables</div>
-      <div class="pill" onclick="toggleComcat(this,'eyewear')">eyewear</div>
-      <div class="pill" onclick="toggleComcat(this,'toys')">toys</div>
-      <div class="pill" onclick="toggleComcat(this,'health_nutrition')">health_nutrition</div>
-    </div>
+    <div class="card-hd">Comcat Selection</div>
+    <div class="pill-group" id="comcatGroup"></div>
   </div>
   <div class="btn-row"><button class="btn pri" onclick="nav(2)">Next: Objective →</button></div>
 </div>
@@ -324,13 +287,13 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div class="w-row"><span class="w-lbl">ROAS</span><input type="range" min="10" max="90" step="5" value="40" id="oW" oninput="syncW(this,'roas')"/><span class="w-val" id="oWv">40%</span></div>
     </div>
   </div>
-  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Budget Formulation →</button></div>
+  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Budget &amp; Scheduling →</button></div>
 </div>
 
 <!-- P3: Budget & Scheduling -->
 <div class="panel" id="p3">
   <div class="card">
-    <div class="card-hd">Budget Formulation</div>
+    <div class="card-hd">Budget &amp; Scheduling</div>
     <div class="fg fg-4" style="margin-bottom:14px">
       <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter investment" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
@@ -345,7 +308,7 @@ td.mono{font-family:var(--mono);font-size:11px}
   </div>
 
   <div class="card">
-    <div class="card-hd">Flight window</div>
+    <div class="card-hd">Flight Window</div>
     <div class="fg fg-3">
       <div class="field"><label>Start date</label><input id="bStart" type="date" onchange="onDatesChange()"/></div>
       <div class="field"><label>End date</label><input id="bEnd" type="date" onchange="onDatesChange()"/></div>
@@ -354,7 +317,7 @@ td.mono{font-family:var(--mono);font-size:11px}
   </div>
 
   <div class="card">
-    <div class="card-hd">Scheduling phases</div>
+    <div class="card-hd">Scheduling Phases</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your full flight window is shown below. Click <strong>+ Add phase</strong>, then click a <strong>start</strong> and <strong>end</strong> date on the calendar to mark a phase. Rename each phase and add as many as you need.</p>
 
     <!-- Calendar nav -->
@@ -390,7 +353,7 @@ td.mono{font-family:var(--mono);font-size:11px}
 <!-- P4: Slot preselection -->
 <div class="panel" id="p4">
   <div class="card">
-    <div class="card-hd">Suggested slots</div>
+    <div class="card-hd">Suggested Slots</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">We suggest a country x marketplace mix with at least 6 slots per country below USD 10,000 and at least 10 slots per country above that when inventory exists. Suggestions already avoid repeating the same category and zone combination.</p>
     <div class="fg fg-3" style="margin-bottom:14px">
       <div class="field"><label>Country filter</label><select id="slotFilterCountry" onchange="renderSlotPreselection()"><option value="">All countries</option></select></div>
@@ -400,7 +363,7 @@ td.mono{font-family:var(--mono);font-size:11px}
     <div id="slotSuggestionGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"></div>
   </div>
   <div class="card">
-    <div class="card-hd">Selected slots</div>
+    <div class="card-hd">Selected Slots</div>
     <div id="selectedSlotList"></div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
       <div class="fg fg-4">
@@ -463,7 +426,7 @@ td.mono{font-family:var(--mono);font-size:11px}
 <div class="panel" id="p5">
   <div class="brand-header">
     <div>
-      <div class="brand-title" id="planBrandTitle">Final recommendation</div>
+      <div class="brand-title" id="planBrandTitle">Final Plan</div>
       <div class="plan-toolbar-note" id="planToolbarNote">Country-slot draft with editable notes and slot swaps.</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -543,8 +506,15 @@ const DOW=['Su','Mo','Tu','We','Th','Fr','Sa'];
 // Budget is entered in USD. We also display an approximate local-currency view for convenience.
 const FX={USD:1,AED:3.6725,SAR:3.75,EGP:50};
 const CURRENCY_SYMBOL={USD:'$',AED:'AED ',SAR:'SAR ',EGP:'EGP '};
+const DEFAULT_COMCATS=[
+  'audio_video','hair_personal_care','epc','fragrance','colour_cosmetics','camera','automotive','bags_luggage',
+  'jewelry','footwear','apparel','headsets_headphones','baby_consumables','home_improvement','furniture',
+  'kitchen_dining','bath_bedding','home_decor','laptop_accessories','laptops','small_appliances','mobiles',
+  'large_appliances','mobile_accessories','baby_nonconsumables','vg_accessories','grocery','sports_outdoor',
+  'books_media','vg_consoles','watches','stationery_office_supplies','wearables','eyewear','toys','health_nutrition'
+];
 const COMCAT_UI_GROUPS=[
-  {key:'admon_suite',label:'Admon & 3rd party',values:['third_party','admon_display','admon_general','admon_streaming']}
+  {key:'admon_suite',label:'Admon',values:['third_party','3p','admon_display','admon_general','admon_streaming']}
 ];
 function normalizePricingModel(value){
   const raw=String(value||'').trim().toLowerCase();
@@ -638,8 +608,13 @@ function titleCaseWords(value){
 function displayBrandName(value){
   return titleCaseWords(value||'Brand') || 'Brand';
 }
+function sentenceCaseLabel(value){
+  const text=String(value||'').replace(/_/g,' ').trim().toLowerCase();
+  if(!text) return '';
+  return text.charAt(0).toUpperCase()+text.slice(1);
+}
 function displayComcatLabel(value){
-  return titleCaseWords(String(value||'').replace(/_/g,' '));
+  return sentenceCaseLabel(value);
 }
 function displayCategoryLabel(value){
   return displayComcatLabel(value||'');
@@ -660,6 +635,20 @@ function comcatUiEntries(values){
     entries.push({key:value,label:displayComcatLabel(value),values:[value]});
   });
   return entries.sort((a,b)=>a.label.localeCompare(b.label));
+}
+function renderComcatGroup(values){
+  const group=document.getElementById('comcatGroup');
+  if(!group) return;
+  group.innerHTML='';
+  comcatUiEntries(values).forEach(entry=>{
+    const pill=document.createElement('div');
+    pill.className='pill';
+    pill.textContent=entry.label;
+    pill.dataset.comcatValues=entry.values.join(',');
+    pill.onclick=()=>toggleComcat(pill,entry.values);
+    group.appendChild(pill);
+  });
+  syncComcatPills();
 }
 function displayCountries(){
   return (S.countries||[]).map(country=>String(country||'').toUpperCase()).join(', ');
@@ -1387,17 +1376,7 @@ async function loadOptions(){
     const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
     S.slotCatalog=(data.slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''},slot.pricing_model));
     if(data.comcats&&data.comcats.length){
-      const group=document.getElementById('comcatGroup');
-      group.innerHTML='';
-      comcatUiEntries(data.comcats).forEach(entry=>{
-        const pill=document.createElement('div');
-        pill.className='pill';
-        pill.textContent=entry.label;
-        pill.dataset.comcatValues=entry.values.join(',');
-        pill.onclick=()=>toggleComcat(pill,entry.values);
-        group.appendChild(pill);
-      });
-      syncComcatPills();
+      renderComcatGroup(data.comcats);
     }
     syncCountryPills();
   }catch(e){}
@@ -2038,6 +2017,7 @@ async function autoLoadPlanFromUrl(){
 S.rows=[];
 setupDateLimits();
 (async function initPlanner(){
+  renderComcatGroup(DEFAULT_COMCATS);
   await loadOptions();
   nav(1);
   await autoLoadPlanFromUrl();
