@@ -77,10 +77,14 @@ input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--noon)}
 .btn.pri:hover{background:#111319}
 .btn.ghost{color:var(--ink);border-color:var(--border2);background:#fffced}
 .btn.ghost:hover{background:var(--noon-soft)}
-.lock-switch{display:inline-flex;align-items:center;gap:0;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
-.lock-switch button{border:none;background:transparent;color:var(--text2);padding:7px 16px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--font);white-space:nowrap}
-.lock-switch button.active{background:var(--ink);color:var(--noon);box-shadow:0 6px 14px rgba(31,33,40,.18)}
-.lock-switch button:not(.active):hover{color:var(--text)}
+.lock-toggle-row{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lock-label{font-size:12px;font-weight:600;color:var(--text3);transition:.15s}
+.lock-label.active{color:var(--text)}
+.lock-switch-track{position:relative;width:68px;height:38px;border:none;border-radius:999px;background:#8f8f8f;cursor:pointer;transition:.18s;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
+.lock-switch-track.active{background:var(--ink)}
+.lock-switch-thumb{position:absolute;top:3px;left:3px;width:32px;height:32px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(31,33,40,.18);transition:.18s}
+.lock-switch-track.active .lock-switch-thumb{transform:translateX(30px)}
+.lock-switch-track:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(255,207,51,.22)}
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
 .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px}
 .metric .ml{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
@@ -206,7 +210,7 @@ td.mono{font-family:var(--mono);font-size:11px}
   <div class="nav-pills">
     <div class="np active" id="sn1" onclick="nav(1)">1 · Brand information</div>
     <div class="np" id="sn2" onclick="nav(2)">2 · Objective</div>
-    <div class="np" id="sn3" onclick="nav(3)">3 · Investment &amp; flighting</div>
+    <div class="np" id="sn3" onclick="nav(3)">3 · Investment &amp; Budget Formulation</div>
     <div class="np" id="sn4" onclick="nav(4)">4 · Slot-preselection</div>
     <div class="np" id="sn5" onclick="nav(5)">5 · Final recommendation</div>
   </div>
@@ -320,19 +324,19 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div class="w-row"><span class="w-lbl">ROAS</span><input type="range" min="10" max="90" step="5" value="40" id="oW" oninput="syncW(this,'roas')"/><span class="w-val" id="oWv">40%</span></div>
     </div>
   </div>
-  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Investment &amp; flighting →</button></div>
+  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Investment &amp; Budget Formulation →</button></div>
 </div>
 
 <!-- P3: Budget & Scheduling -->
 <div class="panel" id="p3">
   <div class="card">
-    <div class="card-hd">Investment &amp; flighting</div>
+    <div class="card-hd">Investment &amp; Budget Formulation</div>
     <div class="fg fg-4" style="margin-bottom:14px">
       <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter investment" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Conversion currency</label><select id="bCur"><option value="">Select currency</option><option>USD</option><option>AED</option><option>SAR</option><option>EGP</option></select></div>
       <div class="field"><label>LE code</label><input id="leCode" type="text" placeholder="e.g. LE-UAE-2026-001"/></div>
-      <div class="field"><label>Plan status</label><div class="lock-switch" style="margin-top:4px" id="budgetLock"><button type="button" id="budgetDraftBtn" onclick="setBudgetLock(false)">Draft Plan</button><button type="button" id="budgetLockedBtn" onclick="setBudgetLock(true)">Confirmed Plan</button></div></div>
+      <div class="field"><label>Plan status</label><div class="lock-toggle-row" style="margin-top:6px" id="budgetLock"><span class="lock-label" id="budgetDraftLabel">Draft Plan</span><button type="button" class="lock-switch-track" id="budgetLockSwitch" role="switch" aria-checked="false" onclick="toggleBudgetLock()"><span class="lock-switch-thumb"></span></button><span class="lock-label" id="budgetLockedLabel">Confirmed Plan</span></div></div>
     </div>
     <div class="bbar-wrap">
       <div class="bbar-labels"><span id="bbarLeft">No budget entered</span><span id="bbarRight">$0 allocated</span></div>
@@ -762,12 +766,21 @@ function syncObjectiveUi(){
 }
 
 function syncBudgetLockUi(){
-  const draftBtn=document.getElementById('budgetDraftBtn');
-  const lockedBtn=document.getElementById('budgetLockedBtn');
-  if(draftBtn) draftBtn.className=S.budgetLocked?'':'active';
-  if(lockedBtn) lockedBtn.className=S.budgetLocked?'active':'';
+  const draftLabel=document.getElementById('budgetDraftLabel');
+  const lockedLabel=document.getElementById('budgetLockedLabel');
+  const lockSwitch=document.getElementById('budgetLockSwitch');
+  if(draftLabel) draftLabel.className='lock-label'+(S.budgetLocked?'':' active');
+  if(lockedLabel) lockedLabel.className='lock-label'+(S.budgetLocked?' active':'');
+  if(lockSwitch){
+    lockSwitch.className='lock-switch-track'+(S.budgetLocked?' active':'');
+    lockSwitch.setAttribute('aria-checked',String(!!S.budgetLocked));
+  }
   const budget=document.getElementById('bBudget');
   if(budget) budget.disabled=!!S.budgetLocked;
+}
+
+function toggleBudgetLock(){
+  setBudgetLock(!S.budgetLocked);
 }
 
 function applyRequestToState(request){
