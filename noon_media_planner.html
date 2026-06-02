@@ -23,11 +23,8 @@
 body{font-family:var(--font);background:radial-gradient(circle at top left,#fff7d8 0,#fbfaf6 36%,#f3f4f7 100%);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 .shell{display:flex;flex-direction:column;min-height:100vh}
 .topnav{background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 10px 30px rgba(31,33,40,.05)}
-.logo{display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center}
 .logo-img{display:block;height:42px;width:auto;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(31,33,40,.08))}
-.logo-copy{display:flex;flex-direction:column;gap:1px}
-.logo-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
-.logo-sub{font-size:12px;color:var(--text2)}
 .nav-pills{display:flex;gap:2px}
 .np{padding:5px 14px;border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);transition:.15s}
 .np:hover{background:var(--surface2)}
@@ -80,11 +77,18 @@ input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--noon)}
 .lock-toggle-row{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
 .lock-label{font-size:12px;font-weight:600;color:var(--text3);transition:.15s}
 .lock-label.active{color:var(--text)}
-.lock-switch-track{position:relative;width:68px;height:38px;border:none;border-radius:999px;background:#8f8f8f;cursor:pointer;transition:.18s;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
+.lock-switch-track{position:relative;width:56px;height:30px;border:none;border-radius:999px;background:#8f8f8f;cursor:pointer;transition:.18s;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
 .lock-switch-track.active{background:var(--ink)}
-.lock-switch-thumb{position:absolute;top:3px;left:3px;width:32px;height:32px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(31,33,40,.18);transition:.18s}
-.lock-switch-track.active .lock-switch-thumb{transform:translateX(30px)}
+.lock-switch-thumb{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(31,33,40,.18);transition:.18s}
+.lock-switch-track.active .lock-switch-thumb{transform:translateX(26px)}
 .lock-switch-track:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(255,207,51,.22)}
+.mini-switch-row{display:inline-flex;align-items:center;gap:8px}
+.mini-switch-label{font-size:11px;font-weight:600;color:var(--text3);transition:.15s}
+.mini-switch-label.active{color:var(--text)}
+.mini-switch-track{position:relative;width:46px;height:24px;border:none;border-radius:999px;background:#b0b0b0;cursor:pointer;transition:.18s;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
+.mini-switch-track.active{background:var(--ink)}
+.mini-switch-thumb{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(31,33,40,.18);transition:.18s}
+.mini-switch-track.active .mini-switch-thumb{transform:translateX(22px)}
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
 .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px}
 .metric .ml{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
@@ -202,15 +206,11 @@ td.mono{font-family:var(--mono);font-size:11px}
 <nav class="topnav">
   <div class="logo">
     <img class="logo-img" src="/static/logo.png" alt="noon ads logo"/>
-    <div class="logo-copy">
-      <span class="logo-title">Media planner</span>
-      <span class="logo-sub">Partner planning workspace</span>
-    </div>
   </div>
   <div class="nav-pills">
     <div class="np active" id="sn1" onclick="nav(1)">1 · Brand information</div>
     <div class="np" id="sn2" onclick="nav(2)">2 · Objective</div>
-    <div class="np" id="sn3" onclick="nav(3)">3 · Investment &amp; Budget Formulation</div>
+    <div class="np" id="sn3" onclick="nav(3)">3 · Budget Formulation</div>
     <div class="np" id="sn4" onclick="nav(4)">4 · Slot-preselection</div>
     <div class="np" id="sn5" onclick="nav(5)">5 · Final recommendation</div>
   </div>
@@ -324,13 +324,13 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div class="w-row"><span class="w-lbl">ROAS</span><input type="range" min="10" max="90" step="5" value="40" id="oW" oninput="syncW(this,'roas')"/><span class="w-val" id="oWv">40%</span></div>
     </div>
   </div>
-  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Investment &amp; Budget Formulation →</button></div>
+  <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Budget Formulation →</button></div>
 </div>
 
 <!-- P3: Budget & Scheduling -->
 <div class="panel" id="p3">
   <div class="card">
-    <div class="card-hd">Investment &amp; Budget Formulation</div>
+    <div class="card-hd">Budget Formulation</div>
     <div class="fg fg-4" style="margin-bottom:14px">
       <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter investment" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
@@ -441,8 +441,12 @@ td.mono{font-family:var(--mono);font-size:11px}
         </div>
         <div class="field">
           <label>FOC</label>
-          <div class="pill-group" style="margin-top:4px">
-            <div class="pill" id="manualFocToggle" onclick="toggleManualFoc()">No</div>
+          <div style="margin-top:6px" id="manualFocToggle">
+            <div class="mini-switch-row">
+              <span class="mini-switch-label active">No</span>
+              <button type="button" class="mini-switch-track" onclick="toggleManualFoc()"><span class="mini-switch-thumb"></span></button>
+              <span class="mini-switch-label">Yes</span>
+            </div>
           </div>
         </div>
         <div class="field" style="justify-content:flex-end">
@@ -546,25 +550,37 @@ function normalizePricingModel(value){
   const raw=String(value||'').trim().toLowerCase();
   return (raw==='cpd' || raw.includes('day')) ? 'CPD' : 'CPM';
 }
+function inferPricingModelFromSlot(slot){
+  const text=`${slot?.slot_code||''} ${slot?.slot_name||''}`.toLowerCase();
+  return text.includes('cpd') ? 'CPD' : 'CPM';
+}
+function slotMetaForPricing(slot){
+  if(!slot?.country || !slot?.slot_code) return slot||{};
+  return {...(findSlotMeta(slot.country,slot.slot_code)||{}), ...(slot||{})};
+}
 function slotPricingOptions(slot){
-  const options=[...new Set((slot?.pricing_options||[]).map(normalizePricingModel).filter(Boolean))];
-  const currentModel=normalizePricingModel(slot?.pricing_model||slot?.buyType||'CPM');
-  const cpmRate=Number(slot?.cpm_rate ?? slot?.gross_cpm ?? (currentModel==='CPM' ? slot?.rate : 0))||0;
-  const cpdRate=Number(slot?.cpd_rate ?? (currentModel==='CPD' ? slot?.rate : 0))||0;
+  const merged=slotMetaForPricing(slot);
+  let options=[...new Set((merged?.pricing_options||[]).map(normalizePricingModel).filter(Boolean))];
+  const currentModel=normalizePricingModel(merged?.pricing_model||merged?.buyType||inferPricingModelFromSlot(merged));
+  const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? (currentModel==='CPM' ? merged?.rate : 0))||0;
+  const cpdRate=Number(merged?.cpd_rate ?? (currentModel==='CPD' ? merged?.rate : 0))||0;
   if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
   if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
-  if(!options.length) options.push(currentModel);
+  if(!options.includes('CPM')) options.unshift('CPM');
+  if(!options.includes('CPD')) options.push('CPD');
+  if(!options.length) options=[currentModel,'CPM','CPD'];
   return options.includes('CPM') ? ['CPM', ...options.filter(option=>option!=='CPM')] : options;
 }
 function applySlotPricing(slot, preferredModel){
-  const options=slotPricingOptions(slot);
-  const requested=normalizePricingModel(preferredModel||slot?.pricing_model||slot?.buyType||options[0]||'CPM');
+  const merged=slotMetaForPricing(slot);
+  const options=slotPricingOptions(merged);
+  const requested=normalizePricingModel(preferredModel||merged?.pricing_model||merged?.buyType||inferPricingModelFromSlot(merged)||options[0]||'CPM');
   const pricingModel=options.includes(requested) ? requested : (options.includes('CPM') ? 'CPM' : options[0]);
-  const discountPct=Number((slot&&slot.discount_pct)!=null?slot.discount_pct:S.discountPct)||0;
+  const discountPct=Number((merged&&merged.discount_pct)!=null?merged.discount_pct:S.discountPct)||0;
   const discountFactor=Math.max(1-(discountPct/100),0);
-  const cpmRate=Number(slot?.cpm_rate ?? slot?.gross_cpm ?? (pricingModel==='CPM' ? slot?.rate : 0))||0;
-  const cpdRate=Number(slot?.cpd_rate ?? (pricingModel==='CPD' ? slot?.rate : 0))||0;
-  const next={...slot,pricing_options:options,pricing_model:pricingModel,cpm_rate:cpmRate,cpd_rate:cpdRate};
+  const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? (pricingModel==='CPM' ? merged?.rate : 0))||0;
+  const cpdRate=Number(merged?.cpd_rate ?? (pricingModel==='CPD' ? merged?.rate : 0))||0;
+  const next={...merged,pricing_options:options,pricing_model:pricingModel,cpm_rate:cpmRate,cpd_rate:cpdRate};
   next.gross_cpm=cpmRate;
   next.net_cpm=cpmRate?Math.round(cpmRate*discountFactor*10000)/10000:0;
   next.net_cpd=cpdRate?Math.round(cpdRate*discountFactor*10000)/10000:0;
@@ -581,6 +597,15 @@ function slotRateSummary(slot){
     return `${current.cpd_rate?` · Gross CPD ${number10(current.cpd_rate)}`:''}${current.net_cpd?` · Net CPD ${number10(current.net_cpd)}`:''}`;
   }
   return `${current.gross_cpm?` · Gross CPM ${number10(current.gross_cpm)}`:''}${current.net_cpm?` · Net CPM ${number10(current.net_cpm)}`:''}`;
+}
+function focToggleHtml(key,isOn,handler){
+  return `<div class="mini-switch-row">
+    <span class="mini-switch-label${isOn?'':' active'}">No</span>
+    <button type="button" class="mini-switch-track${isOn?' active':''}" onclick="${handler}('${key}')" aria-label="Toggle FOC">
+      <span class="mini-switch-thumb"></span>
+    </button>
+    <span class="mini-switch-label${isOn?' active':''}">Yes</span>
+  </div>`;
 }
 function fxRate(cur){ return FX[String(cur||'USD').toUpperCase()]||1; }
 function currencySymbol(cur){ return CURRENCY_SYMBOL[String(cur||'USD').toUpperCase()]||((cur||'USD')+' '); }
@@ -1156,11 +1181,13 @@ function renderManualSlotOptions(){
 
 function toggleManualFoc(){
   S.manualFoc=!S.manualFoc;
-  const pill=document.getElementById('manualFocToggle');
-  if(pill){
-    pill.textContent=S.manualFoc?'Yes':'No';
-    pill.className='pill'+(S.manualFoc?' on':'');
-  }
+  const wrap=document.getElementById('manualFocToggle');
+  if(wrap) wrap.innerHTML=focToggleHtml('manual',S.manualFoc,'toggleManualFocKey');
+}
+function toggleManualFocKey(){ toggleManualFoc(); }
+function renderManualFocToggle(){
+  const wrap=document.getElementById('manualFocToggle');
+  if(wrap) wrap.innerHTML=focToggleHtml('manual',S.manualFoc,'toggleManualFocKey');
 }
 
 function slotKey(country,slotCode){ return `${country}|${slotCode}`; }
@@ -1235,7 +1262,7 @@ function addManualSelectedSlot(){
     foc:S.manualFoc
   });
   S.manualFoc=false;
-  toggleManualFoc();
+  renderManualFocToggle();
   document.getElementById('manualSlotCode').value='';
   renderSlotPreselection();
 }
@@ -1311,7 +1338,7 @@ function renderSlotPreselection(){
         <select class="plan-cell-select" style="min-width:94px" onchange="updateSelectedSlotPricing('${slot.slot_key}',this.value)">
           ${pricingOptionsHtml(slot,slot.pricing_model)}
         </select>
-        <div class="pill${slot.foc?' on':''}" onclick="toggleSelectedFoc('${slot.slot_key}')" style="font-size:11px;padding:4px 10px">FOC ${slot.foc?'Yes':'No'}</div>
+        ${focToggleHtml(slot.slot_key,!!slot.foc,'toggleSelectedFoc')}
         <button class="del-btn" type="button" onclick="removeSelectedSlot('${slot.slot_key}')">×</button>
       </div>
     </div>`).join('')||'<div class="empty">No selected slots yet.</div>';

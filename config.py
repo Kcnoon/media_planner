@@ -17,7 +17,7 @@ class Settings(BaseSettings):
         validation_alias="FORECAST_TABLE",
     )
     slot_data_table: str = Field(
-        "noonbiadmon.admon_business_analytics.slot_base_data",
+        "noonbiadmon.admon_business_analytics.slot_data",
         validation_alias="SLOT_DATA_TABLE",
     )
     slot_rate_card_table: str = Field(

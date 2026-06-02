@@ -243,6 +243,13 @@ def normalize_pricing_model(value) -> str:
     return "CPM"
 
 
+def infer_pricing_model_from_slot(slot_code: str, slot_name: str | None = None) -> str:
+    text = f"{slot_code or ''} {slot_name or ''}".lower()
+    if "cpd" in text or "cost per day" in text or "cost_per_day" in text:
+        return "CPD"
+    return "CPM"
+
+
 def pricing_options_from_values(cpm_value, cpd_value) -> list[str]:
     options = []
     if parse_number(cpm_value) > 0:
@@ -428,26 +435,36 @@ class BigQueryRepository:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
             if not slot_code:
                 continue
+            slot_name = str(get_first(row, "slot_name", "asset", "slot") or slot_code).strip()
             country = infer_country(row)
             rate_meta = rate_by_country_slot.get((country, slot_code)) or rate_by_slot.get(slot_code) or {}
-            default_pricing_model = normalize_pricing_model(get_first(row, "pricing_model", "buy_type") or "cpm")
-            explicit_cpm_rate = parse_number(get_first(row, "cpm_rate", "cpm", "gross_cpm"))
-            explicit_cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
-            generic_rate = parse_number(get_first(row, "rate", "price"))
-            fallback_cpm_rate = explicit_cpm_rate or (generic_rate if default_pricing_model == "CPM" else 0.0)
-            fallback_cpd_rate = explicit_cpd_rate or (generic_rate if default_pricing_model == "CPD" else 0.0)
-            cpm_rate = float(rate_meta.get("cpm_rate") or fallback_cpm_rate or 0.0)
-            cpd_rate = float(rate_meta.get("cpd_rate") or fallback_cpd_rate or 0.0)
+            default_pricing_model = infer_pricing_model_from_slot(
+                slot_code,
+                slot_name,
+            )
+            has_rate_card = bool(
+                rate_meta
+                and (
+                    rate_meta.get("cpm_rate")
+                    or rate_meta.get("cpd_rate")
+                    or rate_meta.get("cpm_rate_schedule")
+                    or rate_meta.get("cpd_rate_schedule")
+                )
+            )
+            cpm_rate = float(rate_meta.get("cpm_rate") or 0.0) if has_rate_card else 0.0
+            cpd_rate = float(rate_meta.get("cpd_rate") or 0.0) if has_rate_card else 0.0
             pricing_options = rate_meta.get("pricing_options") or pricing_options_from_values(cpm_rate, cpd_rate)
             if not pricing_options:
-                pricing_options = [default_pricing_model]
+                pricing_options = ["CPM", "CPD"]
             pricing_model = "CPM" if "CPM" in pricing_options else pricing_options[0]
-            default_rate = cpm_rate or cpd_rate or 10.0
+            if default_pricing_model in pricing_options:
+                pricing_model = default_pricing_model
+            default_rate = cpm_rate or cpd_rate or 0.0
             catalog.append(
                 {
                     "country": country,
                     "slot_code": slot_code,
-                    "slot_name": str(get_first(row, "slot_name", "asset", "slot") or slot_code).strip(),
+                    "slot_name": slot_name,
                     "page": str(get_first(row, "category", "page", "publisher") or "").strip(),
                     "category": str(get_first(row, "category", "page", "publisher") or "").strip(),
                     "zone": str(get_first(row, "zone") or "").strip(),
