@@ -25,11 +25,11 @@ class Settings(BaseSettings):
         validation_alias="SLOT_RATE_CARD_TABLE",
     )
     plan_runs_table: str = Field(
-        "noonbiadmon.admon_business_analytics.dwh_media_plan_runs",
+        "noonbiadmon.dwh_admon_business_analytics.media_plan_runs",
         validation_alias="PLAN_RUNS_TABLE",
     )
     plan_lines_table: str = Field(
-        "noonbiadmon.admon_business_analytics.dwh_media_plan_lines",
+        "noonbiadmon.dwh_admon_business_analytics.media_plan_lines",
         validation_alias="PLAN_LINES_TABLE",
     )
     bigquery_project: str = Field("noonbiadmon", validation_alias="BIGQUERY_PROJECT")
