@@ -389,8 +389,8 @@ class BigQueryRepository:
             slot_key = slot_code_key(slot_code)
             country = infer_country(row)
             dt = parse_date(get_first(row, "date", "dt"))
-            cpm_rate = parse_number(get_first(row, "cpm_rate", "rate_usd", "rate", "usd_rate", "cpm", "price"))
-            cpd_rate = parse_number(get_first(row, "cpd_rate", "daily_rate", "rate_per_day"))
+            cpm_rate = parse_number(get_first(row, "cpm_rate"))
+            cpd_rate = parse_number(get_first(row, "cpd_rate"))
             target_slot = by_slot[slot_key]
             if cpm_rate > 0:
                 target_slot["cpm_rates"].append(cpm_rate)

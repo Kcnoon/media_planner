@@ -473,9 +473,9 @@ td.mono{font-family:var(--mono);font-size:11px}
         <th style="width:88px">Country</th><th style="width:110px">Marketplace</th><th style="width:110px">Page</th><th style="width:120px">Zone</th><th style="width:140px">Dimension</th><th style="min-width:300px">Asset / slot</th>
         <th style="width:56px;text-align:center">Days</th>
         <th style="width:98px">Buy type</th>
-        <th style="width:86px;text-align:right">Net rate</th>
-        <th style="width:92px;text-align:right">Gross CPM</th>
-        <th style="width:92px;text-align:right">Net CPM</th>
+        <th style="width:86px;text-align:right">Rate</th>
+        <th style="width:92px;text-align:right">Gross rate</th>
+        <th style="width:92px;text-align:right">Net rate</th>
         <th style="width:110px;text-align:right">Est. views</th>
         <th style="width:110px;text-align:right">Gross USD</th>
         <th style="width:110px;text-align:right">Net USD</th>
@@ -564,9 +564,9 @@ function pricingOptionsHtml(slot, selected){
 function slotRateSummary(slot){
   const current=applySlotPricing(slot,slot?.pricing_model);
   if(current.pricing_model==='CPD'){
-    return `${current.cpd_rate?` · Gross CPD ${number10(current.cpd_rate)}`:''}${current.net_cpd?` · Net CPD ${number10(current.net_cpd)}`:''}`;
+    return `${current.cpd_rate?` · Gross rate ${number10(current.cpd_rate)}`:''}${current.net_cpd?` · Net rate ${number10(current.net_cpd)}`:''}`;
   }
-  return `${current.gross_cpm?` · Gross CPM ${number10(current.gross_cpm)}`:''}${current.net_cpm?` · Net CPM ${number10(current.net_cpm)}`:''}`;
+  return `${current.gross_cpm?` · Gross rate ${number10(current.gross_cpm)}`:''}${current.net_cpm?` · Net rate ${number10(current.net_cpm)}`:''}`;
 }
 function focToggleHtml(key,isOn,handler){
   return `<div class="mini-switch-row">
@@ -695,6 +695,14 @@ function netAmount(row){ return Number((row&&row.net_amount)!=null?row.net_amoun
 function grossAmount(row){ return Number((row&&row.gross_amount)!=null?row.gross_amount:row?.cost)||0; }
 function grossCpm(row){ return Number((row&&row.gross_cpm)!=null?row.gross_cpm:0)||0; }
 function netCpm(row){ return Number((row&&row.net_cpm)!=null?row.net_cpm:(row?.rate||0))||0; }
+function netRate(row){ return Number((row&&row.rate)!=null?row.rate:netCpm(row))||0; }
+function grossRate(row){
+  const net=netRate(row);
+  const discount=Number(((row&&row.discount_pct)!=null?row.discount_pct:S.discountPct))||0;
+  if(row&&row.buyType==='CPM' && Number((row&&row.gross_cpm)!=null?row.gross_cpm:0)>0) return grossCpm(row);
+  if(discount>=100) return net;
+  return Math.round((net/Math.max(1-(discount/100),0.0001))*10000)/10000;
+}
 
 const S={
   bTag:'', comcats:[], countries:[], marketplace:'both', subBrands:[], obj:'', rW:60, oW:40,
@@ -1698,9 +1706,9 @@ function renderTable(){
     <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
     <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='Cost Per Day'?'selected':''}>Cost Per Day</option></select></td>
-    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(r.rate||0)}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
-    <td><div class="slot-meta" style="font-size:12px">${money2(grossCpm(r),'USD')}</div></td>
-    <td><div class="slot-meta" style="font-size:12px">${money2(netCpm(r),'USD')}</div></td>
+    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(grossRate(r),'USD')}</div></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(netRate(r),'USD')}</div></td>
     <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)"></td>
     <td><div class="slot-meta" style="font-size:12px">${money2(grossAmount(r),'USD')}</div></td>
     <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
@@ -1881,9 +1889,9 @@ function printPlan(mode='detailed'){
     <td>${displaySlotName(row)}<div style="font-size:10px;color:#666">${row.slot_code||''}</div></td>
     <td style="text-align:center">${row.days||0}</td>
     <td>${row.buyType||''}</td>
-    <td style="text-align:right">${number10(row.rate||0)}</td>
-    <td style="text-align:right">${money2(grossCpm(row),'USD')}</td>
-    <td style="text-align:right">${money2(netCpm(row),'USD')}</td>
+    <td style="text-align:right">${number10(netRate(row))}</td>
+    <td style="text-align:right">${money2(grossRate(row),'USD')}</td>
+    <td style="text-align:right">${money2(netRate(row),'USD')}</td>
     <td style="text-align:right">${views10(row.views||0)}</td>
     <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
     <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
@@ -1904,7 +1912,7 @@ function printPlan(mode='detailed'){
   </tr>`).join('');
   const tableHead=mode==='executive'
     ? `<tr><th>Asset / Slot</th><th>Page</th><th>Marketplace</th><th>Country</th><th>Net Rate</th><th>Est. views</th><th>Gross Cost</th><th>Net Cost</th></tr>`
-    : `<tr><th>From</th><th>To</th><th>Country</th><th>Marketplace</th><th>Page</th><th>Zone</th><th>Dimension</th><th>Asset / Slot</th><th>Days</th><th>Buy type</th><th>Net Rate</th><th>Gross CPM</th><th>Net CPM</th><th>Est. views</th><th>Gross $</th><th>Net $</th><th>Net ${currencySymbol(cur).trim()}</th><th>Phase</th><th>Brand</th><th>Note</th></tr>`;
+    : `<tr><th>From</th><th>To</th><th>Country</th><th>Marketplace</th><th>Page</th><th>Zone</th><th>Dimension</th><th>Asset / Slot</th><th>Days</th><th>Buy type</th><th>Rate</th><th>Gross Rate</th><th>Net Rate</th><th>Est. views</th><th>Gross $</th><th>Net $</th><th>Net ${currencySymbol(cur).trim()}</th><th>Phase</th><th>Brand</th><th>Note</th></tr>`;
   const tableRows=mode==='executive'?executiveRows:detailedRows;
   const summaryCards=mode==='executive'
     ? `
@@ -1967,7 +1975,7 @@ function printPlan(mode='detailed'){
 }
 
 function exportCsv(){
-  const headers=['from','to','country','marketplace','page','category','zone','dimension','asset','slot_code','days','buy_type','net_rate','gross_cpm','net_cpm','views','gross_amount_usd','net_amount_usd','phase','brand','note'];
+  const headers=['from','to','country','marketplace','page','category','zone','dimension','asset','slot_code','days','buy_type','rate','gross_rate','net_rate','views','gross_amount_usd','net_amount_usd','phase','brand','note'];
   const rows=S.rows.map(row=>[
     row.from||'',
     row.to||'',
@@ -1981,9 +1989,9 @@ function exportCsv(){
     row.slot_code||'',
     row.days||0,
     row.buyType||'',
-    roundToNearestTen(row.rate||0),
-    roundToNearestTen(grossCpm(row)),
-    roundToNearestTen(netCpm(row)),
+    roundToNearestTen(netRate(row)),
+    roundToNearestTen(grossRate(row)),
+    roundToNearestTen(netRate(row)),
     roundToNearestTen(row.views||0),
     roundToNearestTen(grossAmount(row)),
     roundToNearestTen(netAmount(row)),
