@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     )
     historical_lookback_days: int = Field(365, validation_alias="HISTORICAL_LOOKBACK_DAYS")
     min_slot_views: int = Field(1000, validation_alias="MIN_SLOT_VIEWS")
-    default_cpm: float = Field(12.0, validation_alias="DEFAULT_CPM")
-    default_cpd: float = Field(175.0, validation_alias="DEFAULT_CPD")
+    default_cpm: float = Field(10.0, validation_alias="DEFAULT_CPM")
+    default_cpd: float = Field(1000.0, validation_alias="DEFAULT_CPD")
     max_lines_per_phase: int = Field(6, validation_alias="MAX_LINES_PER_PHASE")
     min_total_lines: int = Field(6, validation_alias="MIN_TOTAL_LINES")
 

@@ -75,8 +75,6 @@ def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
         meta = slot_meta.get(key, {})
         cpm_rate = float(meta.get("cpm_rate") or 0) or 0.0
         cpd_rate = float(meta.get("cpd_rate") or 0) or 0.0
-        if cpm_rate <= 0 and cpd_rate <= 0:
-            continue
         slot_name = str(meta.get("slot_name") or key[1]).strip()
         available_slots.append(
             {
