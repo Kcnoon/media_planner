@@ -537,13 +537,8 @@ function slotPricingOptions(slot){
   const cpdRate=Number(merged?.cpd_rate ?? 0)||0;
   if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
   if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
-  if(!options.includes('CPM')) options.unshift('CPM');
-  if(!options.includes('CPD')) options.push('CPD');
-  if(inferredModel==='CPD'){
-    options=['CPD', ...options.filter(option=>option!=='CPD')];
-  }
-  if(!options.length) options=[currentModel,'CPM','CPD'];
-  if(inferredModel==='CPD') return options;
+  if(!options.length) options=[currentModel];
+  if(inferredModel==='CPD' && options.includes('CPD')) return ['CPD', ...options.filter(option=>option!=='CPD')];
   return options.includes('CPM') ? ['CPM', ...options.filter(option=>option!=='CPM')] : options;
 }
 function applySlotPricing(slot, preferredModel){
@@ -1589,7 +1584,7 @@ async function buildPlan(){
     S.planCode=(data.summary&&data.summary.sheet_plan_code)||S.planCode||S.planId;
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
     S.excludedSlotKeys=[];
-    S.rows=(data.rows||[]).map(r=>({...r, from:r.from, to:r.to}));
+    S.rows=normalizeLoadedRows(data.rows||[]);
     S.phFilter='All';
     nav(5);
   }catch(e){
@@ -1861,7 +1856,7 @@ async function regeneratePlan(){
     const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
     if(!res.ok){ const detail=data.detail; throw new Error((detail&&detail.message)||detail||'Unable to regenerate plan'); }
     S.planCode=(data.summary&&data.summary.sheet_plan_code)||S.planCode||S.planId;
-    S.rows=(data.rows||[]).map(r=>({...r, from:r.from, to:r.to}));
+    S.rows=normalizeLoadedRows(data.rows||[]);
     S.excludedSlotKeys=[];
     renderAll();
   }catch(e){ alert(e.message||'Unable to regenerate plan'); }
