@@ -532,20 +532,21 @@ function slotPricingOptions(slot){
   const merged=slotMetaForPricing(slot);
   let options=[...new Set((merged?.pricing_options||[]).map(normalizePricingModel).filter(Boolean))];
   const inferredModel=inferPricingModelFromSlot(merged);
-  const currentModel=normalizePricingModel(inferredModel==='CPD' ? inferredModel : (merged?.pricing_model||merged?.buyType||inferredModel));
+  const currentModel=normalizePricingModel(merged?.pricing_model||merged?.buyType||inferredModel);
   const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? 0)||0;
   const cpdRate=Number(merged?.cpd_rate ?? 0)||0;
   if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
   if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
-  if(!options.length) options=[currentModel];
-  if(inferredModel==='CPD' && options.includes('CPD')) return ['CPD', ...options.filter(option=>option!=='CPD')];
+  if(!options.includes('CPM')) options.unshift('CPM');
+  if(!options.includes('CPD')) options.push('CPD');
+  if(!options.length) options=[currentModel,'CPM','CPD'];
   return options.includes('CPM') ? ['CPM', ...options.filter(option=>option!=='CPM')] : options;
 }
 function applySlotPricing(slot, preferredModel){
   const merged=slotMetaForPricing(slot);
   const options=slotPricingOptions(merged);
   const inferredModel=inferPricingModelFromSlot(merged);
-  const requested=normalizePricingModel(preferredModel||(inferredModel==='CPD'?inferredModel:(merged?.pricing_model||merged?.buyType||inferredModel||options[0]||'CPM')));
+  const requested=normalizePricingModel(preferredModel||merged?.pricing_model||merged?.buyType||options[0]||inferredModel||'CPM');
   const pricingModel=options.includes(requested) ? requested : (options.includes('CPM') ? 'CPM' : options[0]);
   const discountPct=Number((merged&&merged.discount_pct)!=null?merged.discount_pct:S.discountPct)||0;
   const discountFactor=Math.max(1-(discountPct/100),0);

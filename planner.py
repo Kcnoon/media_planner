@@ -900,6 +900,9 @@ def plan_media(
     def append_row(candidate: Candidate, phase: Phase, stype: str, score_value: float, target_budget: float, force: bool = False) -> bool:
         nonlocal line_id, spent_total
         slot_key_value = slot_key(candidate.country, candidate.slot_code)
+        requested_model = selected_slot_pricing_map.get(slot_key_value)
+        if requested_model and candidate.pricing_model != requested_model:
+            return False
         if not force and slot_key_value in excluded_slot_keys:
             return False
 
@@ -1186,8 +1189,23 @@ def plan_media(
             if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=key in selected_slot_keys):
                 have += 1
 
-    existing_slot_keys = {slot_key(row.country, row.slot_code) for row in rows if row.slot_code}
-    missing_selected = [selected_key for selected_key in selected_slot_keys if selected_key not in existing_slot_keys]
+    def row_matches_selected_pricing(row: EditablePlanLine, selected_key: str) -> bool:
+        requested_model = selected_slot_pricing_map.get(selected_key)
+        if not requested_model:
+            return True
+        row_model = normalize_pricing_model(getattr(row, "buyType", ""))
+        return row_model == requested_model
+
+    existing_selected_keys = {
+        selected_key
+        for selected_key in selected_slot_keys
+        if any(
+            slot_key(row.country, row.slot_code) == selected_key and row_matches_selected_pricing(row, selected_key)
+            for row in rows
+            if row.slot_code
+        )
+    }
+    missing_selected = [selected_key for selected_key in selected_slot_keys if selected_key not in existing_selected_keys]
     for index, selected_key in enumerate(missing_selected):
         candidate = candidate_by_slot_key.get(selected_key)
         if not candidate:
