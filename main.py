@@ -73,6 +73,10 @@ def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
     available_slots = []
     for key, available in available_by_slot.items():
         meta = slot_meta.get(key, {})
+        cpm_rate = float(meta.get("cpm_rate") or 0) or 0.0
+        cpd_rate = float(meta.get("cpd_rate") or 0) or 0.0
+        if cpm_rate <= 0 and cpd_rate <= 0:
+            continue
         slot_name = str(meta.get("slot_name") or key[1]).strip()
         available_slots.append(
             {
@@ -87,8 +91,8 @@ def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
                 "pricing_model": str(meta.get("pricing_model") or "CPM").strip(),
                 "pricing_options": list(meta.get("pricing_options") or [str(meta.get("pricing_model") or "CPM").strip()]),
                 "rate": float(meta.get("rate") or 0) or 0.0,
-                "cpm_rate": float(meta.get("cpm_rate") or 0) or 0.0,
-                "cpd_rate": float(meta.get("cpd_rate") or 0) or 0.0,
+                "cpm_rate": cpm_rate,
+                "cpd_rate": cpd_rate,
                 "available_views": available,
             }
         )

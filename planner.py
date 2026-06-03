@@ -49,6 +49,13 @@ def normalize_pricing_model(value: str | None) -> str:
     return "CPM"
 
 
+def inferred_slot_pricing_model(slot_code: str | None, slot_name: str | None = None) -> str:
+    text = f"{slot_code or ''} {slot_name or ''}".lower()
+    if "cpd" in text or "cost per day" in text or "cost_per_day" in text:
+        return "CPD"
+    return "CPM"
+
+
 def pricing_options_for_meta(meta: dict | None) -> list[str]:
     meta = meta or {}
     raw_options = meta.get("pricing_options") or []
@@ -83,19 +90,37 @@ def slot_rate_for_model(meta: dict | None, model: str, fallback_rate: float | No
     if model == "CPD":
         value = float(meta.get("cpd_rate") or 0) or fallback_rate
     else:
-        value = float(meta.get("cpm_rate") or meta.get("rate") or 0) or fallback_rate
+        value = float(meta.get("cpm_rate") or 0) or fallback_rate
     return float(value) if value and value > 0 else None
+
+
+def slot_has_rate_for_model(
+    meta: dict | None,
+    model: str,
+    start: date | None = None,
+    end: date | None = None,
+) -> bool:
+    meta = meta or {}
+    model = normalize_pricing_model(model)
+    schedule = meta.get("cpd_rate_schedule") if model == "CPD" else meta.get("cpm_rate_schedule") or meta.get("rate_schedule")
+    if start and end and isinstance(schedule, dict):
+        if any(float(schedule.get(dt.isoformat()) or 0) > 0 for dt in iter_dates(start, end)):
+            return True
+    return bool(slot_rate_for_model(meta, model))
 
 
 def preferred_candidate_for_slot(candidates: list[Candidate], preferred_model: str | None, objective: str) -> Candidate | None:
     if not candidates:
         return None
     normalized_preference = normalize_pricing_model(preferred_model) if preferred_model else None
+    if not normalized_preference and candidates:
+        normalized_preference = inferred_slot_pricing_model(candidates[0].slot_code, candidates[0].slot_name)
     preferred = [candidate for candidate in candidates if not normalized_preference or candidate.pricing_model == normalized_preference]
     pool = preferred or candidates
     return max(
         pool,
         key=lambda candidate: (
+            1 if normalized_preference and candidate.pricing_model == normalized_preference else 0,
             1 if candidate.pricing_model == "CPM" else 0,
             _candidate_score(candidate, objective),
             candidate.brand_specific,
@@ -253,7 +278,9 @@ def _cpm_row_pricing(
     discount_pct: float,
     default_cpm: float,
 ) -> tuple[float, float, float, float]:
-    gross_fallback = float(meta.get("cpm_rate") or meta.get("rate") or candidate.slot_rate or candidate.cpm or default_cpm)
+    gross_fallback = float(meta.get("cpm_rate") or candidate.slot_rate or 0)
+    if gross_fallback <= 0:
+        return 0.0, 0.0, 0.0, 0.0
     rate_schedule = meta.get("cpm_rate_schedule") or meta.get("rate_schedule") or {}
     days = list(iter_dates(start, end))
     daily_views = _distributed_daily_views(planned_views, len(days))
@@ -282,7 +309,9 @@ def _cpd_daily_rates(
     default_cpd: float,
 ) -> list[tuple[date, float, float]]:
     schedule = meta.get("cpd_rate_schedule") or {}
-    gross_fallback = float(meta.get("cpd_rate") or candidate.slot_rate or candidate.cpd or default_cpd)
+    gross_fallback = float(meta.get("cpd_rate") or candidate.slot_rate or 0)
+    if gross_fallback <= 0 and not schedule:
+        return []
     rates = []
     for dt in iter_dates(start, end):
         gross_rate = float(schedule.get(dt.isoformat()) or gross_fallback)
@@ -345,18 +374,15 @@ def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str
             base_reach_score *= 1.15
             base_conv_score *= 1.2
 
-        pricing_options = pricing_options_for_meta(meta)
+        pricing_options = [option for option in pricing_options_for_meta(meta) if slot_has_rate_for_model(meta, option)]
         if not pricing_options:
-            pricing_options = [normalize_pricing_model(meta.get("pricing_model") or row.get("pricing_model"))]
+            fallback_model = normalize_pricing_model(meta.get("pricing_model") or row.get("pricing_model"))
+            pricing_options = [fallback_model] if slot_has_rate_for_model(meta, fallback_model) else []
 
         for pricing_model in pricing_options:
-            candidate_slot_rate = slot_rate_for_model(
-                meta,
-                pricing_model,
-                cpd if pricing_model == "CPD" else cpm,
-            )
+            candidate_slot_rate = slot_rate_for_model(meta, pricing_model)
             if not candidate_slot_rate:
-                candidate_slot_rate = settings.default_cpd if pricing_model == "CPD" else settings.default_cpm
+                continue
             pricing_bias = 1.02 if pricing_model == "CPM" else 1.0
             candidates.append(
                 Candidate(
@@ -474,7 +500,7 @@ def expand_candidates_for_countries(
             if not source_candidates:
                 continue
             source = max(source_candidates, key=lambda candidate: (candidate.brand_specific, max(candidate.reach_score, candidate.conv_score), candidate.views))
-            for pricing_model in pricing_options_for_meta(meta):
+            for pricing_model in [option for option in pricing_options_for_meta(meta) if slot_has_rate_for_model(meta, option)]:
                 expanded.append(
                     Candidate(
                         country=country,
@@ -487,7 +513,7 @@ def expand_candidates_for_countries(
                         marketplace=marketplace_from_slot(slot_code, slot_name),
                         publisher=meta.get("publisher"),
                         pricing_model=pricing_model,
-                        slot_rate=slot_rate_for_model(meta, pricing_model, source.slot_rate) or source.slot_rate,
+                        slot_rate=slot_rate_for_model(meta, pricing_model),
                         views=source.views,
                         clicks=source.clicks,
                         revenue=source.revenue,
@@ -562,11 +588,11 @@ def ensure_selected_slot_candidates(
             normalized_model = normalize_pricing_model(pricing_model)
             if (selected_key, normalized_model) in candidate_by_slot_model:
                 continue
-            rate = slot_rate_for_model(
-                meta,
-                normalized_model,
-                source.cpd if source and normalized_model == "CPD" else source.cpm if source else None,
-            ) or (settings.default_cpd if normalized_model == "CPD" else settings.default_cpm)
+            if not slot_has_rate_for_model(meta, normalized_model, req.start_date, req.end_date):
+                continue
+            rate = slot_rate_for_model(meta, normalized_model)
+            if not rate:
+                continue
             reach_score = source.reach_score if source else max(settings.min_slot_views / max(rate, 0.01), 1.0)
             conv_score = source.conv_score if source else reach_score
             candidate = Candidate(
@@ -904,13 +930,19 @@ def plan_media(
         is_foc = slot_key_value in foc_slot_keys
         meta = slot_meta.get((candidate.country, candidate.slot_code), {})
         if buy_type == "Cost Per Day":
-            gross_rate = round(float(meta.get("cpd_rate") or candidate.slot_rate or candidate.cpd or settings.default_cpd), 4)
+            if not slot_has_rate_for_model(meta, "CPD", row_from, row_to):
+                return False
+            gross_rate = round(float(meta.get("cpd_rate") or candidate.slot_rate or 0), 4)
         else:
-            gross_rate = round(float(meta.get("cpm_rate") or meta.get("rate") or candidate.slot_rate or candidate.cpm or settings.default_cpm), 4)
+            if not slot_has_rate_for_model(meta, "CPM", row_from, row_to):
+                return False
+            gross_rate = round(float(meta.get("cpm_rate") or candidate.slot_rate or 0), 4)
+        if gross_rate <= 0:
+            return False
         rate = discounted_rate(gross_rate, req.discount_pct)
 
         remaining_budget = max(req.budget - spent_total, 0)
-        working_budget = max(min(target_budget, remaining_budget), 0)
+        working_budget = max(remaining_budget if force else min(target_budget, remaining_budget), 0)
         if not is_foc and working_budget <= 0 and not force:
             return False
 
@@ -944,6 +976,8 @@ def plan_media(
                     req.discount_pct,
                     settings.default_cpm,
                 )
+                if gross_amount <= 0 and net_amount <= 0:
+                    return False
         else:
             cpd_days = list(iter_dates(row_from, row_to))
             scheduled_daily_rates = [
@@ -994,6 +1028,8 @@ def plan_media(
                     req.discount_pct,
                     settings.default_cpm,
                 )
+                if gross_amount <= 0 and net_amount <= 0:
+                    return False
                 while planned_views >= settings.min_slot_views and spent_total + net_amount > req.budget:
                     planned_views -= 100
                     gross_amount, net_amount, gross_rate_avg, net_rate_avg = _cpm_row_pricing(

@@ -532,8 +532,8 @@ function slotPricingOptions(slot){
   const merged=slotMetaForPricing(slot);
   let options=[...new Set((merged?.pricing_options||[]).map(normalizePricingModel).filter(Boolean))];
   const currentModel=normalizePricingModel(merged?.pricing_model||merged?.buyType||inferPricingModelFromSlot(merged));
-  const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? (currentModel==='CPM' ? merged?.rate : 0))||0;
-  const cpdRate=Number(merged?.cpd_rate ?? (currentModel==='CPD' ? merged?.rate : 0))||0;
+  const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? 0)||0;
+  const cpdRate=Number(merged?.cpd_rate ?? 0)||0;
   if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
   if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
   if(!options.includes('CPM')) options.unshift('CPM');
@@ -548,8 +548,8 @@ function applySlotPricing(slot, preferredModel){
   const pricingModel=options.includes(requested) ? requested : (options.includes('CPM') ? 'CPM' : options[0]);
   const discountPct=Number((merged&&merged.discount_pct)!=null?merged.discount_pct:S.discountPct)||0;
   const discountFactor=Math.max(1-(discountPct/100),0);
-  const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? (pricingModel==='CPM' ? merged?.rate : 0))||0;
-  const cpdRate=Number(merged?.cpd_rate ?? (pricingModel==='CPD' ? merged?.rate : 0))||0;
+  const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? 0)||0;
+  const cpdRate=Number(merged?.cpd_rate ?? 0)||0;
   const next={...merged,pricing_options:options,pricing_model:pricingModel,cpm_rate:cpmRate,cpd_rate:cpdRate};
   next.gross_cpm=cpmRate;
   next.net_cpm=cpmRate?Math.round(cpmRate*discountFactor*10000)/10000:0;
@@ -901,9 +901,9 @@ function buildSavedSelectedSlots(saved){
       dimension:row.dimension||meta.dimension||'',
       pricing_model:selectedPricing[key]||row.buyType||meta.pricing_model||'CPM',
       pricing_options:meta.pricing_options||[],
-      cpm_rate:Number(meta.cpm_rate ?? row.gross_cpm ?? meta.rate)||0,
+      cpm_rate:Number(meta.cpm_rate ?? row.gross_cpm ?? 0)||0,
       cpd_rate:Number(meta.cpd_rate)||0,
-      gross_cpm:Number((row&&row.gross_cpm)!=null?row.gross_cpm:meta.cpm_rate ?? meta.rate)||0,
+      gross_cpm:Number((row&&row.gross_cpm)!=null?row.gross_cpm:meta.cpm_rate ?? 0)||0,
       net_cpm:Number((row&&row.net_cpm)!=null?row.net_cpm:row.rate)||0,
       available_views:Number(row.available_views||0)||0,
       historical_cpm:row.historical_cpm??null,
@@ -1241,7 +1241,7 @@ function addManualSelectedSlot(){
     dimension:slot.dimension||'',
     pricing_model:pricingModel,
     pricing_options:slot.pricing_options||[],
-    cpm_rate:Number(slot.cpm_rate||slot.rate||0)||0,
+    cpm_rate:Number(slot.cpm_rate||0)||0,
     cpd_rate:Number(slot.cpd_rate||0)||0,
     available_views:Number(slot.available_views||0)||0,
     historical_cpm:null,
@@ -1731,7 +1731,7 @@ function updateRowField(id,key,value){
       row.zone=meta.zone||'';
       row.dimension=meta.dimension||'';
       if(row.buyType==='CPM'){
-        row.gross_cpm=Number(meta.cpm_rate||meta.rate||0)||0;
+        row.gross_cpm=Number(meta.cpm_rate||0)||0;
         row.net_cpm=Math.round(row.gross_cpm*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
         row.rate=row.net_cpm;
       }else{
@@ -1748,7 +1748,7 @@ function updateRowField(id,key,value){
     const meta=findSlotMeta(row.country,row.slot_code);
     if(meta){
       if(value==='CPM'){
-        row.gross_cpm=Number(meta.cpm_rate||meta.rate||0)||0;
+        row.gross_cpm=Number(meta.cpm_rate||0)||0;
         row.net_cpm=Math.round(row.gross_cpm*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
         row.rate=row.net_cpm;
       }else{
