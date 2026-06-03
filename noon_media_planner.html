@@ -1713,7 +1713,7 @@ function renderTable(){
     <td>${r.dimension||''}</td>
     <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
-    <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='Cost Per Day'?'selected':''}>Cost Per Day</option></select></td>
+    <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='CPD'?'selected':''}>CPD</option></select></td>
     <td><input class="plan-cell-input" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
     <td><div class="slot-meta" style="font-size:12px">${rateMoney(grossRate(r),'USD')}</div></td>
     <td><div class="slot-meta" style="font-size:12px">${rateMoney(netRate(r),'USD')}</div></td>
@@ -1741,7 +1741,7 @@ function updateRowField(id,key,value){
       row.slot_name=meta.slot_name||row.slot_name||row.asset;
       row.asset=row.slot_name||row.asset;
       row.page=meta.page||meta.publisher||row.page;
-      row.buyType=normalizePricingModel(meta.pricing_model)==='CPD'?'Cost Per Day':'CPM';
+      row.buyType=normalizePricingModel(meta.pricing_model)==='CPD'?'CPD':'CPM';
       row.marketplace=getSlotMarketplace(meta);
       row.category=meta.category||meta.page||'';
       row.zone=meta.zone||'';

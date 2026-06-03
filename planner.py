@@ -445,6 +445,7 @@ def expand_candidates_for_countries(
     req: MediaPlanRequest,
     candidates: list[Candidate],
     slot_meta: dict[tuple[str, str], dict],
+    settings,
 ) -> list[Candidate]:
     selected_countries = {country for country in req.countries if country}
     if not selected_countries:
@@ -820,7 +821,7 @@ def suggest_slots(
     base_candidates = build_candidates(historical_rows, slot_meta, settings, req.marketplace)
     selected_slot_keys = {value for value in req.selected_slot_keys if value}
     selected_slot_pricing_map = selected_slot_pricing(req)
-    candidates = expand_candidates_for_countries(req, base_candidates, slot_meta)
+    candidates = expand_candidates_for_countries(req, base_candidates, slot_meta, settings)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
     inventory = _inventory_by_slot_phase(req, inventory_rows)
     phases = default_phases(req)
@@ -915,7 +916,7 @@ def plan_media(
     selected_slot_key_list = [value for value in req.selected_slot_keys if value]
     selected_slot_keys = set(selected_slot_key_list)
     selected_slot_pricing_map = selected_slot_pricing(req)
-    candidates = expand_candidates_for_countries(req, base_candidates, slot_meta)
+    candidates = expand_candidates_for_countries(req, base_candidates, slot_meta, settings)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
     if not candidates:
         return [], {"reason": "No historical delivery rows found for the selected brand/comcat/countries."}
@@ -973,10 +974,10 @@ def plan_media(
             return False
         row_from, row_to, days = slot_window
 
-        buy_type = "Cost Per Day" if candidate.pricing_model == "CPD" else "CPM"
+        buy_type = candidate.pricing_model
         is_foc = slot_key_value in foc_slot_keys
         meta = slot_meta.get((candidate.country, candidate.slot_code), {})
-        if buy_type == "Cost Per Day":
+        if buy_type == "CPD":
             if not slot_has_rate_for_model(meta, "CPD", row_from, row_to, settings.default_cpd):
                 return False
             gross_rate = round(float(meta.get("cpd_rate") or candidate.slot_rate or settings.default_cpd), 4)
@@ -1161,9 +1162,17 @@ def plan_media(
     candidates_by_slot_key: dict[str, list[Candidate]] = defaultdict(list)
     for candidate in candidates:
         candidates_by_slot_key[slot_key(candidate.country, candidate.slot_code)].append(candidate)
+
+    def selected_candidate_for_key(selected_key: str) -> Candidate | None:
+        return preferred_candidate_for_slot(
+            candidates_by_slot_key.get(selected_key, []),
+            selected_slot_pricing_map.get(selected_key),
+            req.objective,
+        )
+
     candidate_by_slot_key = {
-        key: preferred_candidate_for_slot(value, selected_slot_pricing_map.get(key), req.objective)
-        for key, value in candidates_by_slot_key.items()
+        key: selected_candidate_for_key(key)
+        for key in candidates_by_slot_key.keys()
     }
 
     def row_matches_selected_pricing(row: EditablePlanLine, selected_key: str) -> bool:
@@ -1181,7 +1190,7 @@ def plan_media(
             if row.slot_code
         ):
             continue
-        candidate = candidate_by_slot_key.get(selected_key)
+        candidate = selected_candidate_for_key(selected_key)
         if not candidate:
             continue
         phase = phases[index % len(phases)]
@@ -1236,7 +1245,13 @@ def plan_media(
             continue
         country_candidates = [c for c in candidates if c.country == country]
         if selected_slot_keys:
-            preferred = [candidate_by_slot_key[key] for key in selected_slot_keys if key in candidate_by_slot_key and key.startswith(f"{country}|")]
+            preferred = [
+                candidate
+                for key in selected_slot_keys
+                if key.startswith(f"{country}|")
+                for candidate in [selected_candidate_for_key(key)]
+                if candidate
+            ]
             country_candidates = preferred or [
                 candidate
                 for candidate in country_candidates
@@ -1269,7 +1284,7 @@ def plan_media(
     }
     missing_selected = [selected_key for selected_key in selected_slot_key_list if selected_key not in existing_selected_keys]
     for index, selected_key in enumerate(missing_selected):
-        candidate = candidate_by_slot_key.get(selected_key)
+        candidate = selected_candidate_for_key(selected_key)
         if not candidate:
             continue
         phase = phases[index % len(phases)]
