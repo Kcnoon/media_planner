@@ -869,7 +869,8 @@ def plan_media(
     settings,
 ) -> tuple[list[EditablePlanLine], dict]:
     base_candidates = build_candidates(historical_rows, slot_meta, settings, req.marketplace)
-    selected_slot_keys = {value for value in req.selected_slot_keys if value}
+    selected_slot_key_list = [value for value in req.selected_slot_keys if value]
+    selected_slot_keys = set(selected_slot_key_list)
     selected_slot_pricing_map = selected_slot_pricing(req)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
@@ -1114,6 +1115,38 @@ def plan_media(
         inventory_by_slot_phase[exact_inventory_key] = max(inventory_by_slot_phase[exact_inventory_key] - int(planned_views or 0), 0)
         return True
 
+    candidates_by_slot_key: dict[str, list[Candidate]] = defaultdict(list)
+    for candidate in candidates:
+        candidates_by_slot_key[slot_key(candidate.country, candidate.slot_code)].append(candidate)
+    candidate_by_slot_key = {
+        key: preferred_candidate_for_slot(value, selected_slot_pricing_map.get(key), req.objective)
+        for key, value in candidates_by_slot_key.items()
+    }
+
+    def row_matches_selected_pricing(row: EditablePlanLine, selected_key: str) -> bool:
+        requested_model = selected_slot_pricing_map.get(selected_key)
+        if not requested_model:
+            return True
+        row_model = normalize_pricing_model(getattr(row, "buyType", ""))
+        return row_model == requested_model
+
+    selected_type = "conv" if req.objective == "roas" else "reach"
+    for index, selected_key in enumerate(selected_slot_key_list):
+        if any(
+            slot_key(row.country, row.slot_code) == selected_key and row_matches_selected_pricing(row, selected_key)
+            for row in rows
+            if row.slot_code
+        ):
+            continue
+        candidate = candidate_by_slot_key.get(selected_key)
+        if not candidate:
+            continue
+        phase = phases[index % len(phases)]
+        remaining_selected = max(len(selected_slot_key_list) - index, 1)
+        target_budget = max(req.budget - spent_total, 0) / remaining_selected
+        selected_score = _candidate_score(candidate, req.objective)
+        append_row(candidate, phase, selected_type, selected_score, target_budget, force=True)
+
     total_days = sum(inclusive_days(p.from_date, p.to_date) for p in phases)
     for country in countries:
         country_candidates = [c for c in candidates if c.country == country]
@@ -1154,13 +1187,6 @@ def plan_media(
                         remaining_target = max(remaining_target - target_budget, 0)
 
     per_country_min = _per_country_min_lines(req)
-    candidates_by_slot_key: dict[str, list[Candidate]] = defaultdict(list)
-    for candidate in candidates:
-        candidates_by_slot_key[slot_key(candidate.country, candidate.slot_code)].append(candidate)
-    candidate_by_slot_key = {
-        key: preferred_candidate_for_slot(value, selected_slot_pricing_map.get(key), req.objective)
-        for key, value in candidates_by_slot_key.items()
-    }
     for country in countries:
         have = len([r for r in rows if r.country == country and (r.slot_code or "").strip()])
         if have >= per_country_min:
@@ -1189,23 +1215,16 @@ def plan_media(
             if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=key in selected_slot_keys):
                 have += 1
 
-    def row_matches_selected_pricing(row: EditablePlanLine, selected_key: str) -> bool:
-        requested_model = selected_slot_pricing_map.get(selected_key)
-        if not requested_model:
-            return True
-        row_model = normalize_pricing_model(getattr(row, "buyType", ""))
-        return row_model == requested_model
-
     existing_selected_keys = {
         selected_key
-        for selected_key in selected_slot_keys
+        for selected_key in selected_slot_key_list
         if any(
             slot_key(row.country, row.slot_code) == selected_key and row_matches_selected_pricing(row, selected_key)
             for row in rows
             if row.slot_code
         )
     }
-    missing_selected = [selected_key for selected_key in selected_slot_keys if selected_key not in existing_selected_keys]
+    missing_selected = [selected_key for selected_key in selected_slot_key_list if selected_key not in existing_selected_keys]
     for index, selected_key in enumerate(missing_selected):
         candidate = candidate_by_slot_key.get(selected_key)
         if not candidate:
