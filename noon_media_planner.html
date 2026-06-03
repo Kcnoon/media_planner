@@ -531,20 +531,26 @@ function slotMetaForPricing(slot){
 function slotPricingOptions(slot){
   const merged=slotMetaForPricing(slot);
   let options=[...new Set((merged?.pricing_options||[]).map(normalizePricingModel).filter(Boolean))];
-  const currentModel=normalizePricingModel(merged?.pricing_model||merged?.buyType||inferPricingModelFromSlot(merged));
+  const inferredModel=inferPricingModelFromSlot(merged);
+  const currentModel=normalizePricingModel(inferredModel==='CPD' ? inferredModel : (merged?.pricing_model||merged?.buyType||inferredModel));
   const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? 0)||0;
   const cpdRate=Number(merged?.cpd_rate ?? 0)||0;
   if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
   if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
   if(!options.includes('CPM')) options.unshift('CPM');
   if(!options.includes('CPD')) options.push('CPD');
+  if(inferredModel==='CPD'){
+    options=['CPD', ...options.filter(option=>option!=='CPD')];
+  }
   if(!options.length) options=[currentModel,'CPM','CPD'];
+  if(inferredModel==='CPD') return options;
   return options.includes('CPM') ? ['CPM', ...options.filter(option=>option!=='CPM')] : options;
 }
 function applySlotPricing(slot, preferredModel){
   const merged=slotMetaForPricing(slot);
   const options=slotPricingOptions(merged);
-  const requested=normalizePricingModel(preferredModel||merged?.pricing_model||merged?.buyType||inferPricingModelFromSlot(merged)||options[0]||'CPM');
+  const inferredModel=inferPricingModelFromSlot(merged);
+  const requested=normalizePricingModel(preferredModel||(inferredModel==='CPD'?inferredModel:(merged?.pricing_model||merged?.buyType||inferredModel||options[0]||'CPM')));
   const pricingModel=options.includes(requested) ? requested : (options.includes('CPM') ? 'CPM' : options[0]);
   const discountPct=Number((merged&&merged.discount_pct)!=null?merged.discount_pct:S.discountPct)||0;
   const discountFactor=Math.max(1-(discountPct/100),0);
@@ -564,9 +570,9 @@ function pricingOptionsHtml(slot, selected){
 function slotRateSummary(slot){
   const current=applySlotPricing(slot,slot?.pricing_model);
   if(current.pricing_model==='CPD'){
-    return `${current.cpd_rate?` · Gross rate ${number10(current.cpd_rate)}`:''}${current.net_cpd?` · Net rate ${number10(current.net_cpd)}`:''}`;
+    return `${current.cpd_rate?` · Gross rate ${rateText(current.cpd_rate)}`:''}${current.net_cpd?` · Net rate ${rateText(current.net_cpd)}`:''}`;
   }
-  return `${current.gross_cpm?` · Gross rate ${number10(current.gross_cpm)}`:''}${current.net_cpm?` · Net rate ${number10(current.net_cpm)}`:''}`;
+  return `${current.gross_cpm?` · Gross rate ${rateText(current.gross_cpm)}`:''}${current.net_cpm?` · Net rate ${rateText(current.net_cpm)}`:''}`;
 }
 function focToggleHtml(key,isOn,handler){
   return `<div class="mini-switch-row">
@@ -582,6 +588,12 @@ function currencySymbol(cur){ return CURRENCY_SYMBOL[String(cur||'USD').toUpperC
 function roundToNearestTen(v){ const n=Number(v)||0; return Math.round(n/10)*10; }
 function number10(v){ return roundToNearestTen(v).toLocaleString(undefined,{maximumFractionDigits:0}); }
 function money2(v,cur){ return currencySymbol(cur)+number10(v); }
+function rateText(v){
+  const n=Number(v)||0;
+  const whole=Math.abs(n-Math.round(n))<0.0001;
+  return n.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:whole?0:2});
+}
+function rateMoney(v,cur){ return currencySymbol(cur)+rateText(v); }
 function views10(v){ return number10(v); }
 function compactViews(v){
   const rounded=roundToNearestTen(v);
@@ -1706,9 +1718,9 @@ function renderTable(){
     <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
     <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='Cost Per Day'?'selected':''}>Cost Per Day</option></select></td>
-    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
-    <td><div class="slot-meta" style="font-size:12px">${money2(grossRate(r),'USD')}</div></td>
-    <td><div class="slot-meta" style="font-size:12px">${money2(netRate(r),'USD')}</div></td>
+    <td><input class="plan-cell-input" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
+    <td><div class="slot-meta" style="font-size:12px">${rateMoney(grossRate(r),'USD')}</div></td>
+    <td><div class="slot-meta" style="font-size:12px">${rateMoney(netRate(r),'USD')}</div></td>
     <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)"></td>
     <td><div class="slot-meta" style="font-size:12px">${money2(grossAmount(r),'USD')}</div></td>
     <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
@@ -1889,9 +1901,9 @@ function printPlan(mode='detailed'){
     <td>${displaySlotName(row)}<div style="font-size:10px;color:#666">${row.slot_code||''}</div></td>
     <td style="text-align:center">${row.days||0}</td>
     <td>${row.buyType||''}</td>
-    <td style="text-align:right">${number10(netRate(row))}</td>
-    <td style="text-align:right">${money2(grossRate(row),'USD')}</td>
-    <td style="text-align:right">${money2(netRate(row),'USD')}</td>
+    <td style="text-align:right">${rateText(netRate(row))}</td>
+    <td style="text-align:right">${rateMoney(grossRate(row),'USD')}</td>
+    <td style="text-align:right">${rateMoney(netRate(row),'USD')}</td>
     <td style="text-align:right">${views10(row.views||0)}</td>
     <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
     <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
@@ -1905,7 +1917,7 @@ function printPlan(mode='detailed'){
     <td>${row.page||''}</td>
     <td>${(row.marketplace||'').toUpperCase()}</td>
     <td>${displayCountryCode(row.country)}</td>
-    <td style="text-align:right">${number10(row.rate||0)}</td>
+    <td style="text-align:right">${rateText(row.rate||0)}</td>
     <td style="text-align:right">${views10(row.views||0)}</td>
     <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
     <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
@@ -1989,9 +2001,9 @@ function exportCsv(){
     row.slot_code||'',
     row.days||0,
     row.buyType||'',
-    roundToNearestTen(netRate(row)),
-    roundToNearestTen(grossRate(row)),
-    roundToNearestTen(netRate(row)),
+    rateText(netRate(row)),
+    rateText(grossRate(row)),
+    rateText(netRate(row)),
     roundToNearestTen(row.views||0),
     roundToNearestTen(grossAmount(row)),
     roundToNearestTen(netAmount(row)),
