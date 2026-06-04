@@ -913,9 +913,15 @@ def plan_media(
     settings,
 ) -> tuple[list[EditablePlanLine], dict]:
     base_candidates = build_candidates(historical_rows, slot_meta, settings, req.marketplace)
-    selected_slot_key_list = [value for value in req.selected_slot_keys if value]
-    selected_slot_keys = set(selected_slot_key_list)
     selected_slot_pricing_map = selected_slot_pricing(req)
+    selected_slot_key_list = [value for value in req.selected_slot_keys if value]
+    selected_slot_key_list.sort(
+        key=lambda key: (
+            0 if selected_slot_pricing_map.get(key) == "CPD" else 1,
+            req.selected_slot_keys.index(key) if key in req.selected_slot_keys else 0,
+        )
+    )
+    selected_slot_keys = set(selected_slot_key_list)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta, settings)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
     if not candidates:
@@ -990,7 +996,10 @@ def plan_media(
         rate = discounted_rate(gross_rate, req.discount_pct)
 
         remaining_budget = max(req.budget - spent_total, 0)
-        working_budget = max(remaining_budget if force else min(target_budget, remaining_budget), 0)
+        if force and buy_type == "CPD":
+            working_budget = max(remaining_budget, 0)
+        else:
+            working_budget = max(min(target_budget, remaining_budget), 0)
         if not is_foc and working_budget <= 0 and not force:
             return False
 
