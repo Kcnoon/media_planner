@@ -1303,6 +1303,57 @@ def plan_media(
         target_budget = max(req.budget - spent_total, 0) / remaining_slots
         append_row(candidate, phase, selected_stype, selected_score, target_budget, force=True)
 
+    final_selected_keys = {
+        selected_key
+        for selected_key in selected_slot_key_list
+        if any(
+            slot_key(row.country, row.slot_code) == selected_key and row_matches_selected_pricing(row, selected_key)
+            for row in rows
+            if row.slot_code
+        )
+    }
+    omitted_selected_slots = []
+    remaining_budget_after_plan = round(max(req.budget - spent_total, 0), 2)
+    for selected_key in selected_slot_key_list:
+        if selected_key in final_selected_keys:
+            continue
+        candidate = selected_candidate_for_key(selected_key)
+        requested_model = selected_slot_pricing_map.get(selected_key, "CPM")
+        country, _, selected_slot_code = selected_key.partition("|")
+        meta = slot_meta.get((country, selected_slot_code), {})
+        if not candidate:
+            reason = "No matching candidate was available for the selected slot and buy type."
+        else:
+            phase_inventory = sum(inventory_by_slot_phase.get((candidate.country, candidate.slot_code, phase.name), 0) for phase in phases)
+            if phase_inventory <= 0:
+                reason = "No inventory was available for this slot in the selected phases."
+            elif requested_model == "CPD":
+                one_day_rate = discounted_rate(
+                    float(meta.get("cpd_rate") or candidate.slot_rate or settings.default_cpd),
+                    req.discount_pct,
+                )
+                reason = (
+                    f"Selected CPD slot needs at least USD {round(one_day_rate, 2):,.2f} net for one day, "
+                    f"but only USD {remaining_budget_after_plan:,.2f} remained."
+                )
+            else:
+                min_block_cost = discounted_rate(
+                    float(meta.get("cpm_rate") or candidate.slot_rate or settings.default_cpm),
+                    req.discount_pct,
+                ) * settings.min_slot_views / 1000
+                reason = (
+                    f"Selected CPM slot needs at least USD {round(min_block_cost, 2):,.2f} net for the minimum view block, "
+                    f"but only USD {remaining_budget_after_plan:,.2f} remained."
+                )
+        omitted_selected_slots.append(
+            {
+                "slot_key": selected_key,
+                "slot_name": candidate.slot_name if candidate else (meta.get("slot_name") or selected_slot_code),
+                "buy_type": requested_model,
+                "reason": reason,
+            }
+        )
+
     diagnostics = {
         "candidate_count": len(candidates),
         "base_candidate_count": len(base_candidates),
@@ -1315,6 +1366,7 @@ def plan_media(
         "countries": countries,
         "marketplace": req.marketplace,
         "country_row_counts": {country: len([row for row in rows if row.country == country and (row.slot_code or "").strip()]) for country in countries},
+        "omitted_selected_slots": omitted_selected_slots,
     }
 
     return rows, diagnostics

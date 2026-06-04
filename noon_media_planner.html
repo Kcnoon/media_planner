@@ -719,6 +719,7 @@ const S={
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
   availableSlotCatalog:[],
   slotSuggestions:[], selectedSlots:[], manualFoc:false,
+  planDiagnostics:{},
   calPage:0,
   picking:false, pickFrom:null,
 };
@@ -1195,6 +1196,18 @@ function renderManualFocToggle(){
   if(wrap) wrap.innerHTML=focToggleHtml('manual',S.manualFoc,'toggleManualFocKey');
 }
 
+function mergedSuggestionSlots(){
+  const merged=[...(S.slotSuggestions||[])];
+  const known=new Set(merged.map(slot=>slot.slot_key));
+  (S.selectedSlots||[]).forEach(slot=>{
+    if(slot?.slot_key && !known.has(slot.slot_key)){
+      merged.push(applySlotPricing(slot,slot.pricing_model));
+      known.add(slot.slot_key);
+    }
+  });
+  return merged;
+}
+
 function slotKey(country,slotCode){ return `${country}|${slotCode}`; }
 
 function upsertSelectedSlot(slot){
@@ -1277,7 +1290,7 @@ function refreshSlotFilters(){
   const pageSel=document.getElementById('slotFilterPage');
   const manualPageSel=document.getElementById('manualSlotPage');
   if(countrySel){
-    const countries=[...new Set(S.slotSuggestions.map(s=>s.country).filter(Boolean))];
+    const countries=[...new Set(mergedSuggestionSlots().map(s=>s.country).filter(Boolean))];
     const current=countrySel.value;
     countrySel.innerHTML='<option value="">All countries</option>'+countries.map(v=>`<option value="${v}">${displayCountryCode(v)}</option>`).join('');
     countrySel.value=countries.includes(current)?current:'';
@@ -1304,7 +1317,7 @@ function renderSlotPreselection(){
   const filterCountry=document.getElementById('slotFilterCountry')?.value||'';
   const filterMarketplace=document.getElementById('slotFilterMarketplace')?.value||'';
   const filterPage=document.getElementById('slotFilterPage')?.value||'';
-  const visibleSuggestions=(S.slotSuggestions||[]).filter(slot=>{
+  const visibleSuggestions=mergedSuggestionSlots().filter(slot=>{
     if(filterCountry && slot.country!==filterCountry) return false;
     if(filterMarketplace && (slot.marketplace||getSlotMarketplace(slot))!==filterMarketplace) return false;
     if(filterPage && (slot.page||'')!==filterPage) return false;
@@ -1584,10 +1597,17 @@ async function buildPlan(){
     S.planId=(data.summary&&data.summary.plan_id)||S.planId;
     S.planCode=(data.summary&&data.summary.sheet_plan_code)||S.planCode||S.planId;
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
+    S.planDiagnostics=data.diagnostics||{};
     S.excludedSlotKeys=[];
     S.rows=normalizeLoadedRows(data.rows||[]);
     S.phFilter='All';
     nav(5);
+    if((S.planDiagnostics.omitted_selected_slots||[]).length){
+      const message=S.planDiagnostics.omitted_selected_slots
+        .map(item=>`${item.slot_name} (${item.buy_type}): ${item.reason}`)
+        .join('\n');
+      alert(`Some selected slots could not be placed in the final plan:\n\n${message}`);
+    }
   }catch(e){
     document.getElementById('navChip').textContent='Plan failed';
     alert(e.message||'Unable to create media plan');
