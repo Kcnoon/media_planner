@@ -30,12 +30,21 @@ class Candidate:
     brand_specific: bool
     reach_score: float
     conv_score: float
+    visibility_score: float
+    ctr_score: float
+    roas_score: float
+    brand_score: float
+    comcat_score: float
+    trend_score: float
+    confidence_score: float
+    final_score: float
     cpm: float | None
     cpd: float | None
     ctr: float | None
     roas: float | None
     source_country: str | None = None
     synthetic: bool = False
+    explainability: tuple[str, ...] = ()
 
 
 def inclusive_days(start: date, end: date) -> int:
@@ -233,6 +242,48 @@ def discounted_rate(rate: float, discount_pct: float) -> float:
     return round(rate * max(0.0, 1 - (discount_pct / 100.0)), 4)
 
 
+def normalize_objective(value: str | None) -> str:
+    raw = str(value or "").strip().lower()
+    if raw in {"reach", "visibility", "viewability"}:
+        return "visibility"
+    if raw in {"ctr", "engagement"}:
+        return "ctr"
+    if raw in {"roas", "conversion", "conversions"}:
+        return "roas"
+    return "both"
+
+
+def clamp01(value: float) -> float:
+    return max(0.0, min(value, 1.0))
+
+
+def _safe_ratio(numerator: float, denominator: float) -> float:
+    if denominator <= 0:
+        return 0.0
+    return numerator / denominator
+
+
+def _confidence_score(views: int, clicks: int, active_days: int, settings) -> float:
+    view_signal = clamp01(_safe_ratio(views, max(settings.min_slot_views * 20, 1)))
+    click_signal = clamp01(_safe_ratio(clicks, 1000))
+    day_signal = clamp01(_safe_ratio(active_days, 30))
+    return round((view_signal * 0.45) + (click_signal * 0.35) + (day_signal * 0.20), 4)
+
+
+def _visibility_metric(views: int, spends: float, default_cpm: float) -> float:
+    cpm = spends * 1000 / views if views > 0 and spends > 0 else default_cpm
+    return views / max(cpm, 0.01)
+
+
+def _objective_metric(objective: str, views: int, clicks: int, revenue: float, spends: float, default_cpm: float) -> float:
+    objective_key = normalize_objective(objective)
+    if objective_key == "ctr":
+        return _safe_ratio(clicks, views)
+    if objective_key == "roas":
+        return _safe_ratio(revenue, spends)
+    return _visibility_metric(views, spends, default_cpm)
+
+
 def gross_from_net(net_amount: float, discount_pct: float) -> float:
     factor = max(0.0, 1 - (discount_pct / 100.0))
     if factor <= 0:
@@ -329,9 +380,10 @@ def default_phases(req: MediaPlanRequest) -> list[Phase]:
 
 
 def objective_weights(req: MediaPlanRequest) -> tuple[float, float]:
-    if req.objective == "reach":
+    objective = normalize_objective(req.objective)
+    if objective == "visibility":
         return 1.0, 0.0
-    if req.objective == "roas":
+    if objective in {"roas", "ctr"}:
         return 0.0, 1.0
     reach = max(req.reach_weight, 0)
     roas = max(req.roas_weight, 0)
@@ -341,8 +393,41 @@ def objective_weights(req: MediaPlanRequest) -> tuple[float, float]:
     return reach / total, roas / total
 
 
+def _allocation_tracks(req: MediaPlanRequest) -> list[tuple[str, float, str]]:
+    normalized = normalize_objective(req.objective)
+    if normalized == "visibility":
+        return [("reach", 1.0, "visibility_score")]
+    if normalized == "ctr":
+        return [("conv", 1.0, "ctr_score")]
+    if normalized == "roas":
+        return [("conv", 1.0, "roas_score")]
+    reach_weight, roas_weight = objective_weights(req)
+    return [("reach", reach_weight, "visibility_score"), ("conv", roas_weight, "roas_score")]
+
+
+def _allocation_type(objective: str) -> str:
+    return "reach" if normalize_objective(objective) == "visibility" else "conv"
+
+
+def _portfolio_score(candidate: Candidate) -> float:
+    return candidate.final_score or max(candidate.visibility_score, candidate.ctr_score, candidate.roas_score, candidate.reach_score, candidate.conv_score)
+
+
+def _marketplace_splits(req: MediaPlanRequest) -> list[tuple[str, float]]:
+    if req.marketplace == "core":
+        return [("core", 1.0)]
+    if req.marketplace == "supermall":
+        return [("supermall", 1.0)]
+    core_pct = max(float(getattr(req, "marketplace_core_pct", 70) or 0), 0.0)
+    supermall_pct = max(float(getattr(req, "marketplace_supermall_pct", 30) or 0), 0.0)
+    total = core_pct + supermall_pct
+    if total <= 0:
+        return [("core", 0.7), ("supermall", 0.3)]
+    return [("core", core_pct / total), ("supermall", supermall_pct / total)]
+
+
 def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str], dict], settings, marketplace: str | None) -> list[Candidate]:
-    candidates: list[Candidate] = []
+    prepared_rows: list[dict] = []
     for row in historical_rows:
         country = row.get("country") or ""
         slot_code = row.get("slot_code") or ""
@@ -369,13 +454,107 @@ def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str
         ctr = clicks / views if views > 0 else None
         roas = revenue / spends if spends > 0 else None
         cpd = spends / active_days if active_days > 0 and spends > 0 else None
+        confidence_score = _confidence_score(views, clicks, active_days, settings)
+        visibility_metric = _objective_metric("visibility", views, clicks, revenue, spends, settings.default_cpm)
+        ctr_metric = _objective_metric("ctr", views, clicks, revenue, spends, settings.default_cpm)
+        roas_metric = _objective_metric("roas", views, clicks, revenue, spends, settings.default_cpm)
+        trend_visibility = (
+            _objective_metric("visibility", int(row.get("views_30d") or 0), int(row.get("clicks_30d") or 0), float(row.get("revenue_30d") or 0.0), float(row.get("spends_30d") or 0.0), settings.default_cpm) * 0.5
+            + _objective_metric("visibility", int(row.get("views_90d") or 0), int(row.get("clicks_90d") or 0), float(row.get("revenue_90d") or 0.0), float(row.get("spends_90d") or 0.0), settings.default_cpm) * 0.3
+            + _objective_metric("visibility", int(row.get("views_180d") or 0), int(row.get("clicks_180d") or 0), float(row.get("revenue_180d") or 0.0), float(row.get("spends_180d") or 0.0), settings.default_cpm) * 0.2
+        )
+        trend_ctr = (
+            _objective_metric("ctr", int(row.get("views_30d") or 0), int(row.get("clicks_30d") or 0), float(row.get("revenue_30d") or 0.0), float(row.get("spends_30d") or 0.0), settings.default_cpm) * 0.5
+            + _objective_metric("ctr", int(row.get("views_90d") or 0), int(row.get("clicks_90d") or 0), float(row.get("revenue_90d") or 0.0), float(row.get("spends_90d") or 0.0), settings.default_cpm) * 0.3
+            + _objective_metric("ctr", int(row.get("views_180d") or 0), int(row.get("clicks_180d") or 0), float(row.get("revenue_180d") or 0.0), float(row.get("spends_180d") or 0.0), settings.default_cpm) * 0.2
+        )
+        trend_roas = (
+            _objective_metric("roas", int(row.get("views_30d") or 0), int(row.get("clicks_30d") or 0), float(row.get("revenue_30d") or 0.0), float(row.get("spends_30d") or 0.0), settings.default_cpm) * 0.5
+            + _objective_metric("roas", int(row.get("views_90d") or 0), int(row.get("clicks_90d") or 0), float(row.get("revenue_90d") or 0.0), float(row.get("spends_90d") or 0.0), settings.default_cpm) * 0.3
+            + _objective_metric("roas", int(row.get("views_180d") or 0), int(row.get("clicks_180d") or 0), float(row.get("revenue_180d") or 0.0), float(row.get("spends_180d") or 0.0), settings.default_cpm) * 0.2
+        )
+        prepared_rows.append(
+            {
+                "row": row,
+                "country": country,
+                "slot_code": slot_code,
+                "slot_name": slot_name,
+                "meta": meta,
+                "views": views,
+                "clicks": clicks,
+                "revenue": revenue,
+                "spends": spends,
+                "active_days": active_days,
+                "cpm": cpm,
+                "ctr": ctr,
+                "roas": roas,
+                "cpd": cpd,
+                "brand_specific": bool(row.get("brand_specific")),
+                "confidence_score": confidence_score,
+                "visibility_metric": visibility_metric,
+                "ctr_metric": ctr_metric,
+                "roas_metric": roas_metric,
+                "trend_visibility": trend_visibility,
+                "trend_ctr": trend_ctr,
+                "trend_roas": trend_roas,
+            }
+        )
 
-        scoring_cpm = cpm if cpm and isfinite(cpm) and cpm > 0 else settings.default_cpm
-        base_reach_score = views / max(scoring_cpm, 0.01)
-        base_conv_score = (roas or 0) * 100000 + (ctr or 0) * 1000 + revenue / max(spends, 1)
-        if row.get("brand_specific"):
-            base_reach_score *= 1.15
-            base_conv_score *= 1.2
+    brand_visibility_best = max([item["visibility_metric"] for item in prepared_rows if item["brand_specific"]], default=0.0)
+    brand_ctr_best = max([item["ctr_metric"] for item in prepared_rows if item["brand_specific"]], default=0.0)
+    brand_roas_best = max([item["roas_metric"] for item in prepared_rows if item["brand_specific"]], default=0.0)
+    comcat_visibility_best = max([item["visibility_metric"] for item in prepared_rows], default=0.0)
+    comcat_ctr_best = max([item["ctr_metric"] for item in prepared_rows], default=0.0)
+    comcat_roas_best = max([item["roas_metric"] for item in prepared_rows], default=0.0)
+    trend_visibility_best = max([item["trend_visibility"] for item in prepared_rows], default=0.0)
+    trend_ctr_best = max([item["trend_ctr"] for item in prepared_rows], default=0.0)
+    trend_roas_best = max([item["trend_roas"] for item in prepared_rows], default=0.0)
+    has_brand_history = any(item["brand_specific"] for item in prepared_rows)
+
+    candidates: list[Candidate] = []
+    for item in prepared_rows:
+        row = item["row"]
+        country = item["country"]
+        slot_code = item["slot_code"]
+        slot_name = item["slot_name"]
+        meta = item["meta"]
+        views = item["views"]
+        clicks = item["clicks"]
+        revenue = item["revenue"]
+        spends = item["spends"]
+        active_days = item["active_days"]
+        cpm = item["cpm"]
+        ctr = item["ctr"]
+        roas = item["roas"]
+        cpd = item["cpd"]
+        confidence_score = item["confidence_score"]
+
+        brand_visibility_score = clamp01(_safe_ratio(item["visibility_metric"], brand_visibility_best)) * confidence_score if item["brand_specific"] and brand_visibility_best > 0 else 0.0
+        brand_ctr_score = clamp01(_safe_ratio(item["ctr_metric"], brand_ctr_best)) * confidence_score if item["brand_specific"] and brand_ctr_best > 0 else 0.0
+        brand_roas_score = clamp01(_safe_ratio(item["roas_metric"], brand_roas_best)) * confidence_score if item["brand_specific"] and brand_roas_best > 0 else 0.0
+        comcat_visibility_score = clamp01(_safe_ratio(item["visibility_metric"], comcat_visibility_best)) * confidence_score if comcat_visibility_best > 0 else 0.0
+        comcat_ctr_score = clamp01(_safe_ratio(item["ctr_metric"], comcat_ctr_best)) * confidence_score if comcat_ctr_best > 0 else 0.0
+        comcat_roas_score = clamp01(_safe_ratio(item["roas_metric"], comcat_roas_best)) * confidence_score if comcat_roas_best > 0 else 0.0
+        trend_visibility_score = clamp01(_safe_ratio(item["trend_visibility"], trend_visibility_best))
+        trend_ctr_score = clamp01(_safe_ratio(item["trend_ctr"], trend_ctr_best))
+        trend_roas_score = clamp01(_safe_ratio(item["trend_roas"], trend_roas_best))
+
+        brand_weight = 0.4 if has_brand_history else 0.0
+        comcat_weight = 0.4 if has_brand_history else 0.8
+        trend_weight = 0.2
+
+        visibility_score = round((brand_visibility_score * brand_weight) + (comcat_visibility_score * comcat_weight) + (trend_visibility_score * trend_weight), 4)
+        ctr_score = round((brand_ctr_score * brand_weight) + (comcat_ctr_score * comcat_weight) + (trend_ctr_score * trend_weight), 4)
+        roas_score = round((brand_roas_score * brand_weight) + (comcat_roas_score * comcat_weight) + (trend_roas_score * trend_weight), 4)
+        final_score = round(max(visibility_score, ctr_score, roas_score), 4)
+        explainability = []
+        if item["brand_specific"] and max(brand_visibility_score, brand_ctr_score, brand_roas_score) > 0:
+            explainability.append("Historical advertiser performance is strong on this slot.")
+        if max(comcat_visibility_score, comcat_ctr_score, comcat_roas_score) > 0:
+            explainability.append("Comparable ComCat performance supports this placement.")
+        if max(trend_visibility_score, trend_ctr_score, trend_roas_score) > 0:
+            explainability.append("Recent 30/90/180 day trend signals remain supportive.")
+        explainability.append(f"Confidence score {round(confidence_score * 100)}% based on delivery volume and campaign depth.")
 
         pricing_options = [
             option
@@ -424,19 +603,28 @@ def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str
                     spends=spends,
                     active_days=active_days,
                     brand_specific=bool(row.get("brand_specific")),
-                    reach_score=base_reach_score * pricing_bias,
-                    conv_score=base_conv_score * pricing_bias,
+                    reach_score=visibility_score * pricing_bias,
+                    conv_score=max(ctr_score, roas_score) * pricing_bias,
+                    visibility_score=visibility_score * pricing_bias,
+                    ctr_score=ctr_score * pricing_bias,
+                    roas_score=roas_score * pricing_bias,
+                    brand_score=max(brand_visibility_score, brand_ctr_score, brand_roas_score),
+                    comcat_score=max(comcat_visibility_score, comcat_ctr_score, comcat_roas_score),
+                    trend_score=max(trend_visibility_score, trend_ctr_score, trend_roas_score),
+                    confidence_score=confidence_score,
+                    final_score=final_score * pricing_bias,
                     cpm=cpm,
                     cpd=cpd,
                     ctr=ctr,
                     roas=roas,
                     source_country=country,
                     synthetic=False,
+                    explainability=tuple(explainability),
                 )
             )
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
-    for candidate in sorted(candidates, key=lambda c: (c.brand_specific, c.views), reverse=True):
+    for candidate in sorted(candidates, key=lambda c: (c.final_score, c.brand_specific, c.views), reverse=True):
         deduped.setdefault((candidate.country, candidate.slot_code, candidate.pricing_model), candidate)
     return list(deduped.values())
 
@@ -511,7 +699,7 @@ def expand_candidates_for_countries(
                     page_similarity = 1.0 if target_page and candidate_page == target_page else 0.0
                     if page_similarity <= 0 and similarity < 0.55:
                         continue
-                    score = max(candidate.reach_score, candidate.conv_score)
+                    score = _portfolio_score(candidate)
                     if meta.get("category") and candidate.category and str(meta.get("category")).strip().lower() == str(candidate.category).strip().lower():
                         similarity += 0.1
                     similarity += page_similarity * 0.8
@@ -521,7 +709,7 @@ def expand_candidates_for_countries(
                 source_candidates = [item[3] for item in scored_sources[:3]]
             if not source_candidates:
                 continue
-            source = max(source_candidates, key=lambda candidate: (candidate.brand_specific, max(candidate.reach_score, candidate.conv_score), candidate.views))
+            source = max(source_candidates, key=lambda candidate: (candidate.brand_specific, _portfolio_score(candidate), candidate.views))
             for pricing_model in [
                 option
                 for option in pricing_options_for_meta(meta)
@@ -552,21 +740,30 @@ def expand_candidates_for_countries(
                         clicks=source.clicks,
                         revenue=source.revenue,
                         spends=source.spends,
-                        active_days=source.active_days,
-                        brand_specific=source.brand_specific,
-                        reach_score=source.reach_score * (1.02 if pricing_model == "CPM" else 1.0),
-                        conv_score=source.conv_score * (1.02 if pricing_model == "CPM" else 1.0),
-                        cpm=source.cpm,
-                        cpd=source.cpd,
-                        ctr=source.ctr,
-                        roas=source.roas,
-                        source_country=source.country,
-                        synthetic=True,
-                    )
+                    active_days=source.active_days,
+                    brand_specific=source.brand_specific,
+                    reach_score=source.reach_score * (1.02 if pricing_model == "CPM" else 1.0),
+                    conv_score=source.conv_score * (1.02 if pricing_model == "CPM" else 1.0),
+                    visibility_score=source.visibility_score * (1.02 if pricing_model == "CPM" else 1.0),
+                    ctr_score=source.ctr_score * (1.02 if pricing_model == "CPM" else 1.0),
+                    roas_score=source.roas_score * (1.02 if pricing_model == "CPM" else 1.0),
+                    brand_score=source.brand_score,
+                    comcat_score=source.comcat_score,
+                    trend_score=source.trend_score,
+                    confidence_score=source.confidence_score,
+                    final_score=source.final_score * (1.02 if pricing_model == "CPM" else 1.0),
+                    cpm=source.cpm,
+                    cpd=source.cpd,
+                    ctr=source.ctr,
+                    roas=source.roas,
+                    source_country=source.country,
+                    synthetic=True,
+                    explainability=source.explainability,
                 )
+            )
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
-    for candidate in sorted(expanded, key=lambda item: (not item.synthetic, item.brand_specific, max(item.reach_score, item.conv_score), item.views), reverse=True):
+    for candidate in sorted(expanded, key=lambda item: (not item.synthetic, item.brand_specific, _portfolio_score(item), item.views), reverse=True):
         deduped.setdefault((candidate.country, candidate.slot_code, candidate.pricing_model), candidate)
     return list(deduped.values())
 
@@ -613,7 +810,7 @@ def ensure_selected_slot_candidates(
         ]
         source = max(
             source_candidates,
-            key=lambda candidate: (candidate.brand_specific, max(candidate.reach_score, candidate.conv_score), candidate.views),
+            key=lambda candidate: (candidate.brand_specific, _portfolio_score(candidate), candidate.views),
             default=None,
         )
         requested_model = selected_slot_pricing_map.get(selected_key)
@@ -639,6 +836,14 @@ def ensure_selected_slot_candidates(
                 continue
             reach_score = source.reach_score if source else max(settings.min_slot_views / max(rate, 0.01), 1.0)
             conv_score = source.conv_score if source else reach_score
+            visibility_score = source.visibility_score if source else reach_score
+            ctr_score = source.ctr_score if source else 0.0
+            roas_score = source.roas_score if source else reach_score
+            brand_score = source.brand_score if source else 0.0
+            comcat_score = source.comcat_score if source else reach_score
+            trend_score = source.trend_score if source else 0.0
+            confidence_score = source.confidence_score if source else 0.35
+            final_score = source.final_score if source else max(visibility_score, ctr_score, roas_score)
             candidate = Candidate(
                 country=country,
                 slot_code=slot_code,
@@ -659,18 +864,27 @@ def ensure_selected_slot_candidates(
                 brand_specific=source.brand_specific if source else False,
                 reach_score=reach_score * (1.02 if normalized_model == "CPM" else 1.0),
                 conv_score=conv_score * (1.02 if normalized_model == "CPM" else 1.0),
+                visibility_score=visibility_score * (1.02 if normalized_model == "CPM" else 1.0),
+                ctr_score=ctr_score * (1.02 if normalized_model == "CPM" else 1.0),
+                roas_score=roas_score * (1.02 if normalized_model == "CPM" else 1.0),
+                brand_score=brand_score,
+                comcat_score=comcat_score,
+                trend_score=trend_score,
+                confidence_score=confidence_score,
+                final_score=final_score * (1.02 if normalized_model == "CPM" else 1.0),
                 cpm=source.cpm if source else None,
                 cpd=source.cpd if source else None,
                 ctr=source.ctr if source else None,
                 roas=source.roas if source else None,
                 source_country=source.country if source else country,
                 synthetic=True,
+                explainability=source.explainability if source else ("Synthesized from similar slot and page performance.",),
             )
             ensured.append(candidate)
             candidate_by_slot_model[(selected_key, normalized_model)] = candidate
 
     deduped: dict[tuple[str, str, str], Candidate] = {}
-    for candidate in sorted(ensured, key=lambda item: (not item.synthetic, item.brand_specific, max(item.reach_score, item.conv_score), item.views), reverse=True):
+    for candidate in sorted(ensured, key=lambda item: (not item.synthetic, item.brand_specific, _portfolio_score(item), item.views), reverse=True):
         deduped.setdefault((candidate.country, candidate.slot_code, candidate.pricing_model), candidate)
     return list(deduped.values())
 
@@ -803,11 +1017,14 @@ def _find_non_overlapping_slot_window(
 
 
 def _candidate_score(candidate: Candidate, objective: str) -> float:
-    if objective == "reach":
-        return candidate.reach_score
-    if objective == "roas":
-        return candidate.conv_score
-    return max(candidate.reach_score, candidate.conv_score)
+    normalized = normalize_objective(objective)
+    if normalized == "visibility":
+        return candidate.visibility_score
+    if normalized == "ctr":
+        return candidate.ctr_score
+    if normalized == "roas":
+        return candidate.roas_score
+    return candidate.final_score
 
 
 def suggest_slots(
@@ -898,6 +1115,12 @@ def suggest_slots(
                 "historical_ctr": candidate.ctr,
                 "historical_roas": candidate.roas,
                 "score": round(_candidate_score(candidate, req.objective), 4),
+                "brand_score": round(candidate.brand_score, 4),
+                "comcat_score": round(candidate.comcat_score, 4),
+                "trend_score": round(candidate.trend_score, 4),
+                "confidence_score": round(candidate.confidence_score, 4),
+                "final_score": round(candidate.final_score, 4),
+                "explainability": list(candidate.explainability),
             }
         )
         if len(suggestions) >= limit:
@@ -930,8 +1153,6 @@ def plan_media(
     inventory_by_slot_phase = _inventory_by_slot_phase(req, inventory_rows)
 
     phases = default_phases(req)
-    reach_weight, roas_weight = objective_weights(req)
-
     rows = _coerce_rows(req)
     spent_total = sum(row.cost for row in rows)
     line_id = max([row.id for row in rows], default=0) + 1
@@ -944,6 +1165,7 @@ def plan_media(
         return [], {"reason": "No countries selected."}
 
     country_budget = req.budget / len(countries)
+    marketplace_splits = _marketplace_splits(req)
     spent_by_country: dict[str, float] = defaultdict(float)
     for row in rows:
         spent_by_country[row.country] += float(row.cost or row.net_amount or 0)
@@ -1123,6 +1345,7 @@ def plan_media(
                 gross_rate_avg = round(gross_amount / max(days, 1), 4)
                 net_rate_avg = round(net_amount / max(days, 1), 4)
 
+        explainability_note = " | ".join(candidate.explainability[:3]).strip()
         rows.append(
             EditablePlanLine.model_validate(
                 {
@@ -1156,7 +1379,7 @@ def plan_media(
                     "historical_ctr": candidate.ctr,
                     "historical_roas": candidate.roas,
                     "historical_cpm": candidate.cpm,
-                    "note": "FOC selected slot" if is_foc else "",
+                    "note": "FOC selected slot" if is_foc else explainability_note,
                     "manual": False,
                     "locked": False,
                 }
@@ -1191,7 +1414,7 @@ def plan_media(
         row_model = normalize_pricing_model(getattr(row, "buyType", ""))
         return row_model == requested_model
 
-    selected_type = "conv" if req.objective == "roas" else "reach"
+    selected_type = _allocation_type(req.objective)
     for index, selected_key in enumerate(selected_slot_key_list):
         if any(
             slot_key(row.country, row.slot_code) == selected_key and row_matches_selected_pricing(row, selected_key)
@@ -1227,25 +1450,40 @@ def plan_media(
         for phase in phases:
             phase_days = inclusive_days(phase.from_date, phase.to_date)
             phase_share = phase_days / max(total_days, 1)
-            for stype, weight, score_name in (
-                ("reach", reach_weight, "reach_score"),
-                ("conv", roas_weight, "conv_score"),
-            ):
-                target = country_budget * phase_share * weight
-                if target <= 0:
+            for marketplace_name, marketplace_share in marketplace_splits:
+                marketplace_candidates = [candidate for candidate in country_candidates if candidate.marketplace == marketplace_name]
+                if not marketplace_candidates:
                     continue
-                already = sum(row.cost for row in rows if row.country == country and row.phase == phase.name and row.stype == stype)
-                remaining_target = max(target - already, 0)
-                ranked = sorted(country_candidates, key=lambda c: getattr(c, score_name), reverse=True)
-                phase_goal = max(1, min(settings.max_lines_per_phase, round(_per_country_min_lines(req) * phase_share)))
-                used_in_phase = len([row for row in rows if row.country == country and row.phase == phase.name and row.stype == stype])
-                for candidate in ranked:
-                    if used_in_phase >= phase_goal:
-                        break
-                    target_budget = remaining_target / max(phase_goal - used_in_phase, 1) if remaining_target > 0 else country_budget / max(_per_country_min_lines(req), 1)
-                    if append_row(candidate, phase, stype, getattr(candidate, score_name), target_budget):
-                        used_in_phase += 1
-                        remaining_target = max(remaining_target - target_budget, 0)
+                for stype, weight, score_name in _allocation_tracks(req):
+                    target = country_budget * marketplace_share * phase_share * weight
+                    if target <= 0:
+                        continue
+                    already = sum(
+                        row.cost
+                        for row in rows
+                        if row.country == country
+                        and row.marketplace == marketplace_name
+                        and row.phase == phase.name
+                        and row.stype == stype
+                    )
+                    remaining_target = max(target - already, 0)
+                    ranked = sorted(marketplace_candidates, key=lambda c: getattr(c, score_name), reverse=True)
+                    phase_goal = max(1, min(settings.max_lines_per_phase, round(_per_country_min_lines(req) * phase_share * marketplace_share)))
+                    used_in_phase = len([
+                        row
+                        for row in rows
+                        if row.country == country
+                        and row.marketplace == marketplace_name
+                        and row.phase == phase.name
+                        and row.stype == stype
+                    ])
+                    for candidate in ranked:
+                        if used_in_phase >= phase_goal:
+                            break
+                        target_budget = remaining_target / max(phase_goal - used_in_phase, 1) if remaining_target > 0 else country_budget * marketplace_share / max(_per_country_min_lines(req), 1)
+                        if append_row(candidate, phase, stype, getattr(candidate, score_name), target_budget):
+                            used_in_phase += 1
+                            remaining_target = max(remaining_target - target_budget, 0)
 
     per_country_min = _per_country_min_lines(req)
     for country in countries:
@@ -1270,14 +1508,14 @@ def plan_media(
                     or candidate.pricing_model == selected_slot_pricing_map[slot_key(candidate.country, candidate.slot_code)]
                 )
             ]
-        ranked = sorted(country_candidates, key=lambda c: max(c.reach_score, c.conv_score), reverse=True)
+        ranked = sorted(country_candidates, key=lambda c: _candidate_score(c, req.objective), reverse=True)
         for idx, candidate in enumerate(ranked):
             if have >= per_country_min or spent_total >= req.budget:
                 break
             phase = phases[idx % len(phases)]
             target_budget = max(req.budget - spent_total, 0) / max(per_country_min - have, 1)
-            chosen_type = "reach" if candidate.reach_score >= candidate.conv_score else "conv"
-            chosen_score = max(candidate.reach_score, candidate.conv_score)
+            chosen_type = _allocation_type(req.objective)
+            chosen_score = _candidate_score(candidate, req.objective)
             key = slot_key(candidate.country, candidate.slot_code)
             if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=key in selected_slot_keys):
                 have += 1
@@ -1297,7 +1535,7 @@ def plan_media(
         if not candidate:
             continue
         phase = phases[index % len(phases)]
-        selected_stype = "conv" if req.objective == "roas" or candidate.conv_score > candidate.reach_score else "reach"
+        selected_stype = _allocation_type(req.objective)
         selected_score = _candidate_score(candidate, req.objective)
         remaining_slots = max(len(missing_selected) - index, 1)
         target_budget = max(req.budget - spent_total, 0) / remaining_slots
@@ -1365,6 +1603,7 @@ def plan_media(
         "per_country_min": per_country_min,
         "countries": countries,
         "marketplace": req.marketplace,
+        "marketplace_budget_split": {name: round(share * 100, 2) for name, share in marketplace_splits},
         "country_row_counts": {country: len([row for row in rows if row.country == country and (row.slot_code or "").strip()]) for country in countries},
         "omitted_selected_slots": omitted_selected_slots,
     }

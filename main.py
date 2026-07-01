@@ -34,6 +34,20 @@ def get_repo(settings: Settings = Depends(get_settings)) -> BigQueryRepository:
 def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None):
     allocated = round(sum(row.cost for row in rows), 2)
     views = sum(row.views or 0 for row in rows)
+    weighted_ctr_den = sum(max(row.views or 0, 0) for row in rows)
+    weighted_roas_den = sum(max(float(row.cost or row.net_amount or 0), 0.0) for row in rows)
+    expected_ctr = (
+        sum((row.historical_ctr or 0.0) * max(row.views or 0, 0) for row in rows) / weighted_ctr_den
+        if weighted_ctr_den > 0 else 0.0
+    )
+    expected_roas = (
+        sum((row.historical_roas or 0.0) * max(float(row.cost or row.net_amount or 0), 0.0) for row in rows) / weighted_roas_den
+        if weighted_roas_den > 0 else 0.0
+    )
+    confidence_values = [float(item.get("confidence_score") or 0.0) for item in diagnostics.get("suggested_slots", []) if isinstance(item, dict)]
+    if not confidence_values:
+        confidence_values = [min(max(float(getattr(row, "score", 0.0) or 0.0), 0.0), 1.0) for row in rows if getattr(row, "score", None) is not None]
+    overall_confidence = round((sum(confidence_values) / len(confidence_values)) * 100, 1) if confidence_values else 0.0
     summary = {
         "brand": req.brand,
         "comcats": req.comcats,
@@ -44,6 +58,10 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
         "remaining": round(req.budget - allocated, 2),
         "estimated_views": views,
         "line_count": len(rows),
+        "expected_ctr": round(expected_ctr, 4),
+        "expected_roas": round(expected_roas, 4),
+        "expected_reach": views,
+        "overall_confidence": overall_confidence,
     }
 
     sheet_plan_code, sheet_plan_link = repo.save_plan(

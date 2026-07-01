@@ -83,6 +83,7 @@ input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--noon)}
 .lock-switch-track.active .lock-switch-thumb{transform:translateX(22px)}
 .lock-switch-track:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(255,207,51,.22)}
 .mini-switch-row{display:inline-flex;align-items:center;gap:8px}
+.mini-switch-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;margin-right:2px}
 .mini-switch-label{font-size:11px;font-weight:600;color:var(--text3);transition:.15s}
 .mini-switch-label.active{color:var(--text)}
 .mini-switch-track{position:relative;width:46px;height:24px;border:none;border-radius:999px;background:#b0b0b0;cursor:pointer;transition:.18s;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
@@ -265,26 +266,39 @@ td.mono{font-family:var(--mono);font-size:11px}
   <div class="card">
     <div class="card-hd">Campaign objective</div>
     <div class="obj-grid">
-      <div class="obj-card" id="ob-reach" onclick="setObj('reach')">
+      <div class="obj-card" id="ob-visibility" onclick="setObj('visibility')">
         <div class="obj-icon" style="background:var(--purple-bg)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#6B3FD4" stroke-width="1.4"/><circle cx="9" cy="9" r="4" stroke="#6B3FD4" stroke-width="1.4"/><circle cx="9" cy="9" r="1.5" fill="#6B3FD4"/></svg></div>
-        <div class="obj-title">Reach &amp; visibility</div>
-        <div class="obj-desc">Hero Slider, Top Fold Unit — maximise impressions and brand awareness</div>
+        <div class="obj-title">Visibility</div>
+        <div class="obj-desc">Optimise for reach, impressions, and strong brand visibility placements.</div>
       </div>
       <div class="obj-card" id="ob-roas" onclick="setObj('roas')">
         <div class="obj-icon" style="background:var(--amber-bg)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="2,14 6,8 10,11 16,4" stroke="#C47A1A" stroke-width="1.5" fill="none" stroke-linejoin="round"/><polyline points="12,4 16,4 16,8" stroke="#C47A1A" stroke-width="1.5" fill="none"/></svg></div>
-        <div class="obj-title">ROAS / conversion</div>
-        <div class="obj-desc">CLP ATF, Brand Carousel — drive purchase intent and returns</div>
+        <div class="obj-title">ROAS</div>
+        <div class="obj-desc">Optimise for return on ad spend using historical conversion efficiency.</div>
       </div>
-      <div class="obj-card" id="ob-both" onclick="setObj('both')">
+      <div class="obj-card" id="ob-ctr" onclick="setObj('ctr')">
         <div class="obj-icon" style="background:var(--blue-bg)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="10" width="4" height="6" rx="1" fill="#1A5FD4" opacity=".4"/><rect x="7" y="7" width="4" height="9" rx="1" fill="#1A5FD4" opacity=".65"/><rect x="12" y="3" width="4" height="13" rx="1" fill="#1A5FD4"/></svg></div>
-        <div class="obj-title">Balanced</div>
-        <div class="obj-desc">Split budget across reach and conversion by custom weightage</div>
+        <div class="obj-title">CTR</div>
+        <div class="obj-desc">Optimise for engagement rate and click-driven placements.</div>
       </div>
     </div>
     <div id="wBlock" class="w-wrap" style="display:none">
       <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Budget split</div>
       <div class="w-row"><span class="w-lbl">Reach</span><input type="range" min="10" max="90" step="5" value="60" id="rW" oninput="syncW(this,'reach')"/><span class="w-val" id="rWv">60%</span></div>
       <div class="w-row"><span class="w-lbl">ROAS</span><input type="range" min="10" max="90" step="5" value="40" id="oW" oninput="syncW(this,'roas')"/><span class="w-val" id="oWv">40%</span></div>
+    </div>
+    <div id="marketplaceSplitBlock" class="w-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Marketplace budget split</div>
+      <div class="w-row">
+        <span class="w-lbl">Core</span>
+        <input type="range" min="0" max="100" step="5" value="70" id="mkCoreW" oninput="syncMarketplaceSplit(this.value)"/>
+        <span class="w-val" id="mkCoreWv">70%</span>
+      </div>
+      <div class="w-row">
+        <span class="w-lbl">Supermall</span>
+        <input type="range" min="0" max="100" step="5" value="30" id="mkSuperW" oninput="syncMarketplaceSplit(100-this.value)"/>
+        <span class="w-val" id="mkSuperWv">30%</span>
+      </div>
     </div>
   </div>
   <div class="btn-row"><button class="btn" onclick="nav(1)">← Back</button><button class="btn pri" onclick="nav(3)">Next: Budget &amp; Scheduling →</button></div>
@@ -524,6 +538,13 @@ function inferPricingModelFromSlot(slot){
   const text=`${slot?.slot_code||''} ${slot?.slot_name||''}`.toLowerCase();
   return text.includes('cpd') ? 'CPD' : 'CPM';
 }
+function normalizeObjective(value){
+  const raw=String(value||'').trim().toLowerCase();
+  if(['visibility','reach','viewability'].includes(raw)) return 'visibility';
+  if(['ctr','engagement'].includes(raw)) return 'ctr';
+  if(['roas','conversion','conversions'].includes(raw)) return 'roas';
+  return '';
+}
 function slotMetaForPricing(slot){
   if(!slot?.country || !slot?.slot_code) return slot||{};
   return {...(findSlotMeta(slot.country,slot.slot_code)||{}), ...(slot||{})};
@@ -572,6 +593,7 @@ function slotRateSummary(slot){
 }
 function focToggleHtml(key,isOn,handler){
   return `<div class="mini-switch-row">
+    <span class="mini-switch-title">FOC</span>
     <span class="mini-switch-label${isOn?'':' active'}">No</span>
     <button type="button" class="mini-switch-track${isOn?' active':''}" onclick="${handler}('${key}')" aria-label="Toggle FOC">
       <span class="mini-switch-thumb"></span>
@@ -713,7 +735,7 @@ function grossRate(row){
 }
 
 const S={
-  bTag:'', comcats:[], countries:[], marketplace:'both', subBrands:[], obj:'', rW:60, oW:40,
+  bTag:'', comcats:[], countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'', rW:60, oW:40,
   phases:[],
   rows:[], budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
@@ -780,12 +802,12 @@ function syncComcatPills(){
 }
 
 function syncObjectiveUi(){
-  ['reach','roas','both'].forEach(type=>{
+  ['visibility','roas','ctr'].forEach(type=>{
     const el=document.getElementById('ob-'+type);
     if(el) el.className='obj-card'+(S.obj===type?' on':'');
   });
   const weights=document.getElementById('wBlock');
-  if(weights) weights.style.display=S.obj==='both'?'block':'none';
+  if(weights) weights.style.display='none';
   const rW=document.getElementById('rW');
   const oW=document.getElementById('oW');
   const rWv=document.getElementById('rWv');
@@ -794,6 +816,32 @@ function syncObjectiveUi(){
   if(oW) oW.value=String(S.oW||40);
   if(rWv) rWv.textContent=(S.rW||60)+'%';
   if(oWv) oWv.textContent=(S.oW||40)+'%';
+  syncMarketplaceSplitUi();
+}
+
+function syncMarketplaceSplitUi(){
+  const block=document.getElementById('marketplaceSplitBlock');
+  const core=document.getElementById('mkCoreW');
+  const supermall=document.getElementById('mkSuperW');
+  const coreVal=document.getElementById('mkCoreWv');
+  const superVal=document.getElementById('mkSuperWv');
+  const show=S.marketplace==='both';
+  if(block) block.style.display=show?'block':'none';
+  const corePct=Math.max(0,Math.min(100,Number(S.marketplaceCorePct)||0));
+  const superPct=100-corePct;
+  S.marketplaceCorePct=corePct;
+  S.marketplaceSupermallPct=superPct;
+  if(core) core.value=String(corePct);
+  if(supermall) supermall.value=String(superPct);
+  if(coreVal) coreVal.textContent=corePct+'%';
+  if(superVal) superVal.textContent=superPct+'%';
+}
+
+function syncMarketplaceSplit(value){
+  const corePct=Math.max(0,Math.min(100,Number(value)||0));
+  S.marketplaceCorePct=corePct;
+  S.marketplaceSupermallPct=100-corePct;
+  syncMarketplaceSplitUi();
 }
 
 function syncBudgetLockUi(){
@@ -819,8 +867,10 @@ function applyRequestToState(request){
   S.countries=(req.countries||[]).map(v=>String(v).toLowerCase());
   S.comcats=[...(req.comcats||[])];
   S.marketplace=req.marketplace||'both';
+  S.marketplaceCorePct=req.marketplace_core_pct!=null?Number(req.marketplace_core_pct):70;
+  S.marketplaceSupermallPct=100-S.marketplaceCorePct;
   S.subBrands=[...(req.sub_brands||[])];
-  S.obj=req.objective||'';
+  S.obj=normalizeObjective(req.objective)||'';
   S.rW=Number(req.reach_weight||60)||60;
   S.oW=Number(req.roas_weight||40)||40;
   S.budget=Number(req.budget||0)||0;
@@ -1020,6 +1070,7 @@ function setMarketplace(v){
   if(both) both.className='pill'+(v==='both'?' on':'');
   if(core) core.className='pill'+(v==='core'?' on':'');
   if(sm) sm.className='pill'+(v==='supermall'?' on':'');
+  syncMarketplaceSplitUi();
 }
 
 function addSubBrand(){
@@ -1082,10 +1133,11 @@ function toggleComcat(el,v){
   syncComcatPills();
 }
 function setObj(type){
-  S.obj=type;
-  ['reach','roas','both'].forEach(t=>document.getElementById('ob-'+t).className='obj-card');
-  document.getElementById('ob-'+type).className='obj-card on';
-  document.getElementById('wBlock').style.display=type==='both'?'block':'none';
+  S.obj=normalizeObjective(type)||type;
+  ['visibility','roas','ctr'].forEach(t=>{ const el=document.getElementById('ob-'+t); if(el) el.className='obj-card'; });
+  const active=document.getElementById('ob-'+S.obj);
+  if(active) active.className='obj-card on';
+  document.getElementById('wBlock').style.display='none';
 }
 function syncW(el,which){
   const v=parseInt(el.value,10);
@@ -1140,6 +1192,8 @@ function collectPlanningPayload(){
     roas_weight:S.oW,
     phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})),
     marketplace:S.marketplace,
+    marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0),
+    marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0),
     sub_brands:S.subBrands,
     le_code:(document.getElementById('leCode').value||'').trim(),
     notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'',
@@ -1869,7 +1923,7 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
-  const payload={ brand:(document.getElementById('bName').value||'').trim(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj, reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
+  const payload={ brand:(document.getElementById('bName').value||'').trim(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj, reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
     document.getElementById('navChip').textContent='Regenerating...';
     const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});

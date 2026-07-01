@@ -4,7 +4,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
-Objective = Literal["reach", "roas", "both"]
+Objective = Literal["visibility", "ctr", "roas", "reach", "both"]
 BrandTag = Literal["old", "new"]
 Marketplace = Literal["core", "supermall", "both"]
 
@@ -58,6 +58,8 @@ class MediaPlanRequest(BaseModel):
     countries: list[str] = Field(default_factory=list)
 
     marketplace: Marketplace = "both"
+    marketplace_core_pct: int = 70
+    marketplace_supermall_pct: int = 30
     sub_brands: list[str] = Field(default_factory=list)
 
     start_date: date

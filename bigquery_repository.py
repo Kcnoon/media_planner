@@ -510,6 +510,9 @@ class BigQueryRepository:
         def aggregate(source_rows: list[dict], prefer_brand: bool) -> list[dict]:
             grouped: dict[tuple[str, str, str, str], dict] = {}
             active_dates: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
+            active_dates_30: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
+            active_dates_90: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
+            active_dates_180: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
             for row in source_rows:
                 row_country = infer_country(row)
                 key = (
@@ -532,20 +535,61 @@ class BigQueryRepository:
                         "revenue": 0.0,
                         "spends": 0.0,
                         "active_days": 0,
+                        "views_30d": 0,
+                        "clicks_30d": 0,
+                        "revenue_30d": 0.0,
+                        "spends_30d": 0.0,
+                        "active_days_30d": 0,
+                        "views_90d": 0,
+                        "clicks_90d": 0,
+                        "revenue_90d": 0.0,
+                        "spends_90d": 0.0,
+                        "active_days_90d": 0,
+                        "views_180d": 0,
+                        "clicks_180d": 0,
+                        "revenue_180d": 0.0,
+                        "spends_180d": 0.0,
+                        "active_days_180d": 0,
                         "brand_specific": False,
                     },
                 )
-                target["views"] += int(parse_number(get_first(row, "views", "impressions")))
-                target["clicks"] += int(parse_number(get_first(row, "clicks")))
-                target["revenue"] += parse_number(get_first(row, "revenue"))
-                target["spends"] += parse_number(get_first(row, "spends", "spend", "cost"))
+                row_views = int(parse_number(get_first(row, "views", "impressions")))
+                row_clicks = int(parse_number(get_first(row, "clicks")))
+                row_revenue = parse_number(get_first(row, "revenue"))
+                row_spends = parse_number(get_first(row, "spends", "spend", "cost"))
+                target["views"] += row_views
+                target["clicks"] += row_clicks
+                target["revenue"] += row_revenue
+                target["spends"] += row_spends
                 if prefer_brand and norm(get_first(row, "brand")) == brand:
                     target["brand_specific"] = True
                 row_date = parse_date(get_first(row, "date", "dt"))
                 if row_date:
                     active_dates[key].add(row_date)
+                    lag = (req.start_date - row_date).days
+                    if lag <= 30:
+                        target["views_30d"] += row_views
+                        target["clicks_30d"] += row_clicks
+                        target["revenue_30d"] += row_revenue
+                        target["spends_30d"] += row_spends
+                        active_dates_30[key].add(row_date)
+                    if lag <= 90:
+                        target["views_90d"] += row_views
+                        target["clicks_90d"] += row_clicks
+                        target["revenue_90d"] += row_revenue
+                        target["spends_90d"] += row_spends
+                        active_dates_90[key].add(row_date)
+                    if lag <= 180:
+                        target["views_180d"] += row_views
+                        target["clicks_180d"] += row_clicks
+                        target["revenue_180d"] += row_revenue
+                        target["spends_180d"] += row_spends
+                        active_dates_180[key].add(row_date)
             for key, target in grouped.items():
                 target["active_days"] = max(len(active_dates[key]), 1)
+                target["active_days_30d"] = len(active_dates_30[key])
+                target["active_days_90d"] = len(active_dates_90[key])
+                target["active_days_180d"] = len(active_dates_180[key])
             return list(grouped.values())
 
         def row_country_match(row: dict) -> bool:
@@ -592,30 +636,33 @@ class BigQueryRepository:
         exact_global_rows = [row for row in rows if matches_exact_comcat(row)]
         similar_global_rows = [row for row in rows if matches_similar_comcat(row)]
 
-        if requested_brand_tag == "old":
-            if brand_exact_country_rows:
-                return aggregate(brand_exact_country_rows, prefer_brand=True)
-            if brand_similar_country_rows:
-                return aggregate(brand_similar_country_rows, prefer_brand=True)
-            if brand_exact_global_rows:
-                return aggregate(brand_exact_global_rows, prefer_brand=True)
-            if brand_similar_global_rows:
-                return aggregate(brand_similar_global_rows, prefer_brand=True)
-            if exact_country_rows:
-                return aggregate(exact_country_rows, prefer_brand=False)
-            if similar_country_rows:
-                return aggregate(similar_country_rows, prefer_brand=False)
-            if exact_global_rows:
-                return aggregate(exact_global_rows, prefer_brand=False)
-            return aggregate(similar_global_rows, prefer_brand=False)
+        def dedupe_rows(source_rows: list[dict]) -> list[dict]:
+            seen = set()
+            unique = []
+            for row in source_rows:
+                marker = (
+                    infer_country(row),
+                    str(get_first(row, "slot_code", "slot") or "").strip(),
+                    str(get_first(row, "date", "dt") or "").strip(),
+                    str(get_first(row, "brand") or "").strip().lower(),
+                    str(get_first(row, "pricing_model", "buy_type", "buy type") or "").strip().lower(),
+                )
+                if marker in seen:
+                    continue
+                seen.add(marker)
+                unique.append(row)
+            return unique
 
-        if exact_country_rows:
-            return aggregate(exact_country_rows, prefer_brand=False)
-        if similar_country_rows:
-            return aggregate(similar_country_rows, prefer_brand=False)
-        if exact_global_rows:
-            return aggregate(exact_global_rows, prefer_brand=False)
-        return aggregate(similar_global_rows, prefer_brand=False)
+        if requested_brand_tag == "old":
+            union_country = dedupe_rows([*brand_exact_country_rows, *brand_similar_country_rows, *exact_country_rows, *similar_country_rows])
+            if union_country:
+                return aggregate(union_country, prefer_brand=True)
+            union_global = dedupe_rows([*brand_exact_global_rows, *brand_similar_global_rows, *exact_global_rows, *similar_global_rows])
+            return aggregate(union_global, prefer_brand=True)
+
+        if exact_country_rows or similar_country_rows:
+            return aggregate(dedupe_rows([*exact_country_rows, *similar_country_rows]), prefer_brand=False)
+        return aggregate(dedupe_rows([*exact_global_rows, *similar_global_rows]), prefer_brand=False)
 
     def infer_brand_tag(self, req: MediaPlanRequest) -> str:
         start = req.start_date - timedelta(days=self.settings.historical_lookback_days)
