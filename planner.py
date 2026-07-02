@@ -1723,58 +1723,68 @@ def plan_media(
     ]
     offdeck_budget = round(max(float(getattr(req, "offdeck_budget", 0.0) or 0.0), 0.0), 2)
     if selected_offdeck_slots and offdeck_budget > 0:
-        gross_per_slot = round(offdeck_budget / len(selected_offdeck_slots), 2)
         allocated_offdeck = 0.0
         for index, slot in enumerate(selected_offdeck_slots):
-            if index == len(selected_offdeck_slots) - 1:
-                net_amount = round(offdeck_budget - allocated_offdeck, 2)
-            else:
-                net_amount = gross_per_slot
-                allocated_offdeck = round(allocated_offdeck + net_amount, 2)
+            slot_value = round(max(float(slot.get("value") or 0.0), 0.0), 2)
+            if slot_value <= 0 or allocated_offdeck >= offdeck_budget:
+                continue
+            slot_total = min(slot_value, round(offdeck_budget - allocated_offdeck, 2))
             slot_code_value = str(slot.get("slot_code") or slot.get("slot_key") or slot.get("slot_name") or f"offdeck_{index + 1}").strip()
             slot_name_value = str(slot.get("slot_name") or slot_code_value).strip()
             country_value = str(slot.get("country") or "").strip().lower() or (req.countries[0] if req.countries else "")
             page_value = str(slot.get("page") or slot.get("category") or "Off-deck").strip() or "Off-deck"
-            rows.append(
-                EditablePlanLine.model_validate(
-                    {
-                        "id": line_id,
-                        "from": req.start_date,
-                        "to": req.end_date,
-                        "country": country_value,
-                        "page": page_value,
-                        "marketplace": "OFF-DECK",
-                        "category": page_value,
-                        "zone": "",
-                        "dimension": str(slot.get("dimension") or "").strip(),
-                        "asset": slot_name_value,
-                        "slot_name": slot_name_value,
-                        "days": inclusive_days(req.start_date, req.end_date),
-                        "buyType": "OFF-DECK",
-                        "rate": 0,
-                        "gross_cpm": 0,
-                        "net_cpm": 0,
-                        "views": 0,
-                        "cost": net_amount,
-                        "gross_amount": net_amount,
-                        "net_amount": net_amount,
-                        "discount_pct": req.discount_pct,
-                        "phase": "Full flight",
-                        "brand": req.brand,
-                        "stype": "reach",
-                        "slot_code": slot_code_value,
-                        "score": 0,
-                        "available_views": 0,
-                        "historical_ctr": None,
-                        "historical_roas": None,
-                        "historical_cpm": None,
-                        "note": "",
-                        "manual": False,
-                        "locked": False,
-                    }
+            selected_phases = [
+                Phase.model_validate({"name": phase.get("name") or f"Phase {phase_index + 1}", "from": phase.get("from"), "to": phase.get("to")})
+                for phase_index, phase in enumerate(slot.get("phases") or [])
+                if isinstance(phase, dict) and phase.get("from") and phase.get("to")
+            ]
+            row_phases = selected_phases or [Phase.model_validate({"name": "All phases", "from": req.start_date, "to": req.end_date})]
+            per_phase_value = round(slot_total / len(row_phases), 2)
+            allocated_slot = 0.0
+            for phase_index, phase in enumerate(row_phases):
+                net_amount = round(slot_total - allocated_slot, 2) if phase_index == len(row_phases) - 1 else per_phase_value
+                allocated_slot = round(allocated_slot + net_amount, 2)
+                rows.append(
+                    EditablePlanLine.model_validate(
+                        {
+                            "id": line_id,
+                            "from": phase.from_date,
+                            "to": phase.to_date,
+                            "country": country_value,
+                            "page": page_value,
+                            "marketplace": "OFF-DECK",
+                            "category": page_value,
+                            "zone": "",
+                            "dimension": str(slot.get("dimension") or "").strip(),
+                            "asset": slot_name_value,
+                            "slot_name": slot_name_value,
+                            "days": inclusive_days(phase.from_date, phase.to_date),
+                            "buyType": "OFF-DECK",
+                            "rate": 0,
+                            "gross_cpm": 0,
+                            "net_cpm": 0,
+                            "views": 0,
+                            "cost": net_amount,
+                            "gross_amount": net_amount,
+                            "net_amount": net_amount,
+                            "discount_pct": req.discount_pct,
+                            "phase": phase.name,
+                            "brand": req.brand,
+                            "stype": "reach",
+                            "slot_code": slot_code_value,
+                            "score": 0,
+                            "available_views": 0,
+                            "historical_ctr": None,
+                            "historical_roas": None,
+                            "historical_cpm": None,
+                            "note": "",
+                            "manual": False,
+                            "locked": False,
+                        }
+                    )
                 )
-            )
-            line_id += 1
+                line_id += 1
+            allocated_offdeck = round(allocated_offdeck + slot_total, 2)
 
     diagnostics = {
         "candidate_count": len(candidates),

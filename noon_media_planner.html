@@ -392,8 +392,19 @@ td.mono{font-family:var(--mono);font-size:11px}
 <div class="panel" id="p4">
   <div class="card">
     <div class="card-hd">Off-deck Slots</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Select off-deck placements from the off-deck budget. These run for the full flight and do not use inventory forecasting or rate-card calculations.</p>
-    <div id="offdeckSlotGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Add off-deck placements manually. Choose country, page, slot, planned value, and whether it should run across all phases or selected phases.</p>
+    <div class="fg fg-4" style="margin-bottom:14px">
+      <div class="field"><label>Country</label><select id="offdeckCountry" onchange="renderOffdeckManualOptions()"><option value="">Select country</option><option value="ae">AE</option><option value="sa">SA</option><option value="eg">EG</option></select></div>
+      <div class="field"><label>Page</label><select id="offdeckPage" onchange="renderOffdeckManualOptions()"><option value="">All pages</option></select></div>
+      <div class="field"><label>Slot</label><select id="offdeckSlotCode"><option value="">Select off-deck slot</option></select></div>
+      <div class="field"><label>Value (USD)</label><input id="offdeckSlotValue" type="number" min="0" step="10" placeholder="Enter value"/></div>
+    </div>
+    <div class="fg fg-3" style="margin-bottom:14px">
+      <div class="field"><label>Phase selection</label><select id="offdeckPhaseMode" onchange="renderOffdeckPhasePicker()"><option value="all">All phases</option><option value="custom">Choose phases</option></select></div>
+      <div class="field" style="grid-column:span 2"><label>Phases</label><div class="pill-group" id="offdeckPhasePicker"></div></div>
+    </div>
+    <div class="btn-row" style="justify-content:flex-start;margin-top:0"><button class="btn ghost" type="button" onclick="addManualOffdeckSlot()">+ Add off-deck slot</button></div>
+    <div id="offdeckSelectedList" style="margin-top:14px"></div>
   </div>
   <div class="card">
     <div class="card-hd">On-deck Slots</div>
@@ -1631,36 +1642,105 @@ function offdeckKey(slot){
   return String(slot?.slot_key||slot?.slot_code||slot?.slot_name||'').trim();
 }
 
-function toggleOffdeckSlot(key){
-  const existing=S.selectedOffdeckSlots.find(slot=>offdeckKey(slot)===key);
-  if(existing){
-    S.selectedOffdeckSlots=S.selectedOffdeckSlots.filter(slot=>offdeckKey(slot)!==key);
-  }else{
-    const slot=S.offdeckSlots.find(item=>offdeckKey(item)===key);
-    if(slot) S.selectedOffdeckSlots.push({...slot,slot_key:key});
-  }
-  renderSlotPreselection();
+function offdeckPhaseLabels(slot){
+  const phases=slot?.phases||[];
+  return phases.length?phases.map(phase=>phase.name||phase).join(', '):'All phases';
 }
 
-function renderOffdeckPreselection(){
-  const wrap=document.getElementById('offdeckSlotGrid');
+function renderOffdeckManualOptions(){
+  const country=document.getElementById('offdeckCountry')?.value||'';
+  const page=document.getElementById('offdeckPage')?.value||'';
+  const pageSelect=document.getElementById('offdeckPage');
+  const slotSelect=document.getElementById('offdeckSlotCode');
+  if(pageSelect){
+    const pages=[...new Set((S.offdeckSlots||[])
+      .filter(slot=>!country||slot.country===country)
+      .map(slot=>slot.page)
+      .filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    const current=pageSelect.value;
+    pageSelect.innerHTML='<option value="">All pages</option>'+pages.map(value=>`<option value="${escapeHtml(value)}">${escapeHtml(displayCategoryLabel(value))}</option>`).join('');
+    pageSelect.value=pages.includes(current)?current:'';
+  }
+  if(slotSelect){
+    const current=slotSelect.value;
+    const filtered=(S.offdeckSlots||[]).filter(slot=>{
+      if(country&&slot.country!==country) return false;
+      if(page&&slot.page!==page) return false;
+      return true;
+    });
+    slotSelect.innerHTML='<option value="">Select off-deck slot</option>'+filtered.map(slot=>`<option value="${escapeHtml(offdeckKey(slot))}">${displayCountryCode(slot.country)} · ${escapeHtml(slot.slot_name||slot.slot_code)}</option>`).join('');
+    slotSelect.value=filtered.some(slot=>offdeckKey(slot)===current)?current:'';
+  }
+  renderOffdeckPhasePicker();
+  renderSelectedOffdeckSlots();
+}
+
+function renderOffdeckPhasePicker(){
+  const wrap=document.getElementById('offdeckPhasePicker');
   if(!wrap) return;
-  const budgetText=S.offdeckBudget?` · Off-deck budget USD ${number10(S.offdeckBudget)}`:'';
-  wrap.innerHTML=(S.offdeckSlots||[]).map(slot=>{
-    const key=offdeckKey(slot);
-    const safeKey=JSON.stringify(key);
-    const picked=S.selectedOffdeckSlots.some(item=>offdeckKey(item)===key);
-    return `<div class="card" style="margin:0;padding:14px;border-color:${picked?'var(--blue)':'var(--border)'}">
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
-        <div>
-          <div style="font-size:13px;font-weight:600">${escapeHtml(slot.slot_name||slot.slot_code||'Off-deck slot')}</div>
-          <div class="slot-meta">${displayCountryCode(slot.country)} · ${escapeHtml(slot.slot_code||key)} · OFF-DECK${slot.page?` · ${escapeHtml(slot.page)}`:''}</div>
-          <div class="slot-meta">${slot.category?escapeHtml(displayCategoryLabel(slot.category)): 'Whole-flight placement'}${slot.dimension?` · ${escapeHtml(slot.dimension)}`:''}${budgetText}</div>
-        </div>
-        <button class="btn ${picked?'pri':'ghost'}" type="button" style="padding:7px 12px;font-size:12px" onclick='toggleOffdeckSlot(${safeKey})'>${picked?'Selected':'Select'}</button>
+  const custom=(document.getElementById('offdeckPhaseMode')?.value||'all')==='custom';
+  wrap.style.display=custom?'flex':'none';
+  if(!custom){
+    wrap.innerHTML='<div class="pill on">All phases</div>';
+    return;
+  }
+  wrap.innerHTML=(S.phases||[]).map((phase,index)=>`<div class="pill offdeck-phase-pill" data-phase-index="${index}" onclick="this.classList.toggle('on')">${escapeHtml(phase.name||('Phase '+(index+1)))}</div>`).join('')||'<div class="pill on">Full flight</div>';
+}
+
+function selectedOffdeckPhases(){
+  const mode=document.getElementById('offdeckPhaseMode')?.value||'all';
+  if(mode!=='custom') return [];
+  const picked=[...document.querySelectorAll('#offdeckPhasePicker .offdeck-phase-pill.on')].map(el=>{
+    const index=Number(el.dataset.phaseIndex);
+    const phase=S.phases[index];
+    return phase?{name:phase.name,from:phase.from,to:phase.to}:null;
+  }).filter(Boolean);
+  return picked;
+}
+
+function addManualOffdeckSlot(){
+  const key=document.getElementById('offdeckSlotCode')?.value||'';
+  const value=Number(document.getElementById('offdeckSlotValue')?.value)||0;
+  if(!key){ alert('Select an off-deck slot.'); return; }
+  if(value<=0){ alert('Enter the value for this off-deck slot.'); return; }
+  const slot=S.offdeckSlots.find(item=>offdeckKey(item)===key);
+  if(!slot){ alert('Selected off-deck slot was not found.'); return; }
+  const phases=selectedOffdeckPhases();
+  if((document.getElementById('offdeckPhaseMode')?.value||'all')==='custom' && !phases.length){
+    alert('Choose at least one phase, or switch to All phases.');
+    return;
+  }
+  const lineKey=`${key}|${Date.now()}`;
+  S.selectedOffdeckSlots.push({...slot,slot_key:key,line_key:lineKey,value,phases});
+  document.getElementById('offdeckSlotValue').value='';
+  renderSelectedOffdeckSlots();
+}
+
+function removeManualOffdeckSlot(lineKey){
+  S.selectedOffdeckSlots=S.selectedOffdeckSlots.filter(slot=>(slot.line_key||offdeckKey(slot))!==lineKey);
+  renderSelectedOffdeckSlots();
+}
+
+function renderSelectedOffdeckSlots(){
+  const wrap=document.getElementById('offdeckSelectedList');
+  if(!wrap) return;
+  const total=S.selectedOffdeckSlots.reduce((sum,slot)=>sum+Number(slot.value||0),0);
+  wrap.innerHTML=(S.selectedOffdeckSlots||[]).map(slot=>{
+    const lineKey=slot.line_key||offdeckKey(slot);
+    return `<div class="phase-item" style="justify-content:space-between">
+      <div>
+        <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${escapeHtml(slot.slot_name||slot.slot_code||'Off-deck slot')}</div>
+        <div class="slot-meta">${escapeHtml(slot.slot_code||offdeckKey(slot))} · OFF-DECK · ${escapeHtml(displayCategoryLabel(slot.page||slot.category||''))} · ${offdeckPhaseLabels(slot)}</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="country-chip">${money2(Number(slot.value||0),'USD')}</span>
+        <button class="del-btn" type="button" onclick='removeManualOffdeckSlot(${JSON.stringify(lineKey)})'>×</button>
       </div>
     </div>`;
-  }).join('')||'<div class="empty" style="grid-column:1/-1">No off-deck slots found.</div>';
+  }).join('')||'<div class="empty">No off-deck slots added yet.</div>';
+  if(S.offdeckBudget&&total>S.offdeckBudget){
+    wrap.innerHTML+=`<div class="hint-bar show" style="margin-top:10px;background:var(--red-bg);border-color:rgba(196,53,53,.25);color:var(--red-text)">Off-deck selected value ${money2(total,'USD')} is above the off-deck budget ${money2(S.offdeckBudget,'USD')}.</div>`;
+  }
 }
 
 function slotKey(country,slotCode){ return `${country}|${slotCode}`; }
@@ -1768,7 +1848,7 @@ function renderSlotPreselection(){
   const suggestionWrap=document.getElementById('slotSuggestionGrid');
   const selectedWrap=document.getElementById('selectedSlotList');
   if(!suggestionWrap||!selectedWrap) return;
-  renderOffdeckPreselection();
+  renderOffdeckManualOptions();
   refreshSlotFilters();
   const filterCountry=document.getElementById('slotFilterCountry')?.value||'';
   const filterMarketplace=document.getElementById('slotFilterMarketplace')?.value||'';
@@ -2049,6 +2129,11 @@ async function buildPlan(){
   }
   if(S.offdeckBudget>0 && !S.selectedOffdeckSlots.length){
     alert('Select at least one off-deck slot or set the off-deck budget to 0.');
+    return;
+  }
+  const offdeckSelectedValue=S.selectedOffdeckSlots.reduce((sum,slot)=>sum+Number(slot.value||0),0);
+  if(offdeckSelectedValue>S.offdeckBudget+0.01){
+    alert('Off-deck selected value cannot be above the off-deck budget.');
     return;
   }
   payload.selected_slot_keys=S.selectedSlots.map(slot=>slot.slot_key);
