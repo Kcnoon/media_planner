@@ -491,6 +491,33 @@ class BigQueryRepository:
     def fetch_slot_meta(self, req: MediaPlanRequest | None = None) -> dict[tuple[str, str], dict]:
         return {(row["country"], row["slot_code"]): row for row in self.fetch_slot_catalog(req)}
 
+    def fetch_offdeck_slots(self) -> list[dict]:
+        rows = self._query_records(f"SELECT * FROM `{self.settings.offdeck_slots_table}`")
+        slots = []
+        seen = set()
+        for index, row in enumerate(rows):
+            slot_code = str(get_first(row, "slot_code", "slot", "code", "asset_code") or "").strip()
+            slot_name = str(get_first(row, "slot_name", "asset", "slot", "name", "placement") or slot_code or f"offdeck_{index + 1}").strip()
+            key = slot_code or slot_name
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            slots.append(
+                {
+                    "slot_key": key,
+                    "slot_code": slot_code or key,
+                    "slot_name": slot_name,
+                    "page": str(get_first(row, "page", "category", "publisher", "placement_type") or "").strip(),
+                    "category": str(get_first(row, "category", "page", "vertical", "placement_type") or "").strip(),
+                    "marketplace": str(get_first(row, "marketplace") or "offdeck").strip() or "offdeck",
+                    "country": str(get_first(row, "country") or "").strip().lower(),
+                    "dimension": combined_dimension(row),
+                    "description": str(get_first(row, "description", "remarks", "note") or "").strip(),
+                }
+            )
+        slots.sort(key=lambda slot: (str(slot.get("category") or "").lower(), str(slot.get("slot_name") or "").lower()))
+        return slots
+
     def fetch_historical_performance(self, req: MediaPlanRequest) -> list[dict]:
         start = req.start_date - timedelta(days=self.settings.historical_lookback_days)
         rows = self._table_records_for_window(
@@ -504,8 +531,9 @@ class BigQueryRepository:
         comcat_tokens = {token for value in comcats for token in text_tokens(value)}
         countries = country_values(req.countries)
         brand = norm(req.brand)
+        selected_brands = {norm(value) for value in (getattr(req, "brands", []) or []) if norm(value)}
         sub_brands = {norm(value) for value in (req.sub_brands or []) if norm(value)}
-        brand_names = {value for value in {brand, *sub_brands} if value}
+        brand_names = {value for value in {brand, *selected_brands, *sub_brands} if value}
 
         def aggregate(source_rows: list[dict], prefer_brand: bool) -> list[dict]:
             grouped: dict[tuple[str, str, str, str], dict] = {}
@@ -675,8 +703,9 @@ class BigQueryRepository:
         )
         countries = country_values(req.countries)
         brand = norm(req.brand)
+        selected_brands = {norm(value) for value in (getattr(req, "brands", []) or []) if norm(value)}
         sub_brands = {norm(value) for value in (req.sub_brands or []) if norm(value)}
-        brand_names = {value for value in {brand, *sub_brands} if value}
+        brand_names = {value for value in {brand, *selected_brands, *sub_brands} if value}
         for row in rows:
             if infer_country(row) not in countries:
                 continue
@@ -804,7 +833,7 @@ class BigQueryRepository:
             "marketplace": req.marketplace or "",
             "start_date": req.start_date.isoformat(),
             "end_date": req.end_date.isoformat(),
-            "budget_usd": float(req.budget),
+            "budget_usd": float((req.budget or 0) + (req.offdeck_budget or 0)),
             "discount_pct": float(req.discount_pct),
             "currency": req.currency,
             "budget_locked": bool(req.budget_locked),

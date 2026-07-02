@@ -241,7 +241,12 @@ td.mono{font-family:var(--mono);font-size:11px}
           <input id="brandSelect" type="text" placeholder="Search brand code or type a brand" autocomplete="off" oninput="onBrandSearchInput()" onfocus="onBrandSearchInput()"/>
           <div class="brand-results" id="brandSearchResults"></div>
         </div>
-        <div class="brand-helper" id="brandSearchHint">Type at least 2 characters to search brand codes. You can also type a custom brand.</div>
+        <div class="brand-helper" id="brandSearchHint">Type at least 2 characters to search brand codes. Select multiple brands if needed.</div>
+        <div class="pill-group" id="brandChips" style="margin-top:8px"></div>
+        <div id="brandSplitBlock" class="w-wrap" style="display:none">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Brand budget split</div>
+          <div id="brandSplitRows"></div>
+        </div>
         <input id="bName" type="hidden"/>
       </div>
       <div class="field"><label>Countries</label>
@@ -269,7 +274,8 @@ td.mono{font-family:var(--mono);font-size:11px}
       <div id="comcatSplitRows"></div>
     </div>
   </div>
-  <div class="btn-row"><button class="btn pri" onclick="nav(2)">Next: Objective →</button></div>
+  <div class="hint-bar" id="planInitWarning" style="display:none;background:var(--red-bg);border-color:rgba(196,53,53,.25);color:var(--red-text)"></div>
+  <div class="btn-row"><button class="btn pri" onclick="goObjectiveFromInitialization()">Next: Objective →</button></div>
 </div>
 
 <!-- P2: Objective -->
@@ -321,7 +327,9 @@ td.mono{font-family:var(--mono);font-size:11px}
   <div class="card">
     <div class="card-hd">Budget &amp; Scheduling</div>
     <div class="fg fg-4" style="margin-bottom:14px">
-      <div class="field"><label>Total budget (USD, excl. VAT)</label><input id="bBudget" type="number" placeholder="Enter investment" oninput="updateBudgetBar()"/></div>
+      <div class="field"><label>Off-deck budget</label><input id="bOffdeckBudget" type="number" placeholder="Off-deck investment" oninput="updateBudgetBar()"/></div>
+      <div class="field"><label>On-deck budget</label><input id="bBudget" type="number" placeholder="On-deck media investment" oninput="updateBudgetBar()"/></div>
+      <div class="field"><label>Total budget (USD, excl. VAT, including discount)</label><input id="bTotalBudget" type="number" placeholder="Auto calculated" readonly/></div>
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>Conversion currency</label><select id="bCur"><option value="">Select currency</option><option>USD</option><option>AED</option><option>SAR</option><option>EGP</option></select></div>
       <div class="field"><label>LE code</label><input id="leCode" type="text" placeholder="e.g. LE-UAE-2026-001"/></div>
@@ -383,7 +391,12 @@ td.mono{font-family:var(--mono);font-size:11px}
 <!-- P4: Slot preselection -->
 <div class="panel" id="p4">
   <div class="card">
-    <div class="card-hd">Suggested Slots</div>
+    <div class="card-hd">Off-deck Slots</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Select off-deck placements from the off-deck budget. These run for the full flight and do not use inventory forecasting or rate-card calculations.</p>
+    <div id="offdeckSlotGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"></div>
+  </div>
+  <div class="card">
+    <div class="card-hd">On-deck Slots</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">We suggest a country x marketplace mix with at least 6 slots per country below USD 10,000 and at least 10 slots per country above that when inventory exists. Suggestions already avoid repeating the same category and zone combination.</p>
     <div class="fg fg-3" style="margin-bottom:14px">
       <div class="field"><label>Country filter</label><select id="slotFilterCountry" onchange="renderSlotPreselection()"><option value="">All countries</option></select></div>
@@ -658,6 +671,11 @@ function titleCaseWords(value){
 function displayBrandName(value){
   return titleCaseWords(value||'Brand') || 'Brand';
 }
+function displaySelectedBrandNames(){
+  const brands=selectedBrandsForPayload();
+  if(!brands.length) return displayBrandName(getSelectedBrandName()||'Brand');
+  return brands.map(displayBrandName).join(' + ');
+}
 function sentenceCaseLabel(value){
   const text=String(value||'').replace(/_/g,' ').trim().toLowerCase();
   if(!text) return '';
@@ -834,6 +852,7 @@ function displayCountries(){
   return (S.countries||[]).map(country=>String(country||'').toUpperCase()).join(', ');
 }
 function displayCountryCode(value){
+  if(String(value||'').toLowerCase()==='offdeck') return 'OFF-DECK';
   return String(value||'').toUpperCase();
 }
 function displayFlightRange(){
@@ -866,8 +885,9 @@ function campaignDurationDays(){
   return Math.max(Math.round((end-start)/86400000)+1,0);
 }
 function blendedCpm(rows){
-  const totalNet=rows.reduce((sum,row)=>sum+netAmount(row),0);
-  const totalViews=rows.reduce((sum,row)=>sum+Number(row.views||0),0);
+  const cpmRows=(rows||[]).filter(row=>String(row.buyType||'').toUpperCase()!=='OFF-DECK');
+  const totalNet=cpmRows.reduce((sum,row)=>sum+netAmount(row),0);
+  const totalViews=cpmRows.reduce((sum,row)=>sum+Number(row.views||0),0);
   if(totalViews<=0) return 0;
   return (totalNet*1000)/totalViews;
 }
@@ -885,11 +905,12 @@ function grossRate(row){
 }
 
 const S={
-  bTag:'', brandSearchTimer:null, comcats:[], comcatSplits:{}, countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
+  bTag:'', brandSearchTimer:null, brands:[], brandSplits:{}, comcats:[], comcatSplits:{}, countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
   phases:[], phaseSplits:{},
-  rows:[], budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
+  rows:[], totalBudget:0, offdeckBudget:0, budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
   availableSlotCatalog:[],
+  offdeckSlots:[], selectedOffdeckSlots:[],
   slotSuggestions:[], selectedSlots:[], manualFoc:false,
   planDiagnostics:{},
   calPage:0,
@@ -955,9 +976,12 @@ function setBrandValue(value){
   const brand=String(value||'').trim();
   const search=document.getElementById('brandSelect');
   const hidden=document.getElementById('bName');
-  if(search) search.value=brand;
-  if(hidden) hidden.value=brand;
+  if(brand && !S.brands.some(item=>item.toLowerCase()===brand.toLowerCase())) S.brands.push(brand);
+  if(search) search.value='';
+  if(hidden) hidden.value=S.brands.join(', ');
   hideBrandResults();
+  renderBrandChips();
+  syncBrandSplitUi();
 }
 
 function hideBrandResults(){
@@ -1015,7 +1039,95 @@ function onBrandSearchInput(){
 function getSelectedBrandName(){
   const search=document.getElementById('brandSelect');
   const hidden=document.getElementById('bName');
+  if(S.brands.length) return S.brands[0];
   return (((hidden&&hidden.value)||'') || ((search&&search.value)||'')).trim();
+}
+
+function selectedBrandsForPayload(){
+  const typed=((document.getElementById('brandSelect')?.value)||'').trim();
+  const brands=[...S.brands];
+  if(!brands.length && typed) brands.push(typed);
+  return [...new Set(brands.map(value=>String(value||'').trim()).filter(Boolean))];
+}
+
+function renderBrandChips(){
+  const wrap=document.getElementById('brandChips');
+  const hidden=document.getElementById('bName');
+  if(hidden) hidden.value=selectedBrandsForPayload().join(', ');
+  if(!wrap) return;
+  wrap.innerHTML=S.brands.map(brand=>`<div class="pill on" style="display:flex;gap:6px;align-items:center">${escapeHtml(brand)} <span style="cursor:pointer;color:var(--text2)" onclick='removeBrand(${JSON.stringify(brand)})'>×</span></div>`).join('');
+}
+
+function removeBrand(brand){
+  S.brands=S.brands.filter(item=>item!==brand);
+  delete S.brandSplits[brand];
+  renderBrandChips();
+  syncBrandSplitUi();
+}
+
+function normalizeBrandSplits(){
+  const brands=selectedBrandsForPayload();
+  const next={};
+  if(!brands.length){
+    S.brandSplits={};
+    return brands;
+  }
+  const equal=100/brands.length;
+  brands.forEach(brand=>{
+    const current=Number(S.brandSplits[brand]);
+    next[brand]=Number.isFinite(current)&&current>=0?current:equal;
+  });
+  const total=Object.values(next).reduce((sum,value)=>sum+Number(value||0),0);
+  if(total<=0){
+    brands.forEach(brand=>{ next[brand]=equal; });
+  }else{
+    brands.forEach(brand=>{ next[brand]=(next[brand]/total)*100; });
+  }
+  S.brandSplits=next;
+  return brands;
+}
+
+function syncBrandSplitUi(){
+  const block=document.getElementById('brandSplitBlock');
+  const rows=document.getElementById('brandSplitRows');
+  if(!block||!rows) return;
+  const brands=normalizeBrandSplits();
+  if(brands.length<=1){
+    block.style.display='none';
+    rows.innerHTML='';
+    return;
+  }
+  block.style.display='block';
+  rows.innerHTML=brands.map(brand=>{
+    const value=Math.round(Number(S.brandSplits[brand]||0));
+    return `<div class="w-row">
+      <span class="w-lbl" style="width:120px">${escapeHtml(brand)}</span>
+      <input type="range" min="0" max="100" step="5" value="${value}" oninput='syncBrandSplit(${JSON.stringify(brand)},this.value)'/>
+      <span class="w-val">${value}%</span>
+    </div>`;
+  }).join('');
+}
+
+function syncBrandSplit(key,value){
+  const brands=selectedBrandsForPayload();
+  const target=Math.max(0,Math.min(100,Number(value)||0));
+  const others=brands.filter(brand=>brand!==key);
+  S.brandSplits[key]=target;
+  if(others.length){
+    const remaining=100-target;
+    const otherTotal=others.reduce((sum,brand)=>sum+Number(S.brandSplits[brand]||0),0);
+    others.forEach(brand=>{
+      S.brandSplits[brand]=otherTotal>0?(Number(S.brandSplits[brand]||0)/otherTotal)*remaining:remaining/others.length;
+    });
+  }
+  syncBrandSplitUi();
+}
+
+function collectBrandBudgetSplits(){
+  const brands=normalizeBrandSplits();
+  const splits={};
+  brands.forEach(brand=>{ splits[brand]=Number(S.brandSplits[brand]||0); });
+  return splits;
 }
 
 function syncObjectiveUi(){
@@ -1074,6 +1186,10 @@ function syncBudgetLockUi(){
   }
   const budget=document.getElementById('bBudget');
   if(budget) budget.disabled=!!S.budgetLocked;
+  const totalBudget=document.getElementById('bTotalBudget');
+  if(totalBudget) totalBudget.disabled=!!S.budgetLocked;
+  const offdeckBudget=document.getElementById('bOffdeckBudget');
+  if(offdeckBudget) offdeckBudget.disabled=!!S.budgetLocked;
 }
 
 function toggleBudgetLock(){
@@ -1082,6 +1198,8 @@ function toggleBudgetLock(){
 
 function applyRequestToState(request){
   const req=request||{};
+  S.brands=[...(req.brands&&req.brands.length?req.brands:(req.brand?[req.brand]:[]))].map(value=>String(value||'').trim()).filter(Boolean);
+  S.brandSplits={...(req.brand_budget_splits||{})};
   S.countries=(req.countries||[]).map(v=>String(v).toLowerCase());
   S.comcats=[...(req.comcats||[])];
   S.comcatSplits={...(req.comcat_budget_splits||{})};
@@ -1093,6 +1211,8 @@ function applyRequestToState(request){
   S.obj=normalizeObjective(req.objective)||'both';
   S.rW=Number(req.reach_weight||60)||60;
   S.oW=Number(req.roas_weight||40)||40;
+  S.totalBudget=Number(req.total_budget||0)||Number(req.budget||0)+Number(req.offdeck_budget||0)||0;
+  S.offdeckBudget=Number(req.offdeck_budget||0)||0;
   S.budget=Number(req.budget||0)||0;
   S.discountPct=Number(req.discount_pct||0)||0;
   S.currency=req.currency||'USD';
@@ -1109,6 +1229,8 @@ function applyRequestToState(request){
 
 function hydrateFormFromState(){
   setBrandValue(getSelectedBrandName());
+  document.getElementById('bTotalBudget').value=S.totalBudget||'';
+  document.getElementById('bOffdeckBudget').value=S.offdeckBudget||'';
   document.getElementById('bBudget').value=S.budget||'';
   document.getElementById('bDiscount').value=Number(S.discountPct||0)||'';
   document.getElementById('bCur').value=S.currency||'USD';
@@ -1158,6 +1280,32 @@ function normalizeLoadedRows(rows){
 function displaySlotName(row){
   const meta=findSlotMeta(row&&row.country,row&&row.slot_code)||{};
   return (row&&row.slot_name)||meta.slot_name||row.asset||row.slot_code||'';
+}
+
+function validatePlanInitialization(showWarning=true){
+  const warnings=[];
+  if(!selectedBrandsForPayload().length) warnings.push('Select at least one brand.');
+  if(!S.countries.length) warnings.push('Select at least one country.');
+  if(!S.marketplace) warnings.push('Select a marketplace.');
+  if(!S.comcats.length) warnings.push('Select at least one comcat.');
+  const warning=document.getElementById('planInitWarning');
+  if(warnings.length){
+    if(showWarning&&warning){
+      warning.style.display='block';
+      warning.innerHTML=warnings.join('<br>');
+    }
+    return false;
+  }
+  if(warning){
+    warning.style.display='none';
+    warning.innerHTML='';
+  }
+  return true;
+}
+
+function goObjectiveFromInitialization(){
+  if(!validatePlanInitialization(true)) return;
+  nav(2);
 }
 
 function buildSavedSelectedSlots(saved){
@@ -1213,9 +1361,11 @@ async function fetchSavedPreselection(saved){
     }
     S.slotSuggestions=(data.suggestions||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     S.availableSlotCatalog=(data.available_slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
+    S.offdeckSlots=(data.offdeck_slots||[]);
     mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     const selected=buildSavedSelectedSlots(saved);
     S.selectedSlots=selected.length?selected:S.slotSuggestions.map(slot=>applySlotPricing({...slot,foc:false},slot.pricing_model));
+    S.selectedOffdeckSlots=[...((saved.request&&saved.request.selected_offdeck_slots)||[])];
   S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
 }
 
@@ -1236,7 +1386,8 @@ async function loadSavedPlan(target, reference){
     }
     const request=data.request||{};
     applyRequestToState(request);
-    setBrandValue(request.brand||'');
+    renderBrandChips();
+    syncBrandSplitUi();
     document.getElementById('leCode').value=request.le_code||'';
     if(document.getElementById('bNotes')) document.getElementById('bNotes').value=request.notes||'';
     if(manualRef) manualRef.value=(data.summary&&data.summary.sheet_plan_code)||data.plan_id||ref;
@@ -1245,6 +1396,7 @@ async function loadSavedPlan(target, reference){
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||request.brand_tag||'';
     S.rows=normalizeLoadedRows(data.rows||[]);
     S.selectedSlots=buildSavedSelectedSlots(data);
+    S.selectedOffdeckSlots=[...((request&&request.selected_offdeck_slots)||[])];
     S.excludedSlotKeys=[];
     S.phFilter='All';
     S.tabFilter='all';
@@ -1273,6 +1425,8 @@ async function loadSavedPlan(target, reference){
 }
 
 function nav(n){
+  const startPanel=document.getElementById('p1');
+  if(n>1 && startPanel && startPanel.classList.contains('show') && !validatePlanInitialization(true)) return;
   [1,2,3,4,5].forEach(i=>{
     document.getElementById('p'+i).classList.remove('show');
     document.getElementById('sn'+i).className='np'+(i===n?' active':i<n?' done':'');
@@ -1341,41 +1495,58 @@ function syncW(el,which){
   document.getElementById('oWv').textContent=S.oW+'%';
 }
 function updateBudgetBar(){
+  const offdeck=parseFloat(document.getElementById('bOffdeckBudget')?.value)||0;
   const v=parseFloat(document.getElementById('bBudget').value)||0;
+  const total=v+offdeck;
+  const totalInput=document.getElementById('bTotalBudget');
+  if(totalInput) totalInput.value=total?String(total):'';
   const discount=parseFloat(document.getElementById('bDiscount').value)||0;
   const cur=document.getElementById('bCur').value||'USD';
-  document.getElementById('bbarLeft').textContent=v?('USD '+number10(v)+' net budget'):'No budget entered';
-  if(v){
-    const local=roundToNearestTen(v*fxRate(cur));
-    document.getElementById('bbarRight').textContent=(discount?(`${Math.round(discount)}% discount · `):'')+(cur==='USD'?'USD view':(cur+' ≈ '+number10(local)));
+  const base=total;
+  document.getElementById('bbarLeft').textContent=base?('USD '+number10(base)+' total budget'):'No budget entered';
+  if(base){
+    const local=roundToNearestTen(base*fxRate(cur));
+    document.getElementById('bbarRight').textContent=`On-deck USD ${number10(v)} · Off-deck USD ${number10(offdeck)}${discount?` · ${Math.round(discount)}% discount`:''}${cur&&cur!=='USD'?` · ${cur} ≈ ${number10(local)}`:''}`;
+    document.getElementById('bbarFill').style.width='100%';
   }else{
     document.getElementById('bbarRight').textContent='$0 allocated';
+    document.getElementById('bbarFill').style.width='0%';
   }
 }
 
 function collectPlanningPayload(){
+  S.offdeckBudget=parseFloat(document.getElementById('bOffdeckBudget')?.value)||0;
   S.budget=parseFloat(document.getElementById('bBudget').value)||0;
+  S.totalBudget=S.budget+S.offdeckBudget;
+  const totalInput=document.getElementById('bTotalBudget');
+  if(totalInput) totalInput.value=S.totalBudget?String(S.totalBudget):'';
   S.discountPct=parseFloat(document.getElementById('bDiscount').value)||0;
   S.currency=document.getElementById('bCur').value;
   S.flightStart=document.getElementById('bStart').value;
   S.flightEnd=document.getElementById('bEnd').value;
-  const brand=getSelectedBrandName();
+  const brands=selectedBrandsForPayload();
+  const brand=brands[0]||getSelectedBrandName();
   if(!brand){ throw new Error('Select a brand code or choose Others to enter a brand name.'); }
   if(!S.countries.length){ throw new Error('Select at least one country.'); }
   if(!S.comcats.length){ throw new Error('Select at least one comcat.'); }
   if(!S.obj){ throw new Error('Select campaign objective.'); }
-  if(!S.budget){ throw new Error('Enter total budget.'); }
+  if(!S.budget){ throw new Error('Enter on-deck budget.'); }
+  if(!S.totalBudget){ throw new Error('Enter on-deck or off-deck budget.'); }
   if(!S.currency){ throw new Error('Select currency.'); }
   if(!S.flightStart||!S.flightEnd){ throw new Error('Select start and end dates.'); }
   if(S.flightStart<todayStr()||S.flightEnd<S.flightStart){ throw new Error('Flight dates must be today or later, and end date must be after start date.'); }
   return {
     brand,
+    brands,
+    brand_budget_splits:collectBrandBudgetSplits(),
     brand_tag:null,
     comcats:S.comcats,
     comcat_budget_splits:collectComcatBudgetSplits(),
     countries:S.countries,
     start_date:S.flightStart,
     end_date:S.flightEnd,
+    total_budget:S.totalBudget,
+    offdeck_budget:S.offdeckBudget,
     budget:S.budget,
     discount_pct:S.discountPct,
     currency:S.currency,
@@ -1390,7 +1561,8 @@ function collectPlanningPayload(){
     sub_brands:[],
     le_code:(document.getElementById('leCode').value||'').trim(),
     notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'',
-    budget_locked:!!S.budgetLocked
+    budget_locked:!!S.budgetLocked,
+    selected_offdeck_slots:S.selectedOffdeckSlots.map(slot=>({...slot,slot_key:offdeckKey(slot)}))
   };
 }
 
@@ -1453,6 +1625,42 @@ function mergedSuggestionSlots(){
     }
   });
   return merged;
+}
+
+function offdeckKey(slot){
+  return String(slot?.slot_key||slot?.slot_code||slot?.slot_name||'').trim();
+}
+
+function toggleOffdeckSlot(key){
+  const existing=S.selectedOffdeckSlots.find(slot=>offdeckKey(slot)===key);
+  if(existing){
+    S.selectedOffdeckSlots=S.selectedOffdeckSlots.filter(slot=>offdeckKey(slot)!==key);
+  }else{
+    const slot=S.offdeckSlots.find(item=>offdeckKey(item)===key);
+    if(slot) S.selectedOffdeckSlots.push({...slot,slot_key:key});
+  }
+  renderSlotPreselection();
+}
+
+function renderOffdeckPreselection(){
+  const wrap=document.getElementById('offdeckSlotGrid');
+  if(!wrap) return;
+  const budgetText=S.offdeckBudget?` · Off-deck budget USD ${number10(S.offdeckBudget)}`:'';
+  wrap.innerHTML=(S.offdeckSlots||[]).map(slot=>{
+    const key=offdeckKey(slot);
+    const safeKey=JSON.stringify(key);
+    const picked=S.selectedOffdeckSlots.some(item=>offdeckKey(item)===key);
+    return `<div class="card" style="margin:0;padding:14px;border-color:${picked?'var(--blue)':'var(--border)'}">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div>
+          <div style="font-size:13px;font-weight:600">${escapeHtml(slot.slot_name||slot.slot_code||'Off-deck slot')}</div>
+          <div class="slot-meta">${escapeHtml(slot.slot_code||key)} · OFF-DECK${slot.page?` · ${escapeHtml(slot.page)}`:''}</div>
+          <div class="slot-meta">${slot.category?escapeHtml(displayCategoryLabel(slot.category)): 'Whole-flight placement'}${slot.dimension?` · ${escapeHtml(slot.dimension)}`:''}${budgetText}</div>
+        </div>
+        <button class="btn ${picked?'pri':'ghost'}" type="button" style="padding:7px 12px;font-size:12px" onclick='toggleOffdeckSlot(${safeKey})'>${picked?'Selected':'Select'}</button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty" style="grid-column:1/-1">No off-deck slots found.</div>';
 }
 
 function slotKey(country,slotCode){ return `${country}|${slotCode}`; }
@@ -1560,6 +1768,7 @@ function renderSlotPreselection(){
   const suggestionWrap=document.getElementById('slotSuggestionGrid');
   const selectedWrap=document.getElementById('selectedSlotList');
   if(!suggestionWrap||!selectedWrap) return;
+  renderOffdeckPreselection();
   refreshSlotFilters();
   const filterCountry=document.getElementById('slotFilterCountry')?.value||'';
   const filterMarketplace=document.getElementById('slotFilterMarketplace')?.value||'';
@@ -1623,6 +1832,7 @@ async function openPreselection(){
     }
     S.slotSuggestions=(data.suggestions||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     S.availableSlotCatalog=(data.available_slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
+    S.offdeckSlots=(data.offdeck_slots||[]);
     mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     if(!S.selectedSlots.length) S.selectedSlots=S.slotSuggestions.map(slot=>applySlotPricing({...slot,foc:false},slot.pricing_model));
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
@@ -1837,9 +2047,14 @@ async function buildPlan(){
     alert('Select at least one slot in slot preselection.');
     return;
   }
+  if(S.offdeckBudget>0 && !S.selectedOffdeckSlots.length){
+    alert('Select at least one off-deck slot or set the off-deck budget to 0.');
+    return;
+  }
   payload.selected_slot_keys=S.selectedSlots.map(slot=>slot.slot_key);
   payload.selected_slot_pricing=Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)]));
   payload.foc_slot_keys=S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key);
+  payload.selected_offdeck_slots=S.selectedOffdeckSlots.map(slot=>({...slot,slot_key:offdeckKey(slot)}));
   document.getElementById('navChip').textContent='Generating plan...';
   try{
     const res=await fetch('/api/media-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -1877,7 +2092,7 @@ async function buildPlan(){
 function phClass(ph){ if(!ph) return 'ph-custom'; const l=ph.toLowerCase(); if(l.includes('jan')) return 'ph-jan'; if(l.includes('feb')) return 'ph-feb'; if(l.includes('mar')) return 'ph-mar'; if(l.includes('eid')) return 'ph-eid'; if(l.includes('ram')) return 'ph-ram'; return 'ph-custom'; }
 
 function renderAll(){
-  const brand=displayBrandName(getSelectedBrandName()||'Brand');
+  const brand=displaySelectedBrandNames();
   const countries=displayCountries()||'Countries';
   document.getElementById('planBrandTitle').textContent=brand+' — '+countries+' recommendation';
   const perCountryMin=(S.budget<=10000?6:10);
@@ -1885,21 +2100,24 @@ function renderAll(){
   document.getElementById('planToolbarNote').textContent=(S.rows.length||0)+' editable country-slot recommendations. Target: '+perCountryMin+'+ per country ('+totalMin+' total) when inventory exists.'+(S.planCode?(' Media code: '+S.planCode+'.'):'');
   const total=S.rows.reduce((a,r)=>a+netAmount(r),0);
   const grossTotal=S.rows.reduce((a,r)=>a+grossAmount(r),0);
-  const totalViews=S.rows.filter(r=>r.views).reduce((a,r)=>a+Number(r.views||0),0);
-  const rC=S.rows.filter(r=>r.stype==='reach').reduce((a,r)=>a+netAmount(r),0);
-  const cC=S.rows.filter(r=>r.stype==='conv').reduce((a,r)=>a+netAmount(r),0);
-  const pct=S.budget?Math.min(Math.round(total/S.budget*100),100):0;
+  const onDeckRows=S.rows.filter(r=>String(r.buyType||'').toUpperCase()!=='OFF-DECK');
+  const offdeckTotal=S.rows.filter(r=>String(r.buyType||'').toUpperCase()==='OFF-DECK').reduce((a,r)=>a+netAmount(r),0);
+  const totalViews=onDeckRows.filter(r=>r.views).reduce((a,r)=>a+Number(r.views||0),0);
+  const rC=onDeckRows.filter(r=>r.stype==='reach').reduce((a,r)=>a+netAmount(r),0);
+  const cC=onDeckRows.filter(r=>r.stype==='conv').reduce((a,r)=>a+netAmount(r),0);
+  const budgetBase=S.totalBudget||S.budget+S.offdeckBudget||S.budget;
+  const pct=budgetBase?Math.min(Math.round(total/budgetBase*100),100):0;
   document.getElementById('metricGrid').innerHTML=`
-    <div class="metric accent"><div class="ml">Net budget</div><div class="mv">${money2(S.budget,'USD')}</div><div class="ms">${(S.currency&&S.currency!=='USD')?(money2(Math.round(S.budget*fxRate(S.currency)),S.currency)+' est.'):currencySymbol('USD').trim()+' · excl. VAT'}</div></div>
+    <div class="metric accent"><div class="ml">Total budget</div><div class="mv">${money2(budgetBase,'USD')}</div><div class="ms">${(S.currency&&S.currency!=='USD')?(money2(Math.round(budgetBase*fxRate(S.currency)),S.currency)+' est.'):currencySymbol('USD').trim()+' · excl. VAT'}</div></div>
     <div class="metric"><div class="ml">Net allocated</div><div class="mv">${money2(total,'USD')}</div><div class="ms">${pct}% of budget</div></div>
     <div class="metric"><div class="ml">Gross value</div><div class="mv">${money2(grossTotal,'USD')}</div><div class="ms">${Math.round(Number(S.discountPct||0))}% discount applied</div></div>
     <div class="metric"><div class="ml">Reach spend</div><div class="mv">${money2(rC,'USD')}</div><div class="ms">${total?Math.round(rC/total*100):0}% of alloc.</div></div>
     <div class="metric"><div class="ml">Conversion spend</div><div class="mv">${money2(cC,'USD')}</div><div class="ms">${total?Math.round(cC/total*100):0}% of alloc.</div></div>
-    <div class="metric"><div class="ml">Est. impressions</div><div class="mv">${compactViews(totalViews)}</div><div class="ms">CPM slots only</div></div>`;
+    <div class="metric"><div class="ml">Off-deck spend</div><div class="mv">${money2(offdeckTotal,'USD')}</div><div class="ms">Whole-flight placements</div></div>`;
   const cur=S.currency||'USD';
   const localTotal=Math.round(total*fxRate(cur));
-  const localBudget=Math.round(S.budget*fxRate(cur));
-  document.getElementById('pBarLeft').textContent=money2(total,'USD')+' of '+money2(S.budget,'USD')+(cur!=='USD'?('  |  '+money2(localTotal,cur)+' of '+money2(localBudget,cur)+' est.'):'' );
+  const localBudget=Math.round(budgetBase*fxRate(cur));
+  document.getElementById('pBarLeft').textContent=money2(total,'USD')+' of '+money2(budgetBase,'USD')+(cur!=='USD'?('  |  '+money2(localTotal,cur)+' of '+money2(localBudget,cur)+' est.'):'' );
   document.getElementById('pBarRight').textContent=pct+'%';
   const fill=document.getElementById('pBarFill'); fill.style.width=pct+'%';
   fill.className='bbar-fill'+(pct>100?' over':pct>85?' warn':'');
@@ -1986,14 +2204,14 @@ function renderTable(){
   document.getElementById('planBody').innerHTML=rows.map(r=>`<tr>
     <td><input class="plan-cell-input" type="date" value="${r.from||''}" onchange="updateRowField(${r.id},'from',this.value)"></td>
     <td><input class="plan-cell-input" type="date" value="${r.to||''}" onchange="updateRowField(${r.id},'to',this.value)"></td>
-    <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'country',this.value)"><option value="ae" ${r.country==='ae'?'selected':''}>AE</option><option value="sa" ${r.country==='sa'?'selected':''}>SA</option><option value="eg" ${r.country==='eg'?'selected':''}>EG</option></select></td>
+    <td>${String(r.buyType||'').toUpperCase()==='OFF-DECK'?'OFF-DECK':`<select class="plan-cell-select" onchange="updateRowField(${r.id},'country',this.value)"><option value="ae" ${r.country==='ae'?'selected':''}>AE</option><option value="sa" ${r.country==='sa'?'selected':''}>SA</option><option value="eg" ${r.country==='eg'?'selected':''}>EG</option></select>`}</td>
     <td>${(r.marketplace||getSlotMarketplace(r)||'').toUpperCase()}</td>
     <td><input class="plan-cell-input" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value)"></td>
     <td>${r.zone||''}</td>
     <td>${r.dimension||''}</td>
     <td>${slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
-    <td><select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='CPD'?'selected':''}>CPD</option></select></td>
+    <td>${String(r.buyType||'').toUpperCase()==='OFF-DECK'?'OFF-DECK':`<select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='CPD'?'selected':''}>CPD</option></select>`}</td>
     <td><input class="plan-cell-input" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)"></td>
     <td><div class="slot-meta" style="font-size:12px">${rateMoney(grossRate(r),'USD')}</div></td>
     <td><div class="slot-meta" style="font-size:12px">${rateMoney(netRate(r),'USD')}</div></td>
@@ -2129,7 +2347,8 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
-  const payload={ brand:getSelectedBrandName(), brand_tag:null, comcats:S.comcats, comcat_budget_splits:collectComcatBudgetSplits(), countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), phase_budget_splits:collectPhaseBudgetSplits(), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:[], le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
+  const brands=selectedBrandsForPayload();
+  const payload={ brand:brands[0]||getSelectedBrandName(), brands, brand_budget_splits:collectBrandBudgetSplits(), brand_tag:null, comcats:S.comcats, comcat_budget_splits:collectComcatBudgetSplits(), countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, total_budget:S.totalBudget, offdeck_budget:S.offdeckBudget, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), phase_budget_splits:collectPhaseBudgetSplits(), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:[], le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_offdeck_slots:S.selectedOffdeckSlots.map(slot=>({...slot,slot_key:offdeckKey(slot)})), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
     document.getElementById('navChip').textContent='Regenerating...';
     const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -2157,16 +2376,20 @@ function addRow(){
 
 function printPlan(mode='detailed'){
   const cur=S.currency||'USD';
-  const brand=displayBrandName(getSelectedBrandName()||'Brand');
+  const brand=displaySelectedBrandNames();
   const countries=displayCountries()||'-';
   const total=S.rows.reduce((sum,row)=>sum+netAmount(row),0);
   const grossTotal=S.rows.reduce((sum,row)=>sum+grossAmount(row),0);
-  const totalViews=S.rows.reduce((sum,row)=>sum+Number(row.views||0),0);
+  const onDeckRows=S.rows.filter(row=>String(row.buyType||'').toUpperCase()!=='OFF-DECK');
+  const totalViews=onDeckRows.reduce((sum,row)=>sum+Number(row.views||0),0);
+  const budgetBase=S.totalBudget||S.budget+S.offdeckBudget||S.budget;
   const duration=campaignDurationDays();
   const flightRange=displayFlightRange();
   const campaignCpm=blendedCpm(S.rows);
   const mediaCode=S.planCode||S.planId||'-';
-  const detailedRows=S.rows.map(row=>`<tr>
+  const detailedRows=S.rows.map(row=>{
+    const isOffdeck=String(row.buyType||'').toUpperCase()==='OFF-DECK';
+    return `<tr>
     <td>${row.from||''}</td>
     <td>${row.to||''}</td>
     <td>${displayCountryCode(row.country)}</td>
@@ -2177,27 +2400,31 @@ function printPlan(mode='detailed'){
     <td>${displaySlotName(row)}<div style="font-size:10px;color:#666">${row.slot_code||''}</div></td>
     <td style="text-align:center">${row.days||0}</td>
     <td>${row.buyType||''}</td>
-    <td style="text-align:right">${rateText(netRate(row))}</td>
-    <td style="text-align:right">${rateMoney(grossRate(row),'USD')}</td>
-    <td style="text-align:right">${rateMoney(netRate(row),'USD')}</td>
-    <td style="text-align:right">${views10(row.views||0)}</td>
+    <td style="text-align:right">${isOffdeck?'-':rateText(netRate(row))}</td>
+    <td style="text-align:right">${isOffdeck?'-':rateMoney(grossRate(row),'USD')}</td>
+    <td style="text-align:right">${isOffdeck?'-':rateMoney(netRate(row),'USD')}</td>
+    <td style="text-align:right">${isOffdeck?'-':views10(row.views||0)}</td>
     <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
     <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
     <td style="text-align:right">${money2(netAmount(row)*fxRate(cur),cur)}</td>
     <td>${row.phase||''}</td>
     <td>${row.brand||''}</td>
     <td>${row.note||''}</td>
-  </tr>`).join('');
-  const executiveRows=S.rows.map(row=>`<tr>
+  </tr>`;
+  }).join('');
+  const executiveRows=S.rows.map(row=>{
+    const isOffdeck=String(row.buyType||'').toUpperCase()==='OFF-DECK';
+    return `<tr>
     <td>${displaySlotName(row)}</td>
     <td>${row.page||''}</td>
     <td>${(row.marketplace||'').toUpperCase()}</td>
     <td>${displayCountryCode(row.country)}</td>
-    <td style="text-align:right">${rateText(row.rate||0)}</td>
-    <td style="text-align:right">${views10(row.views||0)}</td>
+    <td style="text-align:right">${isOffdeck?'-':rateText(row.rate||0)}</td>
+    <td style="text-align:right">${isOffdeck?'-':views10(row.views||0)}</td>
     <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
     <td style="text-align:right">${money2(netAmount(row),'USD')}</td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
   const tableHead=mode==='executive'
     ? `<tr><th>Asset / Slot</th><th>Page</th><th>Marketplace</th><th>Country</th><th>Net Rate</th><th>Est. views</th><th>Gross Cost</th><th>Net Cost</th></tr>`
     : `<tr><th>From</th><th>To</th><th>Country</th><th>Marketplace</th><th>Page</th><th>Zone</th><th>Dimension</th><th>Asset / Slot</th><th>Days</th><th>Buy type</th><th>Rate</th><th>Gross Rate</th><th>Net Rate</th><th>Est. views</th><th>Gross $</th><th>Net $</th><th>Net ${currencySymbol(cur).trim()}</th><th>Phase</th><th>Brand</th><th>Note</th></tr>`;
@@ -2212,7 +2439,7 @@ function printPlan(mode='detailed'){
     `
     : `
       <div class="sumcard"><div class="sumlabel">Media Code</div><div class="sumvalue" style="font-size:18px">${mediaCode}</div><div class="sumsub">Generated reference</div></div>
-      <div class="sumcard"><div class="sumlabel">Net Budget</div><div class="sumvalue">${money2(S.budget,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(S.budget*fxRate(cur),cur):'USD view'}</div></div>
+      <div class="sumcard"><div class="sumlabel">Net Budget</div><div class="sumvalue">${money2(budgetBase,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(budgetBase*fxRate(cur),cur):'USD view'}</div></div>
       <div class="sumcard"><div class="sumlabel">Discount</div><div class="sumvalue">${Math.round(Number(S.discountPct||0))}%</div><div class="sumsub">Applied on slot-data rates</div></div>
       <div class="sumcard"><div class="sumlabel">Gross Value</div><div class="sumvalue">${money2(grossTotal,'USD')}</div><div class="sumsub">Before discounting</div></div>
       <div class="sumcard"><div class="sumlabel">Net Value</div><div class="sumvalue">${money2(total,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(total*fxRate(cur),cur):'Aligned to budget'}</div></div>

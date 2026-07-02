@@ -53,6 +53,8 @@ class EditablePlanLine(BaseModel):
 
 class MediaPlanRequest(BaseModel):
     brand: str
+    brands: list[str] = Field(default_factory=list)
+    brand_budget_splits: dict[str, float] = Field(default_factory=dict)
     brand_tag: Optional[BrandTag] = None
     comcats: list[str] = Field(default_factory=list)
     comcat_budget_splits: dict[str, float] = Field(default_factory=dict)
@@ -66,7 +68,9 @@ class MediaPlanRequest(BaseModel):
     start_date: date
     end_date: date
 
-    # Budget is entered in USD. Currency is used for display only.
+    # Budget is entered in USD. `budget` is the on-deck optimizer budget.
+    total_budget: float = 0.0
+    offdeck_budget: float = 0.0
     budget: float
     discount_pct: float = 0.0
     currency: str
@@ -83,6 +87,7 @@ class MediaPlanRequest(BaseModel):
     selected_slot_keys: list[str] = Field(default_factory=list)
     selected_slot_pricing: dict[str, str] = Field(default_factory=dict)
     foc_slot_keys: list[str] = Field(default_factory=list)
+    selected_offdeck_slots: list[dict] = Field(default_factory=list)
 
     plan_id: Optional[str] = None
     current_rows: list[EditablePlanLine] = Field(default_factory=list)

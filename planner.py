@@ -510,6 +510,30 @@ def _phase_splits(req: MediaPlanRequest, phases: list[Phase]) -> dict[str, float
     return {phase.name: inclusive_days(phase.from_date, phase.to_date) / total_days for phase in phases}
 
 
+def _brand_splits(req: MediaPlanRequest) -> list[tuple[str, float]]:
+    selected = [str(value or "").strip() for value in (getattr(req, "brands", []) or []) if str(value or "").strip()]
+    if not selected and str(req.brand or "").strip():
+        selected = [str(req.brand).strip()]
+    if not selected:
+        return [("", 1.0)]
+    raw_splits = getattr(req, "brand_budget_splits", {}) or {}
+    weights = []
+    for brand in selected:
+        raw_value = raw_splits.get(brand)
+        if raw_value is None:
+            raw_value = raw_splits.get(brand.lower())
+        try:
+            weight = max(float(raw_value), 0.0)
+        except (TypeError, ValueError):
+            weight = 0.0
+        weights.append((brand, weight))
+    total = sum(weight for _, weight in weights)
+    if total <= 0:
+        equal_share = 1.0 / len(selected)
+        return [(brand, equal_share) for brand in selected]
+    return [(brand, weight / total) for brand, weight in weights]
+
+
 def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str], dict], settings, marketplace: str | None) -> list[Candidate]:
     prepared_rows: list[dict] = []
     for row in historical_rows:
@@ -1249,6 +1273,7 @@ def plan_media(
         return [], {"reason": "No countries selected."}
 
     country_budget = req.budget / len(countries)
+    brand_splits = _brand_splits(req)
     marketplace_splits = _marketplace_splits(req)
     comcat_splits = _comcat_splits(req)
     phase_splits = _phase_splits(req, phases)
@@ -1256,7 +1281,7 @@ def plan_media(
     for row in rows:
         spent_by_country[row.country] += float(row.cost or row.net_amount or 0)
 
-    def append_row(candidate: Candidate, phase: Phase, stype: str, score_value: float, target_budget: float, force: bool = False) -> bool:
+    def append_row(candidate: Candidate, phase: Phase, stype: str, score_value: float, target_budget: float, force: bool = False, brand_name: str | None = None) -> bool:
         nonlocal line_id, spent_total
         slot_key_value = slot_key(candidate.country, candidate.slot_code)
         requested_model = selected_slot_pricing_map.get(slot_key_value)
@@ -1456,7 +1481,7 @@ def plan_media(
                     "net_amount": round(net_amount, 2),
                     "discount_pct": req.discount_pct,
                     "phase": phase.name,
-                    "brand": req.brand,
+                    "brand": brand_name or req.brand,
                     "stype": stype,
                     "slot_code": candidate.slot_code,
                     "score": round(score_value, 4),
@@ -1510,11 +1535,12 @@ def plan_media(
         candidate = selected_candidate_for_key(selected_key)
         if not candidate:
             continue
+        brand_name, brand_share = brand_splits[index % len(brand_splits)]
         phase = phases[index % len(phases)]
         remaining_selected = max(len(selected_slot_key_list) - index, 1)
-        target_budget = max(req.budget - spent_total, 0) / remaining_selected
+        target_budget = (max(req.budget - spent_total, 0) / remaining_selected) * max(brand_share, 0.01)
         selected_score = _candidate_score(candidate, req.objective)
-        append_row(candidate, phase, selected_type, selected_score, target_budget, force=True)
+        append_row(candidate, phase, selected_type, selected_score, target_budget, force=True, brand_name=brand_name)
 
     for country in countries:
         country_candidates = [c for c in candidates if c.country == country]
@@ -1533,51 +1559,54 @@ def plan_media(
 
         for phase in phases:
             phase_share = phase_splits.get(phase.name, 0)
-            for marketplace_name, marketplace_share in marketplace_splits:
-                marketplace_candidates = [candidate for candidate in country_candidates if candidate.marketplace == marketplace_name]
-                if not marketplace_candidates:
-                    continue
-                for comcat_name, comcat_share in comcat_splits:
-                    comcat_candidates = [
-                        candidate
-                        for candidate in marketplace_candidates
-                        if not comcat_name or _slot_relevance_for_comcat(candidate, comcat_name) > 0
-                    ]
-                    if not comcat_candidates:
+            for brand_name, brand_share in brand_splits:
+                for marketplace_name, marketplace_share in marketplace_splits:
+                    marketplace_candidates = [candidate for candidate in country_candidates if candidate.marketplace == marketplace_name]
+                    if not marketplace_candidates:
                         continue
-                    for stype, weight, score_name in _allocation_tracks(req):
-                        target = country_budget * marketplace_share * phase_share * comcat_share * weight
-                        if target <= 0:
+                    for comcat_name, comcat_share in comcat_splits:
+                        comcat_candidates = [
+                            candidate
+                            for candidate in marketplace_candidates
+                            if not comcat_name or _slot_relevance_for_comcat(candidate, comcat_name) > 0
+                        ]
+                        if not comcat_candidates:
                             continue
-                        already = sum(
-                            row.cost
-                            for row in rows
-                            if row.country == country
-                            and row.marketplace == marketplace_name
-                            and row.phase == phase.name
-                            and row.stype == stype
-                            and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
-                        )
-                        remaining_target = max(target - already, 0)
-                        ranked = sorted(comcat_candidates, key=lambda c: (getattr(c, score_name), _slot_relevance_for_comcat(c, comcat_name)), reverse=True)
-                        base_goal = _per_country_min_lines(req) * phase_share * marketplace_share * comcat_share
-                        phase_goal = max(1, min(settings.max_lines_per_phase, round(base_goal)))
-                        used_in_phase = len([
-                            row
-                            for row in rows
-                            if row.country == country
-                            and row.marketplace == marketplace_name
-                            and row.phase == phase.name
-                            and row.stype == stype
-                            and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
-                        ])
-                        for candidate in ranked:
-                            if used_in_phase >= phase_goal:
-                                break
-                            target_budget = remaining_target / max(phase_goal - used_in_phase, 1) if remaining_target > 0 else country_budget * marketplace_share * comcat_share / max(_per_country_min_lines(req), 1)
-                            if append_row(candidate, phase, stype, getattr(candidate, score_name), target_budget):
-                                used_in_phase += 1
-                                remaining_target = max(remaining_target - target_budget, 0)
+                        for stype, weight, score_name in _allocation_tracks(req):
+                            target = country_budget * brand_share * marketplace_share * phase_share * comcat_share * weight
+                            if target <= 0:
+                                continue
+                            already = sum(
+                                row.cost
+                                for row in rows
+                                if row.country == country
+                                and row.marketplace == marketplace_name
+                                and row.brand == brand_name
+                                and row.phase == phase.name
+                                and row.stype == stype
+                                and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
+                            )
+                            remaining_target = max(target - already, 0)
+                            ranked = sorted(comcat_candidates, key=lambda c: (getattr(c, score_name), _slot_relevance_for_comcat(c, comcat_name)), reverse=True)
+                            base_goal = _per_country_min_lines(req) * brand_share * phase_share * marketplace_share * comcat_share
+                            phase_goal = max(1, min(settings.max_lines_per_phase, round(base_goal)))
+                            used_in_phase = len([
+                                row
+                                for row in rows
+                                if row.country == country
+                                and row.marketplace == marketplace_name
+                                and row.brand == brand_name
+                                and row.phase == phase.name
+                                and row.stype == stype
+                                and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
+                            ])
+                            for candidate in ranked:
+                                if used_in_phase >= phase_goal:
+                                    break
+                                target_budget = remaining_target / max(phase_goal - used_in_phase, 1) if remaining_target > 0 else country_budget * brand_share * marketplace_share * comcat_share / max(_per_country_min_lines(req), 1)
+                                if append_row(candidate, phase, stype, getattr(candidate, score_name), target_budget, brand_name=brand_name):
+                                    used_in_phase += 1
+                                    remaining_target = max(remaining_target - target_budget, 0)
 
     per_country_min = _per_country_min_lines(req)
     for country in countries:
@@ -1607,11 +1636,12 @@ def plan_media(
             if have >= per_country_min or spent_total >= req.budget:
                 break
             phase = phases[idx % len(phases)]
-            target_budget = max(req.budget - spent_total, 0) / max(per_country_min - have, 1)
+            brand_name, brand_share = brand_splits[idx % len(brand_splits)]
+            target_budget = (max(req.budget - spent_total, 0) / max(per_country_min - have, 1)) * max(brand_share, 0.01)
             chosen_type = _allocation_type(req.objective)
             chosen_score = _candidate_score(candidate, req.objective)
             key = slot_key(candidate.country, candidate.slot_code)
-            if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=key in selected_slot_keys):
+            if append_row(candidate, phase, chosen_type, chosen_score, target_budget, force=key in selected_slot_keys, brand_name=brand_name):
                 have += 1
 
     existing_selected_keys = {
@@ -1629,11 +1659,12 @@ def plan_media(
         if not candidate:
             continue
         phase = phases[index % len(phases)]
+        brand_name, brand_share = brand_splits[index % len(brand_splits)]
         selected_stype = _allocation_type(req.objective)
         selected_score = _candidate_score(candidate, req.objective)
         remaining_slots = max(len(missing_selected) - index, 1)
-        target_budget = max(req.budget - spent_total, 0) / remaining_slots
-        append_row(candidate, phase, selected_stype, selected_score, target_budget, force=True)
+        target_budget = (max(req.budget - spent_total, 0) / remaining_slots) * max(brand_share, 0.01)
+        append_row(candidate, phase, selected_stype, selected_score, target_budget, force=True, brand_name=brand_name)
 
     final_selected_keys = {
         selected_key
@@ -1686,6 +1717,63 @@ def plan_media(
             }
         )
 
+    selected_offdeck_slots = [
+        slot for slot in (getattr(req, "selected_offdeck_slots", []) or [])
+        if isinstance(slot, dict) and str(slot.get("slot_key") or slot.get("slot_code") or slot.get("slot_name") or "").strip()
+    ]
+    offdeck_budget = round(max(float(getattr(req, "offdeck_budget", 0.0) or 0.0), 0.0), 2)
+    if selected_offdeck_slots and offdeck_budget > 0:
+        gross_per_slot = round(offdeck_budget / len(selected_offdeck_slots), 2)
+        allocated_offdeck = 0.0
+        for index, slot in enumerate(selected_offdeck_slots):
+            if index == len(selected_offdeck_slots) - 1:
+                net_amount = round(offdeck_budget - allocated_offdeck, 2)
+            else:
+                net_amount = gross_per_slot
+                allocated_offdeck = round(allocated_offdeck + net_amount, 2)
+            slot_code_value = str(slot.get("slot_code") or slot.get("slot_key") or slot.get("slot_name") or f"offdeck_{index + 1}").strip()
+            slot_name_value = str(slot.get("slot_name") or slot_code_value).strip()
+            rows.append(
+                EditablePlanLine.model_validate(
+                    {
+                        "id": line_id,
+                        "from": req.start_date,
+                        "to": req.end_date,
+                        "country": "offdeck",
+                        "page": str(slot.get("page") or slot.get("category") or "Off-deck").strip() or "Off-deck",
+                        "marketplace": "OFF-DECK",
+                        "category": str(slot.get("category") or "Off-deck").strip() or "Off-deck",
+                        "zone": "",
+                        "dimension": str(slot.get("dimension") or "").strip(),
+                        "asset": slot_name_value,
+                        "slot_name": slot_name_value,
+                        "days": inclusive_days(req.start_date, req.end_date),
+                        "buyType": "OFF-DECK",
+                        "rate": 0,
+                        "gross_cpm": 0,
+                        "net_cpm": 0,
+                        "views": 0,
+                        "cost": net_amount,
+                        "gross_amount": net_amount,
+                        "net_amount": net_amount,
+                        "discount_pct": req.discount_pct,
+                        "phase": "Full flight",
+                        "brand": req.brand,
+                        "stype": "reach",
+                        "slot_code": slot_code_value,
+                        "score": 0,
+                        "available_views": 0,
+                        "historical_ctr": None,
+                        "historical_roas": None,
+                        "historical_cpm": None,
+                        "note": "",
+                        "manual": False,
+                        "locked": False,
+                    }
+                )
+            )
+            line_id += 1
+
     diagnostics = {
         "candidate_count": len(candidates),
         "base_candidate_count": len(base_candidates),
@@ -1694,9 +1782,13 @@ def plan_media(
         "inventory_rows": len(inventory_rows),
         "inventory_total_available": sum(max(int(row.get("available_views") or 0), 0) for row in inventory_rows),
         "allocated": round(sum(row.cost for row in rows), 2),
+        "on_deck_allocated": round(sum(row.cost for row in rows if str(row.buyType or "").upper() != "OFF-DECK"), 2),
+        "offdeck_allocated": round(sum(row.cost for row in rows if str(row.buyType or "").upper() == "OFF-DECK"), 2),
+        "offdeck_slot_count": len(selected_offdeck_slots),
         "per_country_min": per_country_min,
         "countries": countries,
         "marketplace": req.marketplace,
+        "brand_budget_split": {name: round(share * 100, 2) for name, share in brand_splits if name},
         "marketplace_budget_split": {name: round(share * 100, 2) for name, share in marketplace_splits},
         "comcat_budget_split": {name: round(share * 100, 2) for name, share in comcat_splits if name},
         "phase_budget_split": {name: round(share * 100, 2) for name, share in phase_splits.items()},

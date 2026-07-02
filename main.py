@@ -69,15 +69,19 @@ def search_static_brand_codes(query: str, limit: int = 30) -> list[str]:
 
 def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None):
     allocated = round(sum(row.cost for row in rows), 2)
-    views = sum(row.views or 0 for row in rows)
-    weighted_ctr_den = sum(max(row.views or 0, 0) for row in rows)
-    weighted_roas_den = sum(max(float(row.cost or row.net_amount or 0), 0.0) for row in rows)
+    offdeck_allocated = round(sum(row.cost for row in rows if str(row.buyType or "").upper() == "OFF-DECK"), 2)
+    on_deck_allocated = round(allocated - offdeck_allocated, 2)
+    total_budget = float((req.budget or 0) + (req.offdeck_budget or 0))
+    on_deck_rows = [row for row in rows if str(row.buyType or "").upper() != "OFF-DECK"]
+    views = sum(row.views or 0 for row in on_deck_rows)
+    weighted_ctr_den = sum(max(row.views or 0, 0) for row in on_deck_rows)
+    weighted_roas_den = sum(max(float(row.cost or row.net_amount or 0), 0.0) for row in on_deck_rows)
     expected_ctr = (
-        sum((row.historical_ctr or 0.0) * max(row.views or 0, 0) for row in rows) / weighted_ctr_den
+        sum((row.historical_ctr or 0.0) * max(row.views or 0, 0) for row in on_deck_rows) / weighted_ctr_den
         if weighted_ctr_den > 0 else 0.0
     )
     expected_roas = (
-        sum((row.historical_roas or 0.0) * max(float(row.cost or row.net_amount or 0), 0.0) for row in rows) / weighted_roas_den
+        sum((row.historical_roas or 0.0) * max(float(row.cost or row.net_amount or 0), 0.0) for row in on_deck_rows) / weighted_roas_den
         if weighted_roas_den > 0 else 0.0
     )
     confidence_values = [float(item.get("confidence_score") or 0.0) for item in diagnostics.get("suggested_slots", []) if isinstance(item, dict)]
@@ -89,9 +93,14 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
         "comcats": req.comcats,
         "countries": req.countries,
         "budget": req.budget,
+        "total_budget": total_budget,
+        "on_deck_budget": req.budget,
+        "offdeck_budget": req.offdeck_budget,
         "discount_pct": req.discount_pct,
         "allocated": allocated,
-        "remaining": round(req.budget - allocated, 2),
+        "on_deck_allocated": on_deck_allocated,
+        "offdeck_allocated": offdeck_allocated,
+        "remaining": round(total_budget - allocated, 2),
         "estimated_views": views,
         "line_count": len(rows),
         "expected_ctr": round(expected_ctr, 4),
@@ -186,9 +195,11 @@ def slot_preselection(req: MediaPlanRequest, settings: Settings = Depends(get_se
     slot_meta = repo.fetch_slot_meta(req)
     suggestions = suggest_slots(req, historical_rows, inventory_rows, slot_meta, settings, limit=max(len(req.countries), 1) * (6 if req.budget <= 10000 else 10))
     available_slots = build_available_slots(req, inventory_rows, slot_meta)
+    offdeck_slots = repo.fetch_offdeck_slots()
     return {
         "suggestions": suggestions,
         "available_slots": available_slots,
+        "offdeck_slots": offdeck_slots,
         "diagnostics": {
             "historical_rows": len(historical_rows),
             "inventory_rows": len(inventory_rows),
@@ -206,7 +217,8 @@ def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_se
     if req.start_date < date.today():
         raise HTTPException(status_code=400, detail="start_date must be today or later")
     if req.budget <= 0:
-        raise HTTPException(status_code=400, detail="budget must be positive")
+        raise HTTPException(status_code=400, detail="on-deck budget must be positive")
+    req.total_budget = req.budget + req.offdeck_budget
     if not req.comcats:
         raise HTTPException(status_code=400, detail="select at least one comcat")
     if not req.countries:
@@ -227,6 +239,9 @@ def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_se
 
 @app.post("/api/media-plan/{plan_id}/regenerate", response_model=MediaPlanResponse)
 def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
+    if req.budget <= 0:
+        raise HTTPException(status_code=400, detail="on-deck budget must be positive")
+    req.total_budget = req.budget + req.offdeck_budget
     req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)
