@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         validation_alias="SLOT_RATE_CARD_TABLE",
     )
     brand_code_table: str = Field(
-        "noonbiadmon.admon_business_analytics.brand_code",
+        "noonbiadmon.assortment_noon.catalog",
         validation_alias="BRAND_CODE_TABLE",
     )
     plan_runs_table: str = Field(
