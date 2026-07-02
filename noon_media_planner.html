@@ -249,14 +249,6 @@ td.mono{font-family:var(--mono);font-size:11px}
           <div class="pill" id="mk-supermall" onclick="setMarketplace('supermall')">Supermall</div>
         </div>
       </div>
-      <div class="field">
-        <label>Sub-brands</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-          <input id="subBrandInput" type="text" placeholder="Add sub-brand" style="flex:1"/>
-          <button class="btn" type="button" style="padding:7px 12px;font-size:12px" onclick="addSubBrand()">Add</button>
-        </div>
-        <div class="pill-group" id="subBrandChips" style="margin-top:8px"></div>
-      </div>
     </div>
   </div>
   <div class="card">
@@ -937,7 +929,7 @@ function applyRequestToState(request){
   S.marketplace=req.marketplace||'both';
   S.marketplaceCorePct=req.marketplace_core_pct!=null?Number(req.marketplace_core_pct):70;
   S.marketplaceSupermallPct=100-S.marketplaceCorePct;
-  S.subBrands=[...(req.sub_brands||[])];
+  S.subBrands=[];
   S.obj=normalizeObjective(req.objective)||'both';
   S.rW=Number(req.reach_weight||60)||60;
   S.oW=Number(req.roas_weight||40)||40;
@@ -967,7 +959,6 @@ function hydrateFormFromState(){
   syncCountryPills();
   syncComcatPills();
   setMarketplace(S.marketplace||'both');
-  renderSubBrands();
   syncObjectiveUi();
   syncBudgetLockUi();
   updateBudgetBar();
@@ -1142,39 +1133,6 @@ function setMarketplace(v){
   syncMarketplaceSplitUi();
 }
 
-function addSubBrand(){
-  const inp=document.getElementById('subBrandInput');
-  const v=((inp&&inp.value)||'').trim();
-  if(!v) return;
-  if(!S.subBrands.includes(v)) S.subBrands.push(v);
-  if(inp) inp.value='';
-  renderSubBrands();
-}
-function removeSubBrand(v){
-  S.subBrands=S.subBrands.filter(x=>x!==v);
-  renderSubBrands();
-}
-function renderSubBrands(){
-  const wrap=document.getElementById('subBrandChips');
-  if(!wrap) return;
-  wrap.innerHTML='';
-  S.subBrands.forEach(s=>{
-    const pill=document.createElement('div');
-    pill.className='pill on';
-    pill.style.display='flex';
-    pill.style.gap='6px';
-    pill.style.alignItems='center';
-    pill.textContent=s;
-    const x=document.createElement('span');
-    x.textContent='×';
-    x.style.cursor='pointer';
-    x.style.color='var(--text2)';
-    x.onclick=()=>removeSubBrand(s);
-    pill.appendChild(x);
-    wrap.appendChild(pill);
-  });
-}
-
 function setBudgetLock(locked){
   S.budgetLocked=!!locked;
   syncBudgetLockUi();
@@ -1264,7 +1222,7 @@ function collectPlanningPayload(){
     marketplace:S.marketplace,
     marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0),
     marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0),
-    sub_brands:S.subBrands,
+    sub_brands:[],
     le_code:(document.getElementById('leCode').value||'').trim(),
     notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'',
     budget_locked:!!S.budgetLocked
@@ -1996,7 +1954,7 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
-  const payload={ brand:getSelectedBrandName(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
+  const payload={ brand:getSelectedBrandName(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:[], le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
     document.getElementById('navChip').textContent='Regenerating...';
     const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
