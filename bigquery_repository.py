@@ -755,24 +755,19 @@ class BigQueryRepository:
         return sorted(values, key=str.lower)
 
     def list_brand_codes(self) -> list[str]:
-        for field in ("brand_code", "brand", "brand_name", "code"):
-            try:
-                rows = self._query_records(
-                    f"""
-                    SELECT DISTINCT CAST(`{field}` AS STRING) AS value
-                    FROM `{self.settings.brand_code_table}`
-                    WHERE `{field}` IS NOT NULL AND CAST(`{field}` AS STRING) != ''
-                    ORDER BY value
-                    LIMIT 5000
-                    """
-                )
-                values = {str(row.get("value") or "").strip() for row in rows}
-                brand_codes = sorted([value for value in values if value], key=str.lower)
-                if brand_codes:
-                    return brand_codes
-            except Exception:
-                continue
-        return []
+        try:
+            rows = self._query_records(
+                f"""
+                SELECT DISTINCT CAST(brand_code AS STRING) AS brand_code
+                FROM `{self.settings.brand_code_table}`
+                WHERE brand_code IS NOT NULL AND CAST(brand_code AS STRING) != ''
+                ORDER BY brand_code
+                """
+            )
+        except Exception:
+            return []
+        values = {str(row.get("brand_code") or "").strip() for row in rows}
+        return sorted([value for value in values if value], key=str.lower)
 
     def save_plan(
         self,

@@ -810,8 +810,9 @@ function renderBrandOptions(values){
   if(!select) return;
   const previous=select.value;
   S.brandCodes=[...(values||[])].map(value=>String(value||'').trim()).filter(Boolean);
+  const emptyLabel=S.brandCodes.length ? 'Select brand code' : 'No brand codes found';
   const options=[
-    brandOptionHtml('','Select brand code'),
+    brandOptionHtml('',emptyLabel),
     ...S.brandCodes.map(value=>brandOptionHtml(value,value)),
     brandOptionHtml('__other__','Others')
   ];
