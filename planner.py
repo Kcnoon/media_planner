@@ -238,6 +238,45 @@ def _slot_comcat_relevance(category: str | None, slot_code: str, slot_name: str 
     return best
 
 
+def _comcat_tokens(value: str) -> set[str]:
+    return {
+        token
+        for token in re.split(r"[^a-z0-9]+", str(value or "").strip().lower())
+        if token and len(token) > 2
+    }
+
+
+def _slot_values_relevance_for_comcat(category: str | None, page: str | None, slot_code: str | None, slot_name: str | None, comcat: str) -> float:
+    comcat_value = str(comcat or "").strip().lower()
+    if not comcat_value:
+        return 1.0
+    haystacks = [
+        (category or "").strip().lower(),
+        (page or "").strip().lower(),
+        (slot_name or "").strip().lower(),
+        (slot_code or "").strip().lower(),
+    ]
+    best = 0.0
+    for value in haystacks:
+        if not value:
+            continue
+        if value == comcat_value or comcat_value in value or value in comcat_value:
+            best = max(best, 1.0)
+    comcat_tokens = _comcat_tokens(comcat_value)
+    haystack_tokens = set().union(*(_slot_tokens(text, None) for text in haystacks if text))
+    if comcat_tokens and haystack_tokens:
+        best = max(best, len(comcat_tokens & haystack_tokens) / len(comcat_tokens))
+    return best
+
+
+def _slot_relevance_for_comcat(candidate: Candidate, comcat: str) -> float:
+    return _slot_values_relevance_for_comcat(candidate.category, candidate.page, candidate.slot_code, candidate.slot_name, comcat)
+
+
+def _row_relevance_for_comcat(row: EditablePlanLine, comcat: str) -> float:
+    return _slot_values_relevance_for_comcat(row.category, row.page, row.slot_code, row.slot_name, comcat)
+
+
 def discounted_rate(rate: float, discount_pct: float) -> float:
     return round(rate * max(0.0, 1 - (discount_pct / 100.0)), 4)
 
@@ -424,6 +463,51 @@ def _marketplace_splits(req: MediaPlanRequest) -> list[tuple[str, float]]:
     if total <= 0:
         return [("core", 0.7), ("supermall", 0.3)]
     return [("core", core_pct / total), ("supermall", supermall_pct / total)]
+
+
+def _comcat_splits(req: MediaPlanRequest) -> list[tuple[str, float]]:
+    selected = [str(value or "").strip() for value in req.comcats if str(value or "").strip()]
+    if not selected:
+        return [("", 1.0)]
+    raw_splits = getattr(req, "comcat_budget_splits", {}) or {}
+    weights = []
+    for comcat in selected:
+        raw_value = raw_splits.get(comcat)
+        if raw_value is None:
+            raw_value = raw_splits.get(comcat.lower())
+        try:
+            weight = max(float(raw_value), 0.0)
+        except (TypeError, ValueError):
+            weight = 0.0
+        weights.append((comcat, weight))
+    total = sum(weight for _, weight in weights)
+    if total <= 0:
+        equal_share = 1.0 / len(selected)
+        return [(comcat, equal_share) for comcat in selected]
+    return [(comcat, weight / total) for comcat, weight in weights]
+
+
+def _phase_splits(req: MediaPlanRequest, phases: list[Phase]) -> dict[str, float]:
+    if not phases:
+        return {}
+    raw_splits = getattr(req, "phase_budget_splits", {}) or {}
+    weights: dict[str, float] = {}
+    for phase in phases:
+        raw_value = raw_splits.get(phase.name)
+        if raw_value is None:
+            raw_value = raw_splits.get(str(phase.name or "").lower())
+        try:
+            weights[phase.name] = max(float(raw_value), 0.0)
+        except (TypeError, ValueError):
+            weights[phase.name] = 0.0
+    total = sum(weights.values())
+    if total > 0:
+        return {name: weight / total for name, weight in weights.items()}
+    total_days = sum(inclusive_days(phase.from_date, phase.to_date) for phase in phases)
+    if total_days <= 0:
+        equal_share = 1.0 / len(phases)
+        return {phase.name: equal_share for phase in phases}
+    return {phase.name: inclusive_days(phase.from_date, phase.to_date) / total_days for phase in phases}
 
 
 def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str], dict], settings, marketplace: str | None) -> list[Candidate]:
@@ -1166,6 +1250,8 @@ def plan_media(
 
     country_budget = req.budget / len(countries)
     marketplace_splits = _marketplace_splits(req)
+    comcat_splits = _comcat_splits(req)
+    phase_splits = _phase_splits(req, phases)
     spent_by_country: dict[str, float] = defaultdict(float)
     for row in rows:
         spent_by_country[row.country] += float(row.cost or row.net_amount or 0)
@@ -1431,7 +1517,6 @@ def plan_media(
         selected_score = _candidate_score(candidate, req.objective)
         append_row(candidate, phase, selected_type, selected_score, target_budget, force=True)
 
-    total_days = sum(inclusive_days(p.from_date, p.to_date) for p in phases)
     for country in countries:
         country_candidates = [c for c in candidates if c.country == country]
         if selected_slot_keys:
@@ -1448,42 +1533,52 @@ def plan_media(
             continue
 
         for phase in phases:
-            phase_days = inclusive_days(phase.from_date, phase.to_date)
-            phase_share = phase_days / max(total_days, 1)
+            phase_share = phase_splits.get(phase.name, 0)
             for marketplace_name, marketplace_share in marketplace_splits:
                 marketplace_candidates = [candidate for candidate in country_candidates if candidate.marketplace == marketplace_name]
                 if not marketplace_candidates:
                     continue
-                for stype, weight, score_name in _allocation_tracks(req):
-                    target = country_budget * marketplace_share * phase_share * weight
-                    if target <= 0:
+                for comcat_name, comcat_share in comcat_splits:
+                    comcat_candidates = [
+                        candidate
+                        for candidate in marketplace_candidates
+                        if not comcat_name or _slot_relevance_for_comcat(candidate, comcat_name) > 0
+                    ]
+                    if not comcat_candidates:
                         continue
-                    already = sum(
-                        row.cost
-                        for row in rows
-                        if row.country == country
-                        and row.marketplace == marketplace_name
-                        and row.phase == phase.name
-                        and row.stype == stype
-                    )
-                    remaining_target = max(target - already, 0)
-                    ranked = sorted(marketplace_candidates, key=lambda c: getattr(c, score_name), reverse=True)
-                    phase_goal = max(1, min(settings.max_lines_per_phase, round(_per_country_min_lines(req) * phase_share * marketplace_share)))
-                    used_in_phase = len([
-                        row
-                        for row in rows
-                        if row.country == country
-                        and row.marketplace == marketplace_name
-                        and row.phase == phase.name
-                        and row.stype == stype
-                    ])
-                    for candidate in ranked:
-                        if used_in_phase >= phase_goal:
-                            break
-                        target_budget = remaining_target / max(phase_goal - used_in_phase, 1) if remaining_target > 0 else country_budget * marketplace_share / max(_per_country_min_lines(req), 1)
-                        if append_row(candidate, phase, stype, getattr(candidate, score_name), target_budget):
-                            used_in_phase += 1
-                            remaining_target = max(remaining_target - target_budget, 0)
+                    for stype, weight, score_name in _allocation_tracks(req):
+                        target = country_budget * marketplace_share * phase_share * comcat_share * weight
+                        if target <= 0:
+                            continue
+                        already = sum(
+                            row.cost
+                            for row in rows
+                            if row.country == country
+                            and row.marketplace == marketplace_name
+                            and row.phase == phase.name
+                            and row.stype == stype
+                            and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
+                        )
+                        remaining_target = max(target - already, 0)
+                        ranked = sorted(comcat_candidates, key=lambda c: (getattr(c, score_name), _slot_relevance_for_comcat(c, comcat_name)), reverse=True)
+                        base_goal = _per_country_min_lines(req) * phase_share * marketplace_share * comcat_share
+                        phase_goal = max(1, min(settings.max_lines_per_phase, round(base_goal)))
+                        used_in_phase = len([
+                            row
+                            for row in rows
+                            if row.country == country
+                            and row.marketplace == marketplace_name
+                            and row.phase == phase.name
+                            and row.stype == stype
+                            and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
+                        ])
+                        for candidate in ranked:
+                            if used_in_phase >= phase_goal:
+                                break
+                            target_budget = remaining_target / max(phase_goal - used_in_phase, 1) if remaining_target > 0 else country_budget * marketplace_share * comcat_share / max(_per_country_min_lines(req), 1)
+                            if append_row(candidate, phase, stype, getattr(candidate, score_name), target_budget):
+                                used_in_phase += 1
+                                remaining_target = max(remaining_target - target_budget, 0)
 
     per_country_min = _per_country_min_lines(req)
     for country in countries:
@@ -1604,6 +1699,8 @@ def plan_media(
         "countries": countries,
         "marketplace": req.marketplace,
         "marketplace_budget_split": {name: round(share * 100, 2) for name, share in marketplace_splits},
+        "comcat_budget_split": {name: round(share * 100, 2) for name, share in comcat_splits if name},
+        "phase_budget_split": {name: round(share * 100, 2) for name, share in phase_splits.items()},
         "country_row_counts": {country: len([row for row in rows if row.country == country and (row.slot_code or "").strip()]) for country in countries},
         "omitted_selected_slots": omitted_selected_slots,
     }

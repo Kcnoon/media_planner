@@ -55,6 +55,7 @@ class MediaPlanRequest(BaseModel):
     brand: str
     brand_tag: Optional[BrandTag] = None
     comcats: list[str] = Field(default_factory=list)
+    comcat_budget_splits: dict[str, float] = Field(default_factory=dict)
     countries: list[str] = Field(default_factory=list)
 
     marketplace: Marketplace = "both"
@@ -78,6 +79,7 @@ class MediaPlanRequest(BaseModel):
     reach_weight: int = 60
     roas_weight: int = 40
     phases: list[Phase] = Field(default_factory=list)
+    phase_budget_splits: dict[str, float] = Field(default_factory=dict)
     selected_slot_keys: list[str] = Field(default_factory=list)
     selected_slot_pricing: dict[str, str] = Field(default_factory=dict)
     foc_slot_keys: list[str] = Field(default_factory=list)

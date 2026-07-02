@@ -264,6 +264,10 @@ td.mono{font-family:var(--mono);font-size:11px}
   <div class="card">
     <div class="card-hd">Comcat Selection</div>
     <div class="pill-group" id="comcatGroup"></div>
+    <div id="comcatSplitBlock" class="w-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Comcat budget split</div>
+      <div id="comcatSplitRows"></div>
+    </div>
   </div>
   <div class="btn-row"><button class="btn pri" onclick="nav(2)">Next: Objective →</button></div>
 </div>
@@ -358,6 +362,10 @@ td.mono{font-family:var(--mono);font-size:11px}
 
     <!-- Phase list -->
     <div class="phase-list" id="phaseList"></div>
+    <div id="phaseSplitBlock" class="w-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Phase budget allocation</div>
+      <div id="phaseSplitRows"></div>
+    </div>
 
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="btn ghost" id="addPhBtn" style="font-size:12px;padding:6px 14px" onclick="startPick()">+ Add phase</button>
@@ -688,6 +696,136 @@ function renderComcatGroup(values){
     group.appendChild(pill);
   });
   syncComcatPills();
+  syncComcatSplitUi();
+}
+function selectedComcatSplitEntries(){
+  return comcatUiEntries(S.comcats);
+}
+function normalizeComcatSplits(){
+  const entries=selectedComcatSplitEntries();
+  const next={};
+  if(!entries.length){
+    S.comcatSplits={};
+    return entries;
+  }
+  const equal=100/entries.length;
+  entries.forEach(entry=>{
+    const current=Number(S.comcatSplits[entry.key]);
+    next[entry.key]=Number.isFinite(current)&&current>=0?current:equal;
+  });
+  const total=Object.values(next).reduce((sum,value)=>sum+Number(value||0),0);
+  if(total<=0){
+    entries.forEach(entry=>{ next[entry.key]=equal; });
+  }else{
+    entries.forEach(entry=>{ next[entry.key]=(next[entry.key]/total)*100; });
+  }
+  S.comcatSplits=next;
+  return entries;
+}
+function syncComcatSplitUi(){
+  const block=document.getElementById('comcatSplitBlock');
+  const rows=document.getElementById('comcatSplitRows');
+  if(!block||!rows) return;
+  const entries=normalizeComcatSplits();
+  if(entries.length<=1){
+    block.style.display='none';
+    rows.innerHTML='';
+    return;
+  }
+  block.style.display='block';
+  rows.innerHTML=entries.map(entry=>{
+    const value=Math.round(Number(S.comcatSplits[entry.key]||0));
+    return `<div class="w-row">
+      <span class="w-lbl" style="width:120px">${escapeHtml(entry.label)}</span>
+      <input type="range" min="0" max="100" step="5" value="${value}" oninput='syncComcatSplit(${JSON.stringify(entry.key)},this.value)'/>
+      <span class="w-val">${value}%</span>
+    </div>`;
+  }).join('');
+}
+function syncComcatSplit(key,value){
+  const entries=selectedComcatSplitEntries();
+  const target=Math.max(0,Math.min(100,Number(value)||0));
+  const others=entries.filter(entry=>entry.key!==key);
+  S.comcatSplits[key]=target;
+  if(others.length){
+    const remaining=100-target;
+    const otherTotal=others.reduce((sum,entry)=>sum+Number(S.comcatSplits[entry.key]||0),0);
+    others.forEach(entry=>{
+      S.comcatSplits[entry.key]=otherTotal>0?(Number(S.comcatSplits[entry.key]||0)/otherTotal)*remaining:remaining/others.length;
+    });
+  }
+  syncComcatSplitUi();
+}
+function collectComcatBudgetSplits(){
+  const entries=normalizeComcatSplits();
+  const splits={};
+  entries.forEach(entry=>{
+    const groupValue=Number(S.comcatSplits[entry.key]||0);
+    const perValue=entry.values.length?groupValue/entry.values.length:groupValue;
+    entry.values.forEach(value=>{ splits[value]=perValue; });
+  });
+  return splits;
+}
+function normalizePhaseSplits(){
+  const phases=S.phases||[];
+  const next={};
+  if(!phases.length){
+    S.phaseSplits={};
+    return phases;
+  }
+  const equal=100/phases.length;
+  phases.forEach(phase=>{
+    const current=Number(S.phaseSplits[phase.name]);
+    next[phase.name]=Number.isFinite(current)&&current>=0?current:equal;
+  });
+  const total=Object.values(next).reduce((sum,value)=>sum+Number(value||0),0);
+  if(total<=0){
+    phases.forEach(phase=>{ next[phase.name]=equal; });
+  }else{
+    phases.forEach(phase=>{ next[phase.name]=(next[phase.name]/total)*100; });
+  }
+  S.phaseSplits=next;
+  return phases;
+}
+function syncPhaseSplitUi(){
+  const block=document.getElementById('phaseSplitBlock');
+  const rows=document.getElementById('phaseSplitRows');
+  if(!block||!rows) return;
+  const phases=normalizePhaseSplits();
+  if(!phases.length){
+    block.style.display='none';
+    rows.innerHTML='';
+    return;
+  }
+  block.style.display='block';
+  rows.innerHTML=phases.map(phase=>{
+    const value=Math.round(Number(S.phaseSplits[phase.name]||0));
+    return `<div class="w-row">
+      <span class="w-lbl" style="width:120px">${escapeHtml(phase.name||'Phase')}</span>
+      <input type="range" min="0" max="100" step="5" value="${value}" ${phases.length===1?'disabled':''} oninput='syncPhaseSplit(${JSON.stringify(phase.name)},this.value)'/>
+      <span class="w-val">${phases.length===1?100:value}%</span>
+    </div>`;
+  }).join('');
+}
+function syncPhaseSplit(key,value){
+  const phases=S.phases||[];
+  const target=Math.max(0,Math.min(100,Number(value)||0));
+  const others=phases.filter(phase=>phase.name!==key);
+  S.phaseSplits[key]=target;
+  if(others.length){
+    const remaining=100-target;
+    const otherTotal=others.reduce((sum,phase)=>sum+Number(S.phaseSplits[phase.name]||0),0);
+    others.forEach(phase=>{
+      S.phaseSplits[phase.name]=otherTotal>0?(Number(S.phaseSplits[phase.name]||0)/otherTotal)*remaining:remaining/others.length;
+    });
+  }
+  syncPhaseSplitUi();
+}
+function collectPhaseBudgetSplits(){
+  const phases=normalizePhaseSplits();
+  const splits={};
+  phases.forEach(phase=>{ splits[phase.name]=Number(S.phaseSplits[phase.name]||0); });
+  return splits;
 }
 function displayCountries(){
   return (S.countries||[]).map(country=>String(country||'').toUpperCase()).join(', ');
@@ -744,8 +882,8 @@ function grossRate(row){
 }
 
 const S={
-  bTag:'', brandSearchTimer:null, comcats:[], countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
-  phases:[],
+  bTag:'', brandSearchTimer:null, comcats:[], comcatSplits:{}, countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
+  phases:[], phaseSplits:{},
   rows:[], budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
   availableSlotCatalog:[],
@@ -943,10 +1081,12 @@ function applyRequestToState(request){
   const req=request||{};
   S.countries=(req.countries||[]).map(v=>String(v).toLowerCase());
   S.comcats=[...(req.comcats||[])];
+  S.comcatSplits={...(req.comcat_budget_splits||{})};
   S.marketplace=req.marketplace||'both';
   S.marketplaceCorePct=req.marketplace_core_pct!=null?Number(req.marketplace_core_pct):70;
   S.marketplaceSupermallPct=100-S.marketplaceCorePct;
   S.subBrands=[];
+  S.phaseSplits={...(req.phase_budget_splits||{})};
   S.obj=normalizeObjective(req.objective)||'both';
   S.rW=Number(req.reach_weight||60)||60;
   S.oW=Number(req.roas_weight||40)||40;
@@ -975,11 +1115,13 @@ function hydrateFormFromState(){
   if(document.getElementById('bNotes')) document.getElementById('bNotes').value=document.getElementById('bNotes').value||'';
   syncCountryPills();
   syncComcatPills();
+  syncComcatSplitUi();
   setMarketplace(S.marketplace||'both');
   syncObjectiveUi();
   syncBudgetLockUi();
   updateBudgetBar();
   onDatesChange();
+  syncPhaseSplitUi();
 }
 
 function normalizeLoadedRows(rows){
@@ -1175,6 +1317,7 @@ function toggleComcat(el,v){
     });
   }
   syncComcatPills();
+  syncComcatSplitUi();
 }
 function setObj(type){
   S.obj=normalizeObjective(type)||type;
@@ -1226,6 +1369,7 @@ function collectPlanningPayload(){
     brand,
     brand_tag:null,
     comcats:S.comcats,
+    comcat_budget_splits:collectComcatBudgetSplits(),
     countries:S.countries,
     start_date:S.flightStart,
     end_date:S.flightEnd,
@@ -1236,6 +1380,7 @@ function collectPlanningPayload(){
     reach_weight:S.rW,
     roas_weight:S.oW,
     phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})),
+    phase_budget_splits:collectPhaseBudgetSplits(),
     marketplace:S.marketplace,
     marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0),
     marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0),
@@ -1565,6 +1710,7 @@ function buildCalendar(){
   visible.forEach(({y,m})=>row.appendChild(buildMonthBlock(y,m)));
   renderSegBar();
   renderPhaseList();
+  syncPhaseSplitUi();
 }
 
 function buildMonthBlock(year,month){
@@ -1614,7 +1760,8 @@ function calDayClick(ds){
   }else{
     if(ds<S.pickFrom){ S.pickFrom=ds; buildCalendar(); return; }
     const color=PHASE_COLORS[S.phases.length%PHASE_COLORS.length];
-    S.phases.push({name:'Phase '+(S.phases.length+1),from:S.pickFrom,to:ds,color});
+    const phaseName='Phase '+(S.phases.length+1);
+    S.phases.push({name:phaseName,from:S.pickFrom,to:ds,color});
     S.picking=false; S.pickFrom=null;
     document.getElementById('addPhBtn').textContent='+ Add phase';
     document.getElementById('addPhBtn').onclick=startPick;
@@ -1662,7 +1809,17 @@ function renderPhaseList(){
   if(!S.phases.length){ list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">No phases yet. Click "+ Add phase" to mark segments on the calendar.</div>'; return; }
   list.innerHTML=S.phases.map((ph,i)=>`<div class="phase-item"><div class="phase-dot" style="background:${ph.color}"></div><div class="phase-dates">${dFmtSh(ph.from)} &ndash; ${dFmtSh(ph.to)}</div><input class="phase-name-inp" value="${ph.name}" oninput="updatePhName(${i},this.value)" placeholder="Phase name"/><button class="phase-del" onclick="delPhase(${i})" title="Remove">×</button></div>`).join('');
 }
-function updatePhName(i,v){ S.phases[i].name=v; renderSegBar(); }
+function updatePhName(i,v){
+  const oldName=S.phases[i].name;
+  const nextName=v||oldName;
+  if(oldName!==nextName){
+    S.phaseSplits[nextName]=S.phaseSplits[oldName]||S.phaseSplits[nextName]||0;
+    delete S.phaseSplits[oldName];
+  }
+  S.phases[i].name=nextName;
+  renderSegBar();
+  syncPhaseSplitUi();
+}
 function delPhase(i){ S.phases.splice(i,1); buildCalendar(); }
 
 async function buildPlan(){
@@ -1969,7 +2126,7 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
-  const payload={ brand:getSelectedBrandName(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:[], le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
+  const payload={ brand:getSelectedBrandName(), brand_tag:null, comcats:S.comcats, comcat_budget_splits:collectComcatBudgetSplits(), countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), phase_budget_splits:collectPhaseBudgetSplits(), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:[], le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
     document.getElementById('navChip').textContent='Regenerating...';
     const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
