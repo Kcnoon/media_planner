@@ -755,17 +755,14 @@ class BigQueryRepository:
         return sorted(values, key=str.lower)
 
     def list_brand_codes(self) -> list[str]:
-        try:
-            rows = self._query_records(
-                f"""
-                SELECT DISTINCT CAST(brand_code AS STRING) AS brand_code
-                FROM `{self.settings.brand_code_table}`
-                WHERE brand_code IS NOT NULL AND CAST(brand_code AS STRING) != ''
-                ORDER BY brand_code
-                """
-            )
-        except Exception:
-            return []
+        rows = self._query_records(
+            f"""
+            SELECT DISTINCT CAST(brand_code AS STRING) AS brand_code
+            FROM `{self.settings.brand_code_table}`
+            WHERE brand_code IS NOT NULL AND CAST(brand_code AS STRING) != ''
+            ORDER BY brand_code
+            """
+        )
         values = {str(row.get("brand_code") or "").strip() for row in rows}
         return sorted([value for value in values if value], key=str.lower)
 

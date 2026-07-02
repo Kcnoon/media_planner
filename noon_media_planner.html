@@ -805,18 +805,19 @@ function brandOptionHtml(value,label){
   return `<option value="${safeValue}">${label||value}</option>`;
 }
 
-function renderBrandOptions(values){
+function renderBrandOptions(values,errorMessage=''){
   const select=document.getElementById('brandSelect');
   if(!select) return;
   const previous=select.value;
   S.brandCodes=[...(values||[])].map(value=>String(value||'').trim()).filter(Boolean);
-  const emptyLabel=S.brandCodes.length ? 'Select brand code' : 'No brand codes found';
+  const emptyLabel=S.brandCodes.length ? 'Select brand code' : (errorMessage ? 'Brand codes unavailable' : 'No brand codes found');
   const options=[
     brandOptionHtml('',emptyLabel),
     ...S.brandCodes.map(value=>brandOptionHtml(value,value)),
     brandOptionHtml('__other__','Others')
   ];
   select.innerHTML=options.join('');
+  select.title=errorMessage||'';
   if(previous && [...S.brandCodes,'__other__'].includes(previous)) select.value=previous;
   syncBrandInputUi();
 }
@@ -1487,7 +1488,7 @@ async function loadOptions(){
     const raw=await res.text();
     const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
     S.slotCatalog=(data.slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''},slot.pricing_model));
-    renderBrandOptions(data.brand_codes||[]);
+    renderBrandOptions(data.brand_codes||[], data.brand_codes_error||'');
     if(data.comcats&&data.comcats.length){
       renderComcatGroup(data.comcats);
     }

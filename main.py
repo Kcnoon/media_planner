@@ -128,10 +128,17 @@ def health():
 
 @app.get("/api/options")
 def list_options(repo: BigQueryRepository = Depends(get_repo)):
+    brand_codes = []
+    brand_codes_error = ""
+    try:
+        brand_codes = repo.list_brand_codes()
+    except Exception as exc:
+        brand_codes_error = str(exc)
     return {
         "countries": ["ae", "sa", "eg"],
         "comcats": repo.list_comcats(),
-        "brand_codes": repo.list_brand_codes(),
+        "brand_codes": brand_codes,
+        "brand_codes_error": brand_codes_error,
         "slots": repo.fetch_slot_catalog(),
     }
 
