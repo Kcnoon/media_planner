@@ -1654,7 +1654,7 @@ function renderOffdeckPreselection(){
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
         <div>
           <div style="font-size:13px;font-weight:600">${escapeHtml(slot.slot_name||slot.slot_code||'Off-deck slot')}</div>
-          <div class="slot-meta">${escapeHtml(slot.slot_code||key)} · OFF-DECK${slot.page?` · ${escapeHtml(slot.page)}`:''}</div>
+          <div class="slot-meta">${displayCountryCode(slot.country)} · ${escapeHtml(slot.slot_code||key)} · OFF-DECK${slot.page?` · ${escapeHtml(slot.page)}`:''}</div>
           <div class="slot-meta">${slot.category?escapeHtml(displayCategoryLabel(slot.category)): 'Whole-flight placement'}${slot.dimension?` · ${escapeHtml(slot.dimension)}`:''}${budgetText}</div>
         </div>
         <button class="btn ${picked?'pri':'ghost'}" type="button" style="padding:7px 12px;font-size:12px" onclick='toggleOffdeckSlot(${safeKey})'>${picked?'Selected':'Select'}</button>

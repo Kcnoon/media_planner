@@ -491,13 +491,18 @@ class BigQueryRepository:
     def fetch_slot_meta(self, req: MediaPlanRequest | None = None) -> dict[tuple[str, str], dict]:
         return {(row["country"], row["slot_code"]): row for row in self.fetch_slot_catalog(req)}
 
-    def fetch_offdeck_slots(self) -> list[dict]:
+    def fetch_offdeck_slots(self, req: MediaPlanRequest | None = None) -> list[dict]:
         rows = self._query_records(f"SELECT * FROM `{self.settings.offdeck_slots_table}`")
+        countries = country_values(req.countries) if req is not None else set()
         slots = []
         seen = set()
         for index, row in enumerate(rows):
-            slot_code = str(get_first(row, "slot_code", "slot", "code", "asset_code") or "").strip()
-            slot_name = str(get_first(row, "slot_name", "asset", "slot", "name", "placement") or slot_code or f"offdeck_{index + 1}").strip()
+            country = infer_country(row)
+            if countries and country not in countries:
+                continue
+            page = str(get_first(row, "Page", "page") or "").strip()
+            slot_code = str(get_first(row, "slot_code") or "").strip()
+            slot_name = str(get_first(row, "slot_name") or slot_code or f"offdeck_{index + 1}").strip()
             key = slot_code or slot_name
             if not key or key in seen:
                 continue
@@ -507,15 +512,15 @@ class BigQueryRepository:
                     "slot_key": key,
                     "slot_code": slot_code or key,
                     "slot_name": slot_name,
-                    "page": str(get_first(row, "page", "category", "publisher", "placement_type") or "").strip(),
-                    "category": str(get_first(row, "category", "page", "vertical", "placement_type") or "").strip(),
-                    "marketplace": str(get_first(row, "marketplace") or "offdeck").strip() or "offdeck",
-                    "country": str(get_first(row, "country") or "").strip().lower(),
-                    "dimension": combined_dimension(row),
-                    "description": str(get_first(row, "description", "remarks", "note") or "").strip(),
+                    "page": page,
+                    "category": page,
+                    "marketplace": "offdeck",
+                    "country": country,
+                    "dimension": "",
+                    "description": "",
                 }
             )
-        slots.sort(key=lambda slot: (str(slot.get("category") or "").lower(), str(slot.get("slot_name") or "").lower()))
+        slots.sort(key=lambda slot: (str(slot.get("country") or ""), str(slot.get("page") or "").lower(), str(slot.get("slot_name") or "").lower()))
         return slots
 
     def fetch_historical_performance(self, req: MediaPlanRequest) -> list[dict]:

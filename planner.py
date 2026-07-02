@@ -1733,16 +1733,18 @@ def plan_media(
                 allocated_offdeck = round(allocated_offdeck + net_amount, 2)
             slot_code_value = str(slot.get("slot_code") or slot.get("slot_key") or slot.get("slot_name") or f"offdeck_{index + 1}").strip()
             slot_name_value = str(slot.get("slot_name") or slot_code_value).strip()
+            country_value = str(slot.get("country") or "").strip().lower() or (req.countries[0] if req.countries else "")
+            page_value = str(slot.get("page") or slot.get("category") or "Off-deck").strip() or "Off-deck"
             rows.append(
                 EditablePlanLine.model_validate(
                     {
                         "id": line_id,
                         "from": req.start_date,
                         "to": req.end_date,
-                        "country": "offdeck",
-                        "page": str(slot.get("page") or slot.get("category") or "Off-deck").strip() or "Off-deck",
+                        "country": country_value,
+                        "page": page_value,
                         "marketplace": "OFF-DECK",
-                        "category": str(slot.get("category") or "Off-deck").strip() or "Off-deck",
+                        "category": page_value,
                         "zone": "",
                         "dimension": str(slot.get("dimension") or "").strip(),
                         "asset": slot_name_value,

@@ -195,7 +195,7 @@ def slot_preselection(req: MediaPlanRequest, settings: Settings = Depends(get_se
     slot_meta = repo.fetch_slot_meta(req)
     suggestions = suggest_slots(req, historical_rows, inventory_rows, slot_meta, settings, limit=max(len(req.countries), 1) * (6 if req.budget <= 10000 else 10))
     available_slots = build_available_slots(req, inventory_rows, slot_meta)
-    offdeck_slots = repo.fetch_offdeck_slots()
+    offdeck_slots = repo.fetch_offdeck_slots(req)
     return {
         "suggestions": suggestions,
         "available_slots": available_slots,
