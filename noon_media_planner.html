@@ -608,6 +608,9 @@ function slotRateSummary(slot){
   }
   return `${current.gross_cpm?` · Gross rate ${rateText(current.gross_cpm)}`:''}${current.net_cpm?` · Net rate ${rateText(current.net_cpm)}`:''}`;
 }
+function slotInventorySummary(slot){
+  return `Avail. views ${views10(slot.available_views||0)}`;
+}
 function focToggleHtml(key,isOn,handler){
   return `<div class="mini-switch-row">
     <span class="mini-switch-title">FOC</span>
@@ -1575,7 +1578,7 @@ function renderSlotPreselection(){
           <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${slot.slot_name}</div>
           <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'} · ${String(slot.pricing_model||'CPM').toUpperCase()}</div>
           <div class="slot-meta">${displayCategoryLabel(slot.category)||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
-          <div class="slot-meta">Avail. views ${views10(slot.available_views||0)}${slotRateSummary(slot)}${slot.historical_roas?` · ROAS ${Number(slot.historical_roas).toFixed(1)}`:''}</div>
+          <div class="slot-meta">${slotInventorySummary(slot)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;min-width:122px">
           <select class="plan-cell-select" onchange="updateSuggestionPricing('${slot.slot_key}',this.value)">
@@ -1592,7 +1595,7 @@ function renderSlotPreselection(){
         <div class="phase-dot" style="background:${slot.foc?'var(--green)':'var(--blue)'}"></div>
         <div>
           <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${slot.slot_name||slot.slot_code}</div>
-          <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'}${slot.available_views?` · Avail. views ${views10(slot.available_views)}`:''}${slotRateSummary(slot)}</div>
+          <div class="slot-meta">${slot.slot_code} · ${(slot.marketplace||'').toUpperCase()} · ${slot.page||'Page pending'}${slot.available_views?` · ${slotInventorySummary(slot)}`:''}</div>
           <div class="slot-meta">${displayCategoryLabel(slot.category)||'No category'}${slot.zone?` · Zone ${slot.zone}`:''}${slot.dimension?` · ${slot.dimension}`:''}</div>
         </div>
       </div>

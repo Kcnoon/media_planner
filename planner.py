@@ -1431,7 +1431,6 @@ def plan_media(
                 gross_rate_avg = round(gross_amount / max(days, 1), 4)
                 net_rate_avg = round(net_amount / max(days, 1), 4)
 
-        explainability_note = " | ".join(candidate.explainability[:3]).strip()
         rows.append(
             EditablePlanLine.model_validate(
                 {
@@ -1465,7 +1464,7 @@ def plan_media(
                     "historical_ctr": candidate.ctr,
                     "historical_roas": candidate.roas,
                     "historical_cpm": candidate.cpm,
-                    "note": "FOC selected slot" if is_foc else explainability_note,
+                    "note": "",
                     "manual": False,
                     "locked": False,
                 }
