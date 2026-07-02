@@ -754,6 +754,23 @@ class BigQueryRepository:
                     values.add(value)
         return sorted(values, key=str.lower)
 
+    def list_brand_codes(self) -> list[str]:
+        try:
+            field = self._field_name(self.settings.brand_code_table, "brand_code", "brand code", "brand", "brand_name", "brand name", "code")
+            if not field:
+                return []
+            rows = self._query_records(
+                f"""
+                SELECT DISTINCT CAST(`{field}` AS STRING) AS value
+                FROM `{self.settings.brand_code_table}`
+                WHERE `{field}` IS NOT NULL AND CAST(`{field}` AS STRING) != ''
+                """
+            )
+            values = {str(row.get("value") or "").strip() for row in rows}
+            return sorted([value for value in values if value], key=str.lower)
+        except Exception:
+            return []
+
     def save_plan(
         self,
         req: MediaPlanRequest,

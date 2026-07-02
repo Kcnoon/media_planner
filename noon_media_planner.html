@@ -229,7 +229,11 @@ td.mono{font-family:var(--mono);font-size:11px}
   <div class="card">
     <div class="card-hd">Brand Details</div>
     <div class="fg fg-4">
-      <div class="field"><label>Brand name</label><input id="bName" type="text" placeholder="Brand name"/></div>
+      <div class="field">
+        <label>Brand code</label>
+        <select id="brandSelect" onchange="onBrandSelectChange()"><option value="">Loading brands...</option></select>
+        <input id="bName" type="text" placeholder="Enter brand name" style="display:none;margin-top:8px"/>
+      </div>
       <div class="field"><label>Countries</label>
         <div class="pill-group" id="bCountryGroup" style="margin-top:4px">
           <div class="pill" onclick="toggleCountry(this,'ae')">AE</div>
@@ -738,7 +742,7 @@ function grossRate(row){
 }
 
 const S={
-  bTag:'', comcats:[], countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
+  bTag:'', brandCodes:[], comcats:[], countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
   phases:[],
   rows:[], budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
@@ -802,6 +806,66 @@ function syncComcatPills(){
     const active=values.length?values.every(value=>S.comcats.includes(value)):false;
     pill.className='pill'+(active?' on':'');
   });
+}
+
+function brandOptionHtml(value,label){
+  const safeValue=String(value||'').replace(/"/g,'&quot;');
+  return `<option value="${safeValue}">${label||value}</option>`;
+}
+
+function renderBrandOptions(values){
+  const select=document.getElementById('brandSelect');
+  if(!select) return;
+  const previous=select.value;
+  S.brandCodes=[...(values||[])].map(value=>String(value||'').trim()).filter(Boolean);
+  const options=[
+    brandOptionHtml('','Select brand code'),
+    ...S.brandCodes.map(value=>brandOptionHtml(value,value)),
+    brandOptionHtml('__other__','Others')
+  ];
+  select.innerHTML=options.join('');
+  if(previous && [...S.brandCodes,'__other__'].includes(previous)) select.value=previous;
+  syncBrandInputUi();
+}
+
+function setBrandValue(value){
+  const brand=String(value||'').trim();
+  const select=document.getElementById('brandSelect');
+  const input=document.getElementById('bName');
+  if(!select || !input) return;
+  if(!brand){
+    select.value='';
+    input.value='';
+  }else if(S.brandCodes.some(code=>code.toLowerCase()===brand.toLowerCase())){
+    const match=S.brandCodes.find(code=>code.toLowerCase()===brand.toLowerCase());
+    select.value=match||brand;
+    input.value='';
+  }else{
+    select.value='__other__';
+    input.value=brand;
+  }
+  syncBrandInputUi();
+}
+
+function syncBrandInputUi(){
+  const select=document.getElementById('brandSelect');
+  const input=document.getElementById('bName');
+  if(!select || !input) return;
+  input.style.display=select.value==='__other__'?'block':'none';
+}
+
+function onBrandSelectChange(){
+  const select=document.getElementById('brandSelect');
+  const input=document.getElementById('bName');
+  if(select && select.value!=='__other__' && input) input.value='';
+  syncBrandInputUi();
+}
+
+function getSelectedBrandName(){
+  const select=document.getElementById('brandSelect');
+  const input=document.getElementById('bName');
+  if(select && select.value && select.value!=='__other__') return select.value.trim();
+  return ((input&&input.value)||'').trim();
 }
 
 function syncObjectiveUi(){
@@ -892,7 +956,7 @@ function applyRequestToState(request){
 }
 
 function hydrateFormFromState(){
-  document.getElementById('bName').value=document.getElementById('bName').value||'';
+  setBrandValue(getSelectedBrandName());
   document.getElementById('bBudget').value=S.budget||'';
   document.getElementById('bDiscount').value=Number(S.discountPct||0)||'';
   document.getElementById('bCur').value=S.currency||'USD';
@@ -1019,7 +1083,7 @@ async function loadSavedPlan(target, reference){
     }
     const request=data.request||{};
     applyRequestToState(request);
-    document.getElementById('bName').value=request.brand||'';
+    setBrandValue(request.brand||'');
     document.getElementById('leCode').value=request.le_code||'';
     if(document.getElementById('bNotes')) document.getElementById('bNotes').value=request.notes||'';
     if(manualRef) manualRef.value=(data.summary&&data.summary.sheet_plan_code)||data.plan_id||ref;
@@ -1174,8 +1238,8 @@ function collectPlanningPayload(){
   S.currency=document.getElementById('bCur').value;
   S.flightStart=document.getElementById('bStart').value;
   S.flightEnd=document.getElementById('bEnd').value;
-  const brand=(document.getElementById('bName').value||'').trim();
-  if(!brand){ throw new Error('Enter brand name.'); }
+  const brand=getSelectedBrandName();
+  if(!brand){ throw new Error('Select a brand code or choose Others to enter a brand name.'); }
   if(!S.countries.length){ throw new Error('Select at least one country.'); }
   if(!S.comcats.length){ throw new Error('Select at least one comcat.'); }
   if(!S.obj){ throw new Error('Select campaign objective.'); }
@@ -1464,11 +1528,14 @@ async function loadOptions(){
     const raw=await res.text();
     const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
     S.slotCatalog=(data.slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''},slot.pricing_model));
+    renderBrandOptions(data.brand_codes||[]);
     if(data.comcats&&data.comcats.length){
       renderComcatGroup(data.comcats);
     }
     syncCountryPills();
-  }catch(e){}
+  }catch(e){
+    renderBrandOptions([]);
+  }
 }
 
 function getFlightMonths(){
@@ -1677,7 +1744,7 @@ async function buildPlan(){
 function phClass(ph){ if(!ph) return 'ph-custom'; const l=ph.toLowerCase(); if(l.includes('jan')) return 'ph-jan'; if(l.includes('feb')) return 'ph-feb'; if(l.includes('mar')) return 'ph-mar'; if(l.includes('eid')) return 'ph-eid'; if(l.includes('ram')) return 'ph-ram'; return 'ph-custom'; }
 
 function renderAll(){
-  const brand=displayBrandName(document.getElementById('bName').value||'Brand');
+  const brand=displayBrandName(getSelectedBrandName()||'Brand');
   const countries=displayCountries()||'Countries';
   document.getElementById('planBrandTitle').textContent=brand+' — '+countries+' recommendation';
   const perCountryMin=(S.budget<=10000?6:10);
@@ -1929,7 +1996,7 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
-  const payload={ brand:(document.getElementById('bName').value||'').trim(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
+  const payload={ brand:getSelectedBrandName(), brand_tag:null, comcats:S.comcats, countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:S.subBrands, le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
     document.getElementById('navChip').textContent='Regenerating...';
     const res=await fetch(`/api/media-plan/${S.planId}/regenerate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -1951,13 +2018,13 @@ function delRow(id){
 function addRow(){
   const maxId=Math.max(...S.rows.map(r=>r.id),0);
   const country=S.countries[0]||'ae';
-  S.rows.push({id:maxId+1,from:S.flightStart||todayStr(),to:S.flightEnd||todayStr(),country:country,marketplace:'',category:'',zone:'',dimension:'',page:'',asset:'',slot_name:'',days:1,buyType:'CPM',rate:0,gross_cpm:0,net_cpm:0,views:0,cost:0,gross_amount:0,net_amount:0,discount_pct:S.discountPct,phase:S.phases[0]?.name||'Full flight',brand:document.getElementById('bName').value||'',stype:'reach',slot_code:'',score:0,available_views:0,note:'',manual:true,locked:true});
+  S.rows.push({id:maxId+1,from:S.flightStart||todayStr(),to:S.flightEnd||todayStr(),country:country,marketplace:'',category:'',zone:'',dimension:'',page:'',asset:'',slot_name:'',days:1,buyType:'CPM',rate:0,gross_cpm:0,net_cpm:0,views:0,cost:0,gross_amount:0,net_amount:0,discount_pct:S.discountPct,phase:S.phases[0]?.name||'Full flight',brand:getSelectedBrandName(),stype:'reach',slot_code:'',score:0,available_views:0,note:'',manual:true,locked:true});
   renderAll();
 }
 
 function printPlan(mode='detailed'){
   const cur=S.currency||'USD';
-  const brand=displayBrandName(document.getElementById('bName').value||'Brand');
+  const brand=displayBrandName(getSelectedBrandName()||'Brand');
   const countries=displayCountries()||'-';
   const total=S.rows.reduce((sum,row)=>sum+netAmount(row),0);
   const grossTotal=S.rows.reduce((sum,row)=>sum+grossAmount(row),0);
@@ -2093,7 +2160,7 @@ function exportCsv(){
   const a=document.createElement('a');
   a.href=url;
   const codeSuffix=S.planCode?('_'+S.planCode.replace(/[^A-Za-z0-9_-]/g,'')):'';
-  a.download=((document.getElementById('bName').value||'media_plan').trim().replace(/\s+/g,'_')||'media_plan')+codeSuffix+'.csv';
+  a.download=((getSelectedBrandName()||'media_plan').trim().replace(/\s+/g,'_')||'media_plan')+codeSuffix+'.csv';
   document.body.appendChild(a);
   a.click();
   a.remove();
