@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import csv
 from datetime import date
+from functools import lru_cache
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +17,7 @@ from planner import plan_media, suggest_slots
 
 
 app = FastAPI(title="Noon Media Planner API")
+BRAND_CODES_PATH = Path(__file__).with_name("brand_codes.csv")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,6 +33,38 @@ def unhandled_exception_handler(request: Request, exc: Exception):
 
 def get_repo(settings: Settings = Depends(get_settings)) -> BigQueryRepository:
     return BigQueryRepository(settings)
+
+
+@lru_cache(maxsize=1)
+def load_static_brand_codes() -> tuple[str, ...]:
+    if not BRAND_CODES_PATH.exists():
+        return tuple()
+    with BRAND_CODES_PATH.open(newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        values = {
+            str(row.get("brand_code") or "").strip()
+            for row in reader
+            if str(row.get("brand_code") or "").strip()
+        }
+    return tuple(sorted(values, key=str.lower))
+
+
+def search_static_brand_codes(query: str, limit: int = 30) -> list[str]:
+    q = str(query or "").strip().lower()
+    if len(q) < 2:
+        return []
+    starts_with = []
+    contains = []
+    for code in load_static_brand_codes():
+        lowered = code.lower()
+        if lowered.startswith(q):
+            starts_with.append(code)
+        elif q in lowered:
+            contains.append(code)
+        if len(starts_with) >= limit:
+            break
+    remaining = max(limit - len(starts_with), 0)
+    return starts_with + contains[:remaining]
 
 
 def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None):
@@ -128,18 +164,17 @@ def health():
 
 @app.get("/api/options")
 def list_options(repo: BigQueryRepository = Depends(get_repo)):
-    brand_codes = []
-    brand_codes_error = ""
-    try:
-        brand_codes = repo.list_brand_codes()
-    except Exception as exc:
-        brand_codes_error = str(exc)
     return {
         "countries": ["ae", "sa", "eg"],
         "comcats": repo.list_comcats(),
-        "brand_codes": brand_codes,
-        "brand_codes_error": brand_codes_error,
         "slots": repo.fetch_slot_catalog(),
+    }
+
+
+@app.get("/api/brand-codes/search")
+def search_brand_codes(q: str = "", limit: int = 30):
+    return {
+        "brand_codes": search_static_brand_codes(q, max(1, min(int(limit or 30), 50))),
     }
 
 

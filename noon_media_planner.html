@@ -53,6 +53,12 @@ body{font-family:var(--font);background:radial-gradient(circle at top left,#fff7
 .pill:hover{border-color:var(--border2)}
 .pill.on{background:var(--noon-soft);color:var(--ink);border-color:var(--noon)}
 .pill.on-g{background:var(--green-bg);color:var(--green-text);border-color:var(--green)}
+.brand-search-wrap{position:relative}
+.brand-results{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow);max-height:260px;overflow:auto;display:none}
+.brand-result{padding:10px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text)}
+.brand-result:last-child{border-bottom:none}
+.brand-result:hover{background:#fff7d7}
+.brand-helper{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4}
 .obj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
 .obj-card{border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;cursor:pointer;background:var(--surface);transition:.15s}
 .obj-card:hover{border-color:var(--border2)}
@@ -231,8 +237,12 @@ td.mono{font-family:var(--mono);font-size:11px}
     <div class="fg fg-4">
       <div class="field">
         <label>Brand code</label>
-        <select id="brandSelect" onchange="onBrandSelectChange()"><option value="">Loading brands...</option></select>
-        <input id="bName" type="text" placeholder="Enter brand name" style="display:none;margin-top:8px"/>
+        <div class="brand-search-wrap">
+          <input id="brandSelect" type="text" placeholder="Search brand code or type a brand" autocomplete="off" oninput="onBrandSearchInput()" onfocus="onBrandSearchInput()"/>
+          <div class="brand-results" id="brandSearchResults"></div>
+        </div>
+        <div class="brand-helper" id="brandSearchHint">Type at least 2 characters to search brand codes. You can also type a custom brand.</div>
+        <input id="bName" type="hidden"/>
       </div>
       <div class="field"><label>Countries</label>
         <div class="pill-group" id="bCountryGroup" style="margin-top:4px">
@@ -734,7 +744,7 @@ function grossRate(row){
 }
 
 const S={
-  bTag:'', brandCodes:[], comcats:[], countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
+  bTag:'', brandSearchTimer:null, comcats:[], countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
   phases:[],
   rows:[], budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
@@ -800,66 +810,71 @@ function syncComcatPills(){
   });
 }
 
-function brandOptionHtml(value,label){
-  const safeValue=String(value||'').replace(/"/g,'&quot;');
-  return `<option value="${safeValue}">${label||value}</option>`;
-}
-
-function renderBrandOptions(values,errorMessage=''){
-  const select=document.getElementById('brandSelect');
-  if(!select) return;
-  const previous=select.value;
-  S.brandCodes=[...(values||[])].map(value=>String(value||'').trim()).filter(Boolean);
-  const emptyLabel=S.brandCodes.length ? 'Select brand code' : (errorMessage ? 'Brand codes unavailable' : 'No brand codes found');
-  const options=[
-    brandOptionHtml('',emptyLabel),
-    ...S.brandCodes.map(value=>brandOptionHtml(value,value)),
-    brandOptionHtml('__other__','Others')
-  ];
-  select.innerHTML=options.join('');
-  select.title=errorMessage||'';
-  if(previous && [...S.brandCodes,'__other__'].includes(previous)) select.value=previous;
-  syncBrandInputUi();
-}
-
 function setBrandValue(value){
   const brand=String(value||'').trim();
-  const select=document.getElementById('brandSelect');
-  const input=document.getElementById('bName');
-  if(!select || !input) return;
-  if(!brand){
-    select.value='';
-    input.value='';
-  }else if(S.brandCodes.some(code=>code.toLowerCase()===brand.toLowerCase())){
-    const match=S.brandCodes.find(code=>code.toLowerCase()===brand.toLowerCase());
-    select.value=match||brand;
-    input.value='';
-  }else{
-    select.value='__other__';
-    input.value=brand;
+  const search=document.getElementById('brandSelect');
+  const hidden=document.getElementById('bName');
+  if(search) search.value=brand;
+  if(hidden) hidden.value=brand;
+  hideBrandResults();
+}
+
+function hideBrandResults(){
+  const results=document.getElementById('brandSearchResults');
+  if(results) results.style.display='none';
+}
+
+function escapeHtml(value){
+  return String(value||'').replace(/[&<>"']/g, char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+
+function brandResultHtml(label,value){
+  return `<div class="brand-result" onclick='setBrandValue(${JSON.stringify(String(value||''))})'>${escapeHtml(label)}</div>`;
+}
+
+function renderBrandSearchResults(values,query){
+  const results=document.getElementById('brandSearchResults');
+  if(!results) return;
+  const q=String(query||'').trim();
+  if(!q || q.length<2){
+    hideBrandResults();
+    return;
   }
-  syncBrandInputUi();
+  const rows=(values||[]).slice(0,30);
+  if(!rows.length){
+    results.innerHTML=brandResultHtml(`Use "${q}" as custom brand`, q);
+  }else{
+    const custom=brandResultHtml(`Use "${q}" as custom brand`, q);
+    results.innerHTML=rows.map(code=>brandResultHtml(code, code)).join('')+custom;
+  }
+  results.style.display='block';
 }
 
-function syncBrandInputUi(){
-  const select=document.getElementById('brandSelect');
-  const input=document.getElementById('bName');
-  if(!select || !input) return;
-  input.style.display=select.value==='__other__'?'block':'none';
-}
-
-function onBrandSelectChange(){
-  const select=document.getElementById('brandSelect');
-  const input=document.getElementById('bName');
-  if(select && select.value!=='__other__' && input) input.value='';
-  syncBrandInputUi();
+function onBrandSearchInput(){
+  const search=document.getElementById('brandSelect');
+  const hidden=document.getElementById('bName');
+  const query=((search&&search.value)||'').trim();
+  if(hidden) hidden.value=query;
+  clearTimeout(S.brandSearchTimer);
+  if(query.length<2){
+    hideBrandResults();
+    return;
+  }
+  S.brandSearchTimer=setTimeout(async()=>{
+    try{
+      const res=await fetch(`/api/brand-codes/search?q=${encodeURIComponent(query)}&limit=30`);
+      const data=await res.json();
+      renderBrandSearchResults(data.brand_codes||[], query);
+    }catch(e){
+      renderBrandSearchResults([], query);
+    }
+  },180);
 }
 
 function getSelectedBrandName(){
-  const select=document.getElementById('brandSelect');
-  const input=document.getElementById('bName');
-  if(select && select.value && select.value!=='__other__') return select.value.trim();
-  return ((input&&input.value)||'').trim();
+  const search=document.getElementById('brandSelect');
+  const hidden=document.getElementById('bName');
+  return (((hidden&&hidden.value)||'') || ((search&&search.value)||'')).trim();
 }
 
 function syncObjectiveUi(){
@@ -1488,13 +1503,11 @@ async function loadOptions(){
     const raw=await res.text();
     const data=raw?(()=>{try{return JSON.parse(raw);}catch(_){return {detail:{message:raw}};}})():{};
     S.slotCatalog=(data.slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot),category:slot.category||slot.page||'',zone:slot.zone||'',dimension:slot.dimension||''},slot.pricing_model));
-    renderBrandOptions(data.brand_codes||[], data.brand_codes_error||'');
     if(data.comcats&&data.comcats.length){
       renderComcatGroup(data.comcats);
     }
     syncCountryPills();
   }catch(e){
-    renderBrandOptions([]);
   }
 }
 
