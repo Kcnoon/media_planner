@@ -1743,6 +1743,8 @@ def plan_media(
             allocated_slot = 0.0
             for phase_index, phase in enumerate(row_phases):
                 net_amount = round(slot_total - allocated_slot, 2) if phase_index == len(row_phases) - 1 else per_phase_value
+                discount_factor = max(1 - (float(req.discount_pct or 0) / 100), 0.0001)
+                gross_amount = round(net_amount / discount_factor, 2) if req.discount_pct < 100 else net_amount
                 allocated_slot = round(allocated_slot + net_amount, 2)
                 rows.append(
                     EditablePlanLine.model_validate(
@@ -1765,7 +1767,7 @@ def plan_media(
                             "net_cpm": 0,
                             "views": 0,
                             "cost": net_amount,
-                            "gross_amount": net_amount,
+                            "gross_amount": gross_amount,
                             "net_amount": net_amount,
                             "discount_pct": req.discount_pct,
                             "phase": phase.name,

@@ -1324,18 +1324,22 @@ function buildSavedSelectedSlots(saved){
   const rows=saved.rows||[];
   const focKeys=new Set((request.foc_slot_keys||[]).map(String));
   const selectedPricing=request.selected_slot_pricing||{};
-  const allKeys=[...(request.selected_slot_keys||[])];
+  const offdeckKeys=new Set((request.selected_offdeck_slots||[]).map(slot=>offdeckKey(slot)));
+  const allKeys=[...(request.selected_slot_keys||[])].filter(key=>!offdeckKeys.has(key)&&!offdeckKeys.has(selectedSlotCodeFromKey(key)));
   rows.forEach(row=>{
+    if(String(row.buyType||'').toUpperCase()==='OFF-DECK') return;
     if(row.country&&row.slot_code){
       const key=slotKey(row.country,row.slot_code);
+      if(offdeckKeys.has(row.slot_code)||offdeckKeys.has(key)) return;
       if(!allKeys.includes(key)) allKeys.push(key);
     }
   });
   return allKeys.map(key=>{
     const [country,slotCode]=String(key).split('|');
-    if(!country||!slotCode) return null;
+  if(!country||!slotCode) return null;
     const meta=findSlotMeta(country,slotCode)||{};
     const row=rows.find(item=>item.country===country && item.slot_code===slotCode)||{};
+    if(String(row.buyType||'').toUpperCase()==='OFF-DECK') return null;
     return applySlotPricing({
       slot_key:key,
       country,
@@ -1373,6 +1377,7 @@ async function fetchSavedPreselection(saved){
     S.slotSuggestions=(data.suggestions||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     S.availableSlotCatalog=(data.available_slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     S.offdeckSlots=(data.offdeck_slots||[]);
+    sanitizeOnDeckSelections();
     mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     const selected=buildSavedSelectedSlots(saved);
     S.selectedSlots=selected.length?selected:S.slotSuggestions.map(slot=>applySlotPricing({...slot,foc:false},slot.pricing_model));
@@ -1626,7 +1631,29 @@ function renderManualFocToggle(){
   if(wrap) wrap.innerHTML=focToggleHtml('manual',S.manualFoc,'toggleManualFocKey');
 }
 
+function offdeckKey(slot){
+  return String(slot?.slot_key||slot?.slot_code||slot?.slot_name||'').trim();
+}
+
+function selectedSlotCodeFromKey(key){
+  const parts=String(key||'').split('|');
+  return parts.length>1?parts.slice(1).join('|'):String(key||'');
+}
+
+function isOffdeckSlot(slot){
+  const key=offdeckKey(slot);
+  const slotCode=String(slot?.slot_code||selectedSlotCodeFromKey(key)||'').trim();
+  return String(slot?.buyType||'').toUpperCase()==='OFF-DECK'
+    || String(slot?.marketplace||'').toLowerCase()==='offdeck'
+    || (S.offdeckSlots||[]).some(item=>offdeckKey(item)===key || String(item.slot_code||'')===slotCode);
+}
+
+function sanitizeOnDeckSelections(){
+  S.selectedSlots=(S.selectedSlots||[]).filter(slot=>!isOffdeckSlot(slot));
+}
+
 function mergedSuggestionSlots(){
+  sanitizeOnDeckSelections();
   const merged=[...(S.slotSuggestions||[])];
   const known=new Set(merged.map(slot=>slot.slot_key));
   (S.selectedSlots||[]).forEach(slot=>{
@@ -1636,10 +1663,6 @@ function mergedSuggestionSlots(){
     }
   });
   return merged;
-}
-
-function offdeckKey(slot){
-  return String(slot?.slot_key||slot?.slot_code||slot?.slot_name||'').trim();
 }
 
 function offdeckPhaseLabels(slot){
@@ -1727,13 +1750,16 @@ function renderSelectedOffdeckSlots(){
   const total=S.selectedOffdeckSlots.reduce((sum,slot)=>sum+Number(slot.value||0),0);
   wrap.innerHTML=(S.selectedOffdeckSlots||[]).map(slot=>{
     const lineKey=slot.line_key||offdeckKey(slot);
+    const netValue=Number(slot.value||0);
+    const discount=Number(S.discountPct||0)||0;
+    const grossValue=discount>=100?netValue:Math.round((netValue/Math.max(1-(discount/100),0.0001))*100)/100;
     return `<div class="phase-item" style="justify-content:space-between">
       <div>
         <div style="font-size:13px;font-weight:600">${displayCountryCode(slot.country)} · ${escapeHtml(slot.slot_name||slot.slot_code||'Off-deck slot')}</div>
         <div class="slot-meta">${escapeHtml(slot.slot_code||offdeckKey(slot))} · OFF-DECK · ${escapeHtml(displayCategoryLabel(slot.page||slot.category||''))} · ${offdeckPhaseLabels(slot)}</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
-        <span class="country-chip">${money2(Number(slot.value||0),'USD')}</span>
+        <span class="country-chip">${money2(netValue,'USD')} net · ${money2(grossValue,'USD')} gross</span>
         <button class="del-btn" type="button" onclick='removeManualOffdeckSlot(${JSON.stringify(lineKey)})'>×</button>
       </div>
     </div>`;
@@ -1854,6 +1880,7 @@ function renderSlotPreselection(){
   const filterMarketplace=document.getElementById('slotFilterMarketplace')?.value||'';
   const filterPage=document.getElementById('slotFilterPage')?.value||'';
   const visibleSuggestions=mergedSuggestionSlots().filter(slot=>{
+    if(isOffdeckSlot(slot)) return false;
     if(filterCountry && slot.country!==filterCountry) return false;
     if(filterMarketplace && (slot.marketplace||getSlotMarketplace(slot))!==filterMarketplace) return false;
     if(filterPage && (slot.page||'')!==filterPage) return false;
@@ -1913,6 +1940,7 @@ async function openPreselection(){
     S.slotSuggestions=(data.suggestions||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     S.availableSlotCatalog=(data.available_slots||[]).map(slot=>applySlotPricing({...slot,marketplace:slot.marketplace||getSlotMarketplace(slot)},slot.pricing_model));
     S.offdeckSlots=(data.offdeck_slots||[]);
+    sanitizeOnDeckSelections();
     mergeRuntimeSlotCatalog(S.availableSlotCatalog);
     if(!S.selectedSlots.length) S.selectedSlots=S.slotSuggestions.map(slot=>applySlotPricing({...slot,foc:false},slot.pricing_model));
     S.bTag=(data.diagnostics&&data.diagnostics.brand_tag)||S.bTag||'';
@@ -2136,6 +2164,7 @@ async function buildPlan(){
     alert('Off-deck selected value cannot be above the off-deck budget.');
     return;
   }
+  sanitizeOnDeckSelections();
   payload.selected_slot_keys=S.selectedSlots.map(slot=>slot.slot_key);
   payload.selected_slot_pricing=Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)]));
   payload.foc_slot_keys=S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key);
@@ -2436,6 +2465,7 @@ function serializeRows(){
 }
 async function regeneratePlan(){
   if(!S.planId){ alert('Generate the first draft before regenerating.'); return; }
+  sanitizeOnDeckSelections();
   const brands=selectedBrandsForPayload();
   const payload={ brand:brands[0]||getSelectedBrandName(), brands, brand_budget_splits:collectBrandBudgetSplits(), brand_tag:null, comcats:S.comcats, comcat_budget_splits:collectComcatBudgetSplits(), countries:S.countries, start_date:S.flightStart, end_date:S.flightEnd, total_budget:S.totalBudget, offdeck_budget:S.offdeckBudget, budget:S.budget, discount_pct:S.discountPct, currency:S.currency, objective:S.obj||'both', reach_weight:S.rW, roas_weight:S.oW, phases:S.phases.map(p=>({name:p.name,from:p.from,to:p.to})), phase_budget_splits:collectPhaseBudgetSplits(), plan_id:S.planId, current_rows:serializeRows(), excluded_slot_keys:S.excludedSlotKeys, marketplace:S.marketplace, marketplace_core_pct:S.marketplace==='both'?S.marketplaceCorePct:(S.marketplace==='core'?100:0), marketplace_supermall_pct:S.marketplace==='both'?S.marketplaceSupermallPct:(S.marketplace==='supermall'?100:0), sub_brands:[], le_code:(document.getElementById('leCode').value||'').trim(), notes:(document.getElementById('bNotes')?document.getElementById('bNotes').value:'')||'', budget_locked:!!S.budgetLocked, selected_slot_keys:S.selectedSlots.map(slot=>slot.slot_key), selected_offdeck_slots:S.selectedOffdeckSlots.map(slot=>({...slot,slot_key:offdeckKey(slot)})), selected_slot_pricing:Object.fromEntries(S.selectedSlots.map(slot=>[slot.slot_key,normalizePricingModel(slot.pricing_model)])), foc_slot_keys:S.selectedSlots.filter(slot=>slot.foc).map(slot=>slot.slot_key) };
   try{
