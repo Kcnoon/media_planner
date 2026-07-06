@@ -838,7 +838,7 @@ class BigQueryRepository:
             "marketplace": req.marketplace or "",
             "start_date": req.start_date.isoformat(),
             "end_date": req.end_date.isoformat(),
-            "budget_usd": float((req.budget or 0) + (req.offdeck_budget or 0)),
+            "budget_usd": float(req.total_budget or ((req.budget or 0) + (req.offdeck_budget or 0))),
             "discount_pct": float(req.discount_pct),
             "currency": req.currency,
             "budget_locked": bool(req.budget_locked),

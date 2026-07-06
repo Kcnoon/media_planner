@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import csv
+import json
+import time
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
+from urllib.request import urlopen
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +21,8 @@ from planner import plan_media, suggest_slots
 
 app = FastAPI(title="Noon Media Planner API")
 BRAND_CODES_PATH = Path(__file__).with_name("brand_codes.csv")
+FALLBACK_FX_RATES = {"AED": 3.6725, "SAR": 3.75, "EGP": 50.0}
+FX_CACHE: dict[str, object] = {"expires_at": 0.0, "rates": FALLBACK_FX_RATES.copy()}
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,6 +38,11 @@ def unhandled_exception_handler(request: Request, exc: Exception):
 
 def get_repo(settings: Settings = Depends(get_settings)) -> BigQueryRepository:
     return BigQueryRepository(settings)
+
+
+def gross_budget_from_net(net_amount: float, discount_pct: float) -> float:
+    discount_factor = max(1 - (float(discount_pct or 0) / 100), 0.0001)
+    return round(float(net_amount or 0) / discount_factor, 2)
 
 
 @lru_cache(maxsize=1)
@@ -71,7 +81,8 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
     allocated = round(sum(row.cost for row in rows), 2)
     offdeck_allocated = round(sum(row.cost for row in rows if str(row.buyType or "").upper() == "OFF-DECK"), 2)
     on_deck_allocated = round(allocated - offdeck_allocated, 2)
-    total_budget = float((req.budget or 0) + (req.offdeck_budget or 0))
+    net_budget = float((req.budget or 0) + (req.offdeck_budget or 0))
+    gross_budget = float(req.total_budget or gross_budget_from_net(net_budget, req.discount_pct))
     on_deck_rows = [row for row in rows if str(row.buyType or "").upper() != "OFF-DECK"]
     views = sum(row.views or 0 for row in on_deck_rows)
     weighted_ctr_den = sum(max(row.views or 0, 0) for row in on_deck_rows)
@@ -93,14 +104,15 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
         "comcats": req.comcats,
         "countries": req.countries,
         "budget": req.budget,
-        "total_budget": total_budget,
+        "total_budget": gross_budget,
+        "net_budget": net_budget,
         "on_deck_budget": req.budget,
         "offdeck_budget": req.offdeck_budget,
         "discount_pct": req.discount_pct,
         "allocated": allocated,
         "on_deck_allocated": on_deck_allocated,
         "offdeck_allocated": offdeck_allocated,
-        "remaining": round(total_budget - allocated, 2),
+        "remaining": round(net_budget - allocated, 2),
         "estimated_views": views,
         "line_count": len(rows),
         "expected_ctr": round(expected_ctr, 4),
@@ -180,6 +192,26 @@ def list_options(repo: BigQueryRepository = Depends(get_repo)):
     }
 
 
+@app.get("/api/fx-rates")
+def fx_rates():
+    now = time.time()
+    if float(FX_CACHE.get("expires_at") or 0) > now:
+        return {"base": "USD", "rates": FX_CACHE["rates"], "source": "cache"}
+    try:
+        with urlopen("https://open.er-api.com/v6/latest/USD", timeout=4) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        source_rates = payload.get("rates") or {}
+        rates = {
+            currency: float(source_rates.get(currency) or FALLBACK_FX_RATES[currency])
+            for currency in FALLBACK_FX_RATES
+        }
+        FX_CACHE.update({"expires_at": now + 3600, "rates": rates})
+        return {"base": "USD", "rates": rates, "source": "open.er-api.com"}
+    except Exception:
+        FX_CACHE.update({"expires_at": now + 600, "rates": FALLBACK_FX_RATES.copy()})
+        return {"base": "USD", "rates": FALLBACK_FX_RATES.copy(), "source": "fallback"}
+
+
 @app.get("/api/brand-codes/search")
 def search_brand_codes(q: str = "", limit: int = 30):
     return {
@@ -218,7 +250,7 @@ def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_se
         raise HTTPException(status_code=400, detail="start_date must be today or later")
     if req.budget <= 0:
         raise HTTPException(status_code=400, detail="on-deck budget must be positive")
-    req.total_budget = req.budget + req.offdeck_budget
+    req.total_budget = gross_budget_from_net(req.budget + req.offdeck_budget, req.discount_pct)
     if not req.comcats:
         raise HTTPException(status_code=400, detail="select at least one comcat")
     if not req.countries:
@@ -241,7 +273,7 @@ def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_se
 def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
     if req.budget <= 0:
         raise HTTPException(status_code=400, detail="on-deck budget must be positive")
-    req.total_budget = req.budget + req.offdeck_budget
+    req.total_budget = gross_budget_from_net(req.budget + req.offdeck_budget, req.discount_pct)
     req.brand_tag = req.brand_tag or repo.infer_brand_tag(req)
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)

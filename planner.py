@@ -227,6 +227,8 @@ def _slot_comcat_relevance(category: str | None, slot_code: str, slot_name: str 
     if not comcat_values:
         return 1.0
     haystack_tokens = set().union(*(_slot_tokens(text, None) for text in haystacks if text))
+    if any(_has_comcat_conflict(comcat, haystack_tokens) for comcat in comcat_values):
+        return 0.0
     best = 0.0
     for value in haystacks:
         if not value:
@@ -246,6 +248,23 @@ def _comcat_tokens(value: str) -> set[str]:
     }
 
 
+COMCAT_CONFLICT_TOKENS: dict[str, set[str]] = {
+    "mobiles": {"camera", "cameras"},
+    "mobile_accessories": {"camera", "cameras"},
+    "camera": {"mobile", "mobiles", "phone", "phones", "smartphone", "smartphones"},
+    "cameras": {"mobile", "mobiles", "phone", "phones", "smartphone", "smartphones"},
+}
+
+
+def _has_comcat_conflict(comcat: str, haystack_tokens: set[str]) -> bool:
+    comcat_tokens = _comcat_tokens(comcat)
+    requested = set()
+    for token in comcat_tokens | {str(comcat or "").strip().lower()}:
+        if token in COMCAT_CONFLICT_TOKENS:
+            requested.add(token)
+    return any(haystack_tokens & COMCAT_CONFLICT_TOKENS[token] for token in requested)
+
+
 def _slot_values_relevance_for_comcat(category: str | None, page: str | None, slot_code: str | None, slot_name: str | None, comcat: str) -> float:
     comcat_value = str(comcat or "").strip().lower()
     if not comcat_value:
@@ -256,6 +275,9 @@ def _slot_values_relevance_for_comcat(category: str | None, page: str | None, sl
         (slot_name or "").strip().lower(),
         (slot_code or "").strip().lower(),
     ]
+    haystack_tokens = set().union(*(_slot_tokens(text, None) for text in haystacks if text))
+    if _has_comcat_conflict(comcat_value, haystack_tokens):
+        return 0.0
     best = 0.0
     for value in haystacks:
         if not value:
@@ -263,7 +285,6 @@ def _slot_values_relevance_for_comcat(category: str | None, page: str | None, sl
         if value == comcat_value or comcat_value in value or value in comcat_value:
             best = max(best, 1.0)
     comcat_tokens = _comcat_tokens(comcat_value)
-    haystack_tokens = set().union(*(_slot_tokens(text, None) for text in haystacks if text))
     if comcat_tokens and haystack_tokens:
         best = max(best, len(comcat_tokens & haystack_tokens) / len(comcat_tokens))
     return best

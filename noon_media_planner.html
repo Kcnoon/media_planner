@@ -329,9 +329,9 @@ td.mono{font-family:var(--mono);font-size:11px}
     <div class="fg fg-4" style="margin-bottom:14px">
       <div class="field"><label>Off-deck budget</label><input id="bOffdeckBudget" type="number" placeholder="Off-deck investment" oninput="updateBudgetBar()"/></div>
       <div class="field"><label>On-deck budget</label><input id="bBudget" type="number" placeholder="On-deck media investment" oninput="updateBudgetBar()"/></div>
-      <div class="field"><label>Total budget (USD, excl. VAT, including discount)</label><input id="bTotalBudget" type="number" placeholder="Auto calculated" readonly/></div>
+      <div class="field"><label>Total gross value (USD, excl. VAT)</label><input id="bTotalBudget" type="number" placeholder="Auto calculated" readonly/></div>
       <div class="field"><label>Discount %</label><input id="bDiscount" type="number" min="0" max="100" step="0.1" placeholder="0" oninput="updateBudgetBar()"/></div>
-      <div class="field"><label>Conversion currency</label><select id="bCur"><option value="">Select currency</option><option>USD</option><option>AED</option><option>SAR</option><option>EGP</option></select></div>
+      <div class="field"><label>Conversion currency</label><select id="bCur"><option>AED</option><option>SAR</option><option>EGP</option></select></div>
       <div class="field"><label>LE code</label><input id="leCode" type="text" placeholder="e.g. LE-UAE-2026-001"/></div>
       <div class="field"><label>Plan status</label><div class="lock-toggle-row" style="margin-top:6px" id="budgetLock"><span class="lock-label" id="budgetDraftLabel">Draft Plan</span><button type="button" class="lock-switch-track" id="budgetLockSwitch" role="switch" aria-checked="false" onclick="toggleBudgetLock()"><span class="lock-switch-thumb"></span></button><span class="lock-label" id="budgetLockedLabel">Confirmed Plan</span></div></div>
     </div>
@@ -557,7 +557,7 @@ const MN=['January','February','March','April','May','June','July','August','Sep
 const MNS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const DOW=['Su','Mo','Tu','We','Th','Fr','Sa'];
 
-// Budget is entered in USD. We also display an approximate local-currency view for convenience.
+// Budget is entered in USD. We fetch live local-currency rates for partner-facing conversion views.
 const FX={USD:1,AED:3.6725,SAR:3.75,EGP:50};
 const CURRENCY_SYMBOL={USD:'$',AED:'AED ',SAR:'SAR ',EGP:'EGP '};
 const DEFAULT_COMCATS=[
@@ -645,11 +645,32 @@ function focToggleHtml(key,isOn,handler){
     <span class="mini-switch-label${isOn?' active':''}">Yes</span>
   </div>`;
 }
+async function loadFxRates(){
+  try{
+    const res=await fetch('/api/fx-rates',{cache:'no-store'});
+    if(!res.ok) return;
+    const data=await res.json();
+    const rates=data.rates||{};
+    ['AED','SAR','EGP'].forEach(cur=>{
+      const rate=Number(rates[cur]||0);
+      if(rate>0) FX[cur]=rate;
+    });
+    updateBudgetBar();
+    if(S.rows&&S.rows.length) renderAll();
+  }catch(e){}
+}
 function fxRate(cur){ return FX[String(cur||'USD').toUpperCase()]||1; }
 function currencySymbol(cur){ return CURRENCY_SYMBOL[String(cur||'USD').toUpperCase()]||((cur||'USD')+' '); }
 function roundToNearestTen(v){ const n=Number(v)||0; return Math.round(n/10)*10; }
 function number10(v){ return roundToNearestTen(v).toLocaleString(undefined,{maximumFractionDigits:0}); }
 function money2(v,cur){ return currencySymbol(cur)+number10(v); }
+function netBudgetBase(){ return (Number(S.budget)||0)+(Number(S.offdeckBudget)||0); }
+function grossFromNetValue(value,discountPct=S.discountPct){
+  const net=Number(value)||0;
+  const factor=Math.max(1-(Number(discountPct||0)/100),0.0001);
+  return Math.round((net/factor)*100)/100;
+}
+function grossBudgetBase(){ return grossFromNetValue(netBudgetBase(),S.discountPct); }
 function rateText(v){
   const n=Number(v)||0;
   const whole=Math.abs(n-Math.round(n))<0.0001;
@@ -918,7 +939,7 @@ function grossRate(row){
 const S={
   bTag:'', brandSearchTimer:null, brands:[], brandSplits:{}, comcats:[], comcatSplits:{}, countries:[], marketplace:'both', marketplaceCorePct:70, marketplaceSupermallPct:30, subBrands:[], obj:'both', rW:60, oW:40,
   phases:[], phaseSplits:{},
-  rows:[], totalBudget:0, offdeckBudget:0, budget:0, discountPct:0, currency:'', budgetLocked:false, tabFilter:'all', phFilter:'All',
+  rows:[], totalBudget:0, offdeckBudget:0, budget:0, discountPct:0, currency:'AED', budgetLocked:false, tabFilter:'all', phFilter:'All',
   flightStart:'', flightEnd:'', planId:'', planCode:'', excludedSlotKeys:[], slotCatalog:[],
   availableSlotCatalog:[],
   offdeckSlots:[], selectedOffdeckSlots:[],
@@ -1222,11 +1243,11 @@ function applyRequestToState(request){
   S.obj=normalizeObjective(req.objective)||'both';
   S.rW=Number(req.reach_weight||60)||60;
   S.oW=Number(req.roas_weight||40)||40;
-  S.totalBudget=Number(req.total_budget||0)||Number(req.budget||0)+Number(req.offdeck_budget||0)||0;
   S.offdeckBudget=Number(req.offdeck_budget||0)||0;
   S.budget=Number(req.budget||0)||0;
   S.discountPct=Number(req.discount_pct||0)||0;
-  S.currency=req.currency||'USD';
+  S.totalBudget=Number(req.total_budget||0)||grossFromNetValue(S.budget+S.offdeckBudget,S.discountPct)||0;
+  S.currency=(req.currency&&req.currency!=='USD')?req.currency:'AED';
   S.budgetLocked=!!req.budget_locked;
   S.flightStart=req.start_date||'';
   S.flightEnd=req.end_date||'';
@@ -1244,7 +1265,7 @@ function hydrateFormFromState(){
   document.getElementById('bOffdeckBudget').value=S.offdeckBudget||'';
   document.getElementById('bBudget').value=S.budget||'';
   document.getElementById('bDiscount').value=Number(S.discountPct||0)||'';
-  document.getElementById('bCur').value=S.currency||'USD';
+  document.getElementById('bCur').value=S.currency||'AED';
   document.getElementById('bStart').value=S.flightStart||'';
   document.getElementById('bEnd').value=S.flightEnd||'';
   document.getElementById('leCode').value=document.getElementById('leCode').value||'';
@@ -1513,16 +1534,16 @@ function syncW(el,which){
 function updateBudgetBar(){
   const offdeck=parseFloat(document.getElementById('bOffdeckBudget')?.value)||0;
   const v=parseFloat(document.getElementById('bBudget').value)||0;
-  const total=v+offdeck;
-  const totalInput=document.getElementById('bTotalBudget');
-  if(totalInput) totalInput.value=total?String(total):'';
   const discount=parseFloat(document.getElementById('bDiscount').value)||0;
-  const cur=document.getElementById('bCur').value||'USD';
-  const base=total;
-  document.getElementById('bbarLeft').textContent=base?('USD '+number10(base)+' total budget'):'No budget entered';
-  if(base){
-    const local=roundToNearestTen(base*fxRate(cur));
-    document.getElementById('bbarRight').textContent=`On-deck USD ${number10(v)} · Off-deck USD ${number10(offdeck)}${discount?` · ${Math.round(discount)}% discount`:''}${cur&&cur!=='USD'?` · ${cur} ≈ ${number10(local)}`:''}`;
+  const netTotal=v+offdeck;
+  const grossTotal=grossFromNetValue(netTotal,discount);
+  const totalInput=document.getElementById('bTotalBudget');
+  if(totalInput) totalInput.value=grossTotal?String(grossTotal):'';
+  const cur=document.getElementById('bCur').value||'AED';
+  document.getElementById('bbarLeft').textContent=netTotal?('USD '+number10(grossTotal)+' gross planned value'):'No budget entered';
+  if(netTotal){
+    const local=roundToNearestTen(grossTotal*fxRate(cur));
+    document.getElementById('bbarRight').textContent=`Net: on-deck USD ${number10(v)} · off-deck USD ${number10(offdeck)}${discount?` · ${Math.round(discount)}% discount`:''} · ${cur} ≈ ${number10(local)}`;
     document.getElementById('bbarFill').style.width='100%';
   }else{
     document.getElementById('bbarRight').textContent='$0 allocated';
@@ -1533,11 +1554,11 @@ function updateBudgetBar(){
 function collectPlanningPayload(){
   S.offdeckBudget=parseFloat(document.getElementById('bOffdeckBudget')?.value)||0;
   S.budget=parseFloat(document.getElementById('bBudget').value)||0;
-  S.totalBudget=S.budget+S.offdeckBudget;
+  S.discountPct=parseFloat(document.getElementById('bDiscount').value)||0;
+  S.totalBudget=grossFromNetValue(S.budget+S.offdeckBudget,S.discountPct);
   const totalInput=document.getElementById('bTotalBudget');
   if(totalInput) totalInput.value=S.totalBudget?String(S.totalBudget):'';
-  S.discountPct=parseFloat(document.getElementById('bDiscount').value)||0;
-  S.currency=document.getElementById('bCur').value;
+  S.currency=document.getElementById('bCur').value||'AED';
   S.flightStart=document.getElementById('bStart').value;
   S.flightEnd=document.getElementById('bEnd').value;
   const brands=selectedBrandsForPayload();
@@ -2219,19 +2240,20 @@ function renderAll(){
   const totalViews=onDeckRows.filter(r=>r.views).reduce((a,r)=>a+Number(r.views||0),0);
   const rC=onDeckRows.filter(r=>r.stype==='reach').reduce((a,r)=>a+netAmount(r),0);
   const cC=onDeckRows.filter(r=>r.stype==='conv').reduce((a,r)=>a+netAmount(r),0);
-  const budgetBase=S.totalBudget||S.budget+S.offdeckBudget||S.budget;
-  const pct=budgetBase?Math.min(Math.round(total/budgetBase*100),100):0;
+  const netBudget=netBudgetBase();
+  const grossBudget=S.totalBudget||grossBudgetBase();
+  const pct=netBudget?Math.min(Math.round(total/netBudget*100),100):0;
   document.getElementById('metricGrid').innerHTML=`
-    <div class="metric accent"><div class="ml">Total budget</div><div class="mv">${money2(budgetBase,'USD')}</div><div class="ms">${(S.currency&&S.currency!=='USD')?(money2(Math.round(budgetBase*fxRate(S.currency)),S.currency)+' est.'):currencySymbol('USD').trim()+' · excl. VAT'}</div></div>
+    <div class="metric accent"><div class="ml">Gross budget</div><div class="mv">${money2(grossBudget,'USD')}</div><div class="ms">${S.currency?(money2(Math.round(grossBudget*fxRate(S.currency)),S.currency)+' est.'):'Before discount'}</div></div>
     <div class="metric"><div class="ml">Net allocated</div><div class="mv">${money2(total,'USD')}</div><div class="ms">${pct}% of budget</div></div>
     <div class="metric"><div class="ml">Gross value</div><div class="mv">${money2(grossTotal,'USD')}</div><div class="ms">${Math.round(Number(S.discountPct||0))}% discount applied</div></div>
     <div class="metric"><div class="ml">Reach spend</div><div class="mv">${money2(rC,'USD')}</div><div class="ms">${total?Math.round(rC/total*100):0}% of alloc.</div></div>
     <div class="metric"><div class="ml">Conversion spend</div><div class="mv">${money2(cC,'USD')}</div><div class="ms">${total?Math.round(cC/total*100):0}% of alloc.</div></div>
     <div class="metric"><div class="ml">Off-deck spend</div><div class="mv">${money2(offdeckTotal,'USD')}</div><div class="ms">Whole-flight placements</div></div>`;
-  const cur=S.currency||'USD';
+  const cur=S.currency||'AED';
   const localTotal=Math.round(total*fxRate(cur));
-  const localBudget=Math.round(budgetBase*fxRate(cur));
-  document.getElementById('pBarLeft').textContent=money2(total,'USD')+' of '+money2(budgetBase,'USD')+(cur!=='USD'?('  |  '+money2(localTotal,cur)+' of '+money2(localBudget,cur)+' est.'):'' );
+  const localBudget=Math.round(netBudget*fxRate(cur));
+  document.getElementById('pBarLeft').textContent=money2(total,'USD')+' net of '+money2(netBudget,'USD')+' net  |  '+money2(localTotal,cur)+' of '+money2(localBudget,cur)+' est.';
   document.getElementById('pBarRight').textContent=pct+'%';
   const fill=document.getElementById('pBarFill'); fill.style.width=pct+'%';
   fill.className='bbar-fill'+(pct>100?' over':pct>85?' warn':'');
@@ -2258,7 +2280,7 @@ function renderTimeline(){
       const left=Math.max(0,Math.round(sd/totalDays*100));
       const width=Math.max(1,Math.round(dur/totalDays*100));
       const col=r.stype==='reach'?'#1A5FD4':'#C47A1A';
-      h+=`<div class="tl-bar" style="left:${left}%;width:${width}%;background:${col};color:rgba(255,255,255,.9)" title="${displayCountryCode(r.country)} · ${r.asset} · ${r.phase} · ${money2(netAmount(r),S.currency||'USD')}">${r.days}d</div>`;
+      h+=`<div class="tl-bar" style="left:${left}%;width:${width}%;background:${col};color:rgba(255,255,255,.9)" title="${displayCountryCode(r.country)} · ${r.asset} · ${r.phase} · ${money2(netAmount(r),S.currency||'AED')}">${r.days}d</div>`;
     });
     h+='</div></div>';
   });
@@ -2297,20 +2319,20 @@ function renderTable(){
   if(S.tabFilter==='conv') rows=rows.filter(r=>r.stype==='conv');
   if(S.phFilter&&S.phFilter!=='All') rows=rows.filter(r=>r.phase===S.phFilter);
   const total=S.rows.reduce((a,r)=>a+netAmount(r),0);
-  const budgetBase=S.totalBudget||S.budget+S.offdeckBudget||S.budget;
+  const grossTotal=S.rows.reduce((a,r)=>a+grossAmount(r),0);
+  const budgetBase=netBudgetBase();
   const rem=budgetBase-total;
-  const cur=S.currency||'USD';
-  document.getElementById('totVal').textContent=money2(total,'USD')+(cur!=='USD'?('  |  '+money2(Math.round(total*fxRate(cur)),cur)+' est.'):'' );
+  const cur=S.currency||'AED';
+  document.getElementById('totVal').textContent=money2(grossTotal,'USD')+' gross  |  '+money2(total,'USD')+' net';
   const rb=document.getElementById('remBadge');
-  rb.textContent=rem>=0?money2(rem,S.currency||'USD')+' remaining':money2(Math.abs(rem),S.currency||'USD')+' over budget';
+  rb.textContent=rem>=0?money2(rem,'USD')+' net remaining':money2(Math.abs(rem),'USD')+' net over budget';
   rb.className='rem-badge '+(rem>=0?'rem-ok':'rem-over');
   const ob=document.getElementById('overBudgetBar');
   if(ob){
     if(rem<0){
-      const cur=S.currency||'USD';
       const over=Math.abs(rem);
       ob.style.display='block';
-      ob.innerHTML=`Over budget by <strong>${money2(over,'USD')}</strong>${cur!=='USD'?(' (≈ '+money2(Math.round(over*fxRate(cur)),cur)+')'):''}. Adjust line costs or increase budget.`;
+      ob.innerHTML=`Over net budget by <strong>${money2(over,'USD')}</strong> (≈ ${money2(Math.round(over*fxRate(cur)),cur)}). Adjust line costs or increase net budget.`;
     }else{
       ob.style.display='none';
     }
@@ -2335,7 +2357,7 @@ function renderTable(){
     <td>${isOffdeck?'-':`<input class="plan-cell-input" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${money2(grossAmount(r),'USD')}</div></td>
     <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
-    <td><div class="slot-meta" style="font-size:12px">${money2(netAmount(r)*fxRate(S.currency||'USD'),S.currency||'USD')}</div></td>
+    <td><div class="slot-meta" style="font-size:12px">${money2(netAmount(r)*fxRate(S.currency||'AED'),S.currency||'AED')}</div></td>
     <td><input class="plan-cell-input" value="${r.phase||''}" oninput="updateRowField(${r.id},'phase',this.value)"></td>
     <td><input class="plan-cell-input" value="${r.brand||''}" oninput="updateRowField(${r.id},'brand',this.value)"></td>
     <td><input class="plan-cell-note" value="${r.note||''}" oninput="updateRowField(${r.id},'note',this.value)" placeholder="Add note"></td>
@@ -2494,14 +2516,15 @@ function addRow(){
 }
 
 function printPlan(mode='detailed'){
-  const cur=S.currency||'USD';
+  const cur=S.currency||'AED';
   const brand=displaySelectedBrandNames();
   const countries=displayCountries()||'-';
   const total=S.rows.reduce((sum,row)=>sum+netAmount(row),0);
   const grossTotal=S.rows.reduce((sum,row)=>sum+grossAmount(row),0);
   const onDeckRows=S.rows.filter(row=>String(row.buyType||'').toUpperCase()!=='OFF-DECK');
   const totalViews=onDeckRows.reduce((sum,row)=>sum+Number(row.views||0),0);
-  const budgetBase=S.totalBudget||S.budget+S.offdeckBudget||S.budget;
+  const netBudget=netBudgetBase();
+  const grossBudget=S.totalBudget||grossBudgetBase();
   const duration=campaignDurationDays();
   const flightRange=displayFlightRange();
   const campaignCpm=blendedCpm(S.rows);
@@ -2558,10 +2581,10 @@ function printPlan(mode='detailed'){
     `
     : `
       <div class="sumcard"><div class="sumlabel">Media Code</div><div class="sumvalue" style="font-size:18px">${mediaCode}</div><div class="sumsub">Generated reference</div></div>
-      <div class="sumcard"><div class="sumlabel">Net Budget</div><div class="sumvalue">${money2(budgetBase,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(budgetBase*fxRate(cur),cur):'USD view'}</div></div>
+      <div class="sumcard"><div class="sumlabel">Gross Budget</div><div class="sumvalue">${money2(grossBudget,'USD')}</div><div class="sumsub">${money2(grossBudget*fxRate(cur),cur)} est.</div></div>
       <div class="sumcard"><div class="sumlabel">Discount</div><div class="sumvalue">${Math.round(Number(S.discountPct||0))}%</div><div class="sumsub">Applied on slot-data rates</div></div>
       <div class="sumcard"><div class="sumlabel">Gross Value</div><div class="sumvalue">${money2(grossTotal,'USD')}</div><div class="sumsub">Before discounting</div></div>
-      <div class="sumcard"><div class="sumlabel">Net Value</div><div class="sumvalue">${money2(total,'USD')}</div><div class="sumsub">${cur!=='USD'?money2(total*fxRate(cur),cur):'Aligned to budget'}</div></div>
+      <div class="sumcard"><div class="sumlabel">Net Value</div><div class="sumvalue">${money2(total,'USD')}</div><div class="sumsub">${money2(total*fxRate(cur),cur)} est. of ${money2(netBudget,'USD')} net budget</div></div>
     `;
   const win=window.open('','_blank','width=1280,height=900');
   if(!win) return;
@@ -2660,6 +2683,7 @@ S.rows=[];
 setupDateLimits();
 (async function initPlanner(){
   renderComcatGroup(DEFAULT_COMCATS);
+  await loadFxRates();
   await loadOptions();
   nav(1);
   await autoLoadPlanFromUrl();
