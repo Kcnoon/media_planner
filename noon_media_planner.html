@@ -597,12 +597,13 @@ function slotPricingOptions(slot){
   const currentModel=normalizePricingModel(merged?.pricing_model||merged?.buyType||inferredModel);
   const cpmRate=Number(merged?.cpm_rate ?? merged?.gross_cpm ?? 0)||0;
   const cpdRate=Number(merged?.cpd_rate ?? 0)||0;
-  if(cpmRate>0 && !options.includes('CPM')) options.unshift('CPM');
-  if(cpdRate>0 && !options.includes('CPD')) options.push('CPD');
-  if(!options.includes('CPM')) options.unshift('CPM');
-  if(!options.includes('CPD')) options.push('CPD');
-  if(!options.length) options=[currentModel,'CPM','CPD'];
-  return options.includes('CPM') ? ['CPM', ...options.filter(option=>option!=='CPM')] : options;
+  if(!options.length && currentModel) options=[currentModel];
+  if(!options.length){
+    if(cpmRate>0) options.push('CPM');
+    if(cpdRate>0) options.push('CPD');
+  }
+  if(!options.length) options=[currentModel||'CPM'];
+  return [...new Set(options)];
 }
 function applySlotPricing(slot, preferredModel){
   const merged=slotMetaForPricing(slot);
@@ -917,7 +918,7 @@ function campaignDurationDays(){
   return Math.max(Math.round((end-start)/86400000)+1,0);
 }
 function blendedCpm(rows){
-  const cpmRows=(rows||[]).filter(row=>String(row.buyType||'').toUpperCase()!=='OFF-DECK');
+  const cpmRows=(rows||[]).filter(row=>String(row.buyType||'').toUpperCase()==='CPM');
   const totalNet=cpmRows.reduce((sum,row)=>sum+netAmount(row),0);
   const totalViews=cpmRows.reduce((sum,row)=>sum+Number(row.views||0),0);
   if(totalViews<=0) return 0;
@@ -2350,7 +2351,7 @@ function renderTable(){
     <td>${r.dimension||''}</td>
     <td>${isOffdeck?`<div style="font-weight:600">${displaySlotName(r)}</div>`:slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
-    <td>${isOffdeck?'OFF-DECK':`<select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)"><option ${r.buyType==='CPM'?'selected':''}>CPM</option><option ${r.buyType==='CPD'?'selected':''}>CPD</option></select>`}</td>
+    <td>${isOffdeck?'OFF-DECK':`<select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)">${pricingOptionsHtml(findSlotMeta(r.country,r.slot_code)||r,r.buyType)}</select>`}</td>
     <td>${isOffdeck?'-':`<input class="plan-cell-input" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(grossRate(r),'USD')}</div></td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(netRate(r),'USD')}</div></td>
@@ -2401,7 +2402,9 @@ function updateRowField(id,key,value){
   if(key==='buyType'){
     const meta=findSlotMeta(row.country,row.slot_code);
     if(meta){
-      if(value==='CPM'){
+      const allowed=slotPricingOptions(meta);
+      row.buyType=allowed.includes(normalizePricingModel(value))?normalizePricingModel(value):normalizePricingModel(meta.pricing_model);
+      if(row.buyType==='CPM'){
         row.gross_cpm=Number(meta.cpm_rate||0)||0;
         row.net_cpm=Math.round(row.gross_cpm*Math.max(1-(Number(row.discount_pct??S.discountPct)||0)/100,0)*10000)/10000;
         row.rate=row.net_cpm;

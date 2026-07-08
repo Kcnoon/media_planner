@@ -135,19 +135,26 @@ def build_response(req: MediaPlanRequest, rows, diagnostics, repo, plan_id=None)
 
 
 def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
+    meta_by_normalized_key = {
+        (country, str(slot_code or "").strip().lower()): meta
+        for (country, slot_code), meta in slot_meta.items()
+    }
     available_by_slot = {}
     for row in inventory_rows:
         available = max(int(row.get("available_views") or 0), 0)
         if available <= 0:
             continue
-        key = (row.get("country") or "", row.get("slot_code") or "")
-        if not key[0] or not key[1]:
+        country = row.get("country") or ""
+        slot_code = row.get("slot_code") or ""
+        meta = meta_by_normalized_key.get((country, str(slot_code).strip().lower()))
+        if not country or not slot_code or not meta:
             continue
+        key = (country, meta.get("slot_code") or slot_code)
         available_by_slot[key] = available_by_slot.get(key, 0) + available
 
     available_slots = []
     for key, available in available_by_slot.items():
-        meta = slot_meta.get(key, {})
+        meta = meta_by_normalized_key.get((key[0], str(key[1]).strip().lower()), {})
         cpm_rate = float(meta.get("cpm_rate") or 0) or 0.0
         cpd_rate = float(meta.get("cpd_rate") or 0) or 0.0
         slot_name = str(meta.get("slot_name") or key[1]).strip()
@@ -161,6 +168,7 @@ def build_available_slots(req: MediaPlanRequest, inventory_rows, slot_meta):
                 "zone": str(meta.get("zone") or "").strip(),
                 "dimension": str(meta.get("dimension") or "").strip(),
                 "publisher": str(meta.get("publisher") or "").strip(),
+                "type": str(meta.get("type") or meta.get("pricing_model") or "CPM").strip(),
                 "pricing_model": str(meta.get("pricing_model") or "CPM").strip(),
                 "pricing_options": list(meta.get("pricing_options") or [str(meta.get("pricing_model") or "CPM").strip()]),
                 "rate": float(meta.get("rate") or 0) or 0.0,

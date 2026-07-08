@@ -265,6 +265,10 @@ def pricing_options_from_values(cpm_value, cpd_value) -> list[str]:
     return list(dict.fromkeys(options))
 
 
+def pricing_options_for_type(pricing_model: str) -> list[str]:
+    return [normalize_pricing_model(pricing_model)]
+
+
 def combined_dimension(row: dict) -> str:
     app_dimension = str(get_first(row, "app_dimension", "app dimension") or "").strip()
     web_dimension = str(get_first(row, "web_dimension", "web dimension") or "").strip()
@@ -444,10 +448,7 @@ class BigQueryRepository:
             country = infer_country(row)
             normalized_slot_code = slot_code_key(slot_code)
             rate_meta = rate_by_country_slot.get((country, normalized_slot_code)) or rate_by_slot.get(normalized_slot_code) or {}
-            default_pricing_model = infer_pricing_model_from_slot(
-                slot_code,
-                slot_name,
-            )
+            pricing_model = normalize_pricing_model(get_first(row, "type", "pricing_type", "buy_type", "pricing_model") or infer_pricing_model_from_slot(slot_code, slot_name))
             has_rate_card = bool(
                 rate_meta
                 and (
@@ -459,13 +460,8 @@ class BigQueryRepository:
             )
             cpm_rate = float(rate_meta.get("cpm_rate") or 0.0) if has_rate_card else 0.0
             cpd_rate = float(rate_meta.get("cpd_rate") or 0.0) if has_rate_card else 0.0
-            pricing_options = rate_meta.get("pricing_options") or pricing_options_from_values(cpm_rate, cpd_rate)
-            if not pricing_options:
-                pricing_options = ["CPM", "CPD"]
-            pricing_model = "CPM" if "CPM" in pricing_options else pricing_options[0]
-            if default_pricing_model in pricing_options:
-                pricing_model = default_pricing_model
-            default_rate = cpm_rate or cpd_rate or 0.0
+            pricing_options = pricing_options_for_type(pricing_model)
+            default_rate = cpd_rate if pricing_model == "CPD" else cpm_rate
             catalog.append(
                 {
                     "country": country,
@@ -476,6 +472,7 @@ class BigQueryRepository:
                     "zone": str(get_first(row, "zone") or "").strip(),
                     "dimension": combined_dimension(row),
                     "publisher": str(get_first(row, "publisher") or "").strip(),
+                    "type": pricing_model,
                     "pricing_model": pricing_model,
                     "pricing_options": pricing_options,
                     "cpm_rate": cpm_rate,
@@ -719,6 +716,11 @@ class BigQueryRepository:
         return "new"
 
     def fetch_inventory(self, req: MediaPlanRequest) -> list[dict]:
+        active_slots = {
+            (row["country"], slot_code_key(row["slot_code"])): row
+            for row in self.fetch_slot_catalog(req)
+            if row.get("country") and row.get("slot_code")
+        }
         forecast_rows = self._table_records_for_window(
             self.settings.forecast_table,
             req.start_date,
@@ -744,7 +746,10 @@ class BigQueryRepository:
             if row_country not in countries:
                 continue
             slot = str(get_first(row, "slot_code", "slot") or "").strip()
-            booked_by_date_slot[(dt, row_country, slot)] += int(parse_number(get_first(row, "booked_views", "delivered_views")))
+            slot_key_value = slot_code_key(slot)
+            if (row_country, slot_key_value) not in active_slots:
+                continue
+            booked_by_date_slot[(dt, row_country, slot_key_value)] += int(parse_number(get_first(row, "booked_views", "delivered_views")))
 
         inventory: list[dict] = []
         for row in forecast_rows:
@@ -755,13 +760,17 @@ class BigQueryRepository:
             if row_country not in countries:
                 continue
             slot = str(get_first(row, "slot", "slot_code") or "").strip()
+            slot_key_value = slot_code_key(slot)
+            active_meta = active_slots.get((row_country, slot_key_value))
+            if not active_meta:
+                continue
             forecast = int(parse_number(get_first(row, "slot_sessions", "forecast_views", "views")))
-            booked = booked_by_date_slot.get((dt, row_country, slot), 0)
+            booked = booked_by_date_slot.get((dt, row_country, slot_key_value), 0)
             inventory.append(
                 {
                     "dt": dt,
                     "country": row_country,
-                    "slot_code": slot,
+                    "slot_code": active_meta.get("slot_code") or slot,
                     "forecast_views": forecast,
                     "booked_views": booked,
                     "available_views": max(forecast - booked, 0),

@@ -58,6 +58,10 @@ def normalize_pricing_model(value: str | None) -> str:
     return "CPM"
 
 
+def slot_code_key(value: str | None) -> str:
+    return str(value or "").strip().lower()
+
+
 def inferred_slot_pricing_model(slot_code: str | None, slot_name: str | None = None) -> str:
     text = f"{slot_code or ''} {slot_name or ''}".lower()
     if "cpd" in text or "cost per day" in text or "cost_per_day" in text:
@@ -69,6 +73,8 @@ def pricing_options_for_meta(meta: dict | None) -> list[str]:
     meta = meta or {}
     raw_options = meta.get("pricing_options") or []
     options = [normalize_pricing_model(option) for option in raw_options if str(option or "").strip()]
+    if not options and meta.get("pricing_model"):
+        options = [normalize_pricing_model(meta.get("pricing_model"))]
     if not options:
         if float(meta.get("cpm_rate") or 0) > 0:
             options.append("CPM")
@@ -76,13 +82,24 @@ def pricing_options_for_meta(meta: dict | None) -> list[str]:
             options.append("CPD")
     if not options:
         options = [normalize_pricing_model(meta.get("pricing_model"))]
-    if "CPM" in options:
-        options = ["CPM"] + [option for option in options if option != "CPM"]
     return list(dict.fromkeys(options))
 
 
 def slot_key(country: str, slot_code: str) -> str:
     return f"{country}|{slot_code}"
+
+
+def get_slot_meta(slot_meta: dict[tuple[str, str], dict], country: str, slot_code: str | None) -> dict:
+    if not country or not slot_code:
+        return {}
+    direct = slot_meta.get((country, slot_code))
+    if direct:
+        return direct
+    normalized = slot_code_key(slot_code)
+    for (meta_country, meta_slot_code), meta in slot_meta.items():
+        if meta_country == country and slot_code_key(meta_slot_code) == normalized:
+            return meta
+    return {}
 
 
 def selected_slot_pricing(req: MediaPlanRequest) -> dict[str, str]:
@@ -570,7 +587,10 @@ def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str
         if views < settings.min_slot_views and spends <= 0:
             continue
 
-        meta = slot_meta.get((country, slot_code), {})
+        meta = get_slot_meta(slot_meta, country, slot_code)
+        if not meta:
+            continue
+        slot_code = meta.get("slot_code") or slot_code
         slot_name = meta.get("slot_name")
         if marketplace and marketplace != "both":
             sm = is_supermall(slot_code, slot_name)
@@ -918,9 +938,10 @@ def ensure_selected_slot_candidates(
         country, _, slot_code = selected_key.partition("|")
         if not country or not slot_code:
             continue
-        meta = slot_meta.get((country, slot_code))
+        meta = get_slot_meta(slot_meta, country, slot_code)
         if not meta:
             continue
+        slot_code = meta.get("slot_code") or slot_code
 
         page = meta.get("page")
         category = meta.get("category") or page
@@ -942,8 +963,9 @@ def ensure_selected_slot_candidates(
             key=lambda candidate: (candidate.brand_specific, _portfolio_score(candidate), candidate.views),
             default=None,
         )
+        allowed_models = pricing_options_for_meta(meta)
         requested_model = selected_slot_pricing_map.get(selected_key)
-        pricing_models = [requested_model] if requested_model else pricing_options_for_meta(meta)
+        pricing_models = [requested_model] if requested_model in allowed_models else allowed_models
         for pricing_model in pricing_models:
             normalized_model = normalize_pricing_model(pricing_model)
             if (selected_key, normalized_model) in candidate_by_slot_model:
@@ -1336,7 +1358,7 @@ def plan_media(
 
         buy_type = candidate.pricing_model
         is_foc = slot_key_value in foc_slot_keys
-        meta = slot_meta.get((candidate.country, candidate.slot_code), {})
+        meta = get_slot_meta(slot_meta, candidate.country, candidate.slot_code)
         if buy_type == "CPD":
             if not slot_has_rate_for_model(meta, "CPD", row_from, row_to, settings.default_cpd):
                 return False
@@ -1488,7 +1510,7 @@ def plan_media(
                     "marketplace": candidate.marketplace,
                     "category": candidate.category or "",
                     "zone": candidate.zone or "",
-                    "dimension": candidate.dimension or slot_meta.get((candidate.country, candidate.slot_code), {}).get("dimension", ""),
+                    "dimension": candidate.dimension or get_slot_meta(slot_meta, candidate.country, candidate.slot_code).get("dimension", ""),
                     "asset": asset_from_slot(candidate.slot_code, candidate.slot_name),
                     "slot_name": candidate.slot_name or asset_from_slot(candidate.slot_code, candidate.slot_name),
                     "days": days,
@@ -1702,9 +1724,12 @@ def plan_media(
         if selected_key in final_selected_keys:
             continue
         candidate = selected_candidate_for_key(selected_key)
-        requested_model = selected_slot_pricing_map.get(selected_key, "CPM")
         country, _, selected_slot_code = selected_key.partition("|")
-        meta = slot_meta.get((country, selected_slot_code), {})
+        meta = get_slot_meta(slot_meta, country, selected_slot_code)
+        allowed_models = pricing_options_for_meta(meta)
+        requested_model = selected_slot_pricing_map.get(selected_key)
+        if requested_model not in allowed_models:
+            requested_model = allowed_models[0] if allowed_models else "CPM"
         if not candidate:
             reason = "No matching candidate was available for the selected slot and buy type."
         else:
