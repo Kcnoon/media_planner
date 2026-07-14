@@ -125,7 +125,7 @@ thead th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:v
 tbody td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:#fffdf5}
-.final-plan-table{min-width:2380px;table-layout:auto}
+.final-plan-table{min-width:2580px;table-layout:auto}
 td.mono{font-family:var(--mono);font-size:11px}
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
 .b-cpm{background:var(--blue-bg);color:var(--blue-text)}
@@ -158,6 +158,8 @@ td.mono{font-family:var(--mono);font-size:11px}
 .plan-cell-input:focus,.plan-cell-select:focus,.plan-cell-note:focus{border-color:var(--noon);box-shadow:0 0 0 4px rgba(255,207,51,.18)}
 .plan-cell-input.readable-number{min-width:132px;text-align:right;font-size:13px;font-weight:600;letter-spacing:.01em}
 .plan-cell-input.readable-money{min-width:148px;text-align:right;font-size:13px;font-weight:600;letter-spacing:.01em}
+.plan-cell-input.readable-rate{min-width:122px;text-align:right;font-size:13px;font-weight:600;letter-spacing:.01em}
+.plan-cell-input.readable-page{min-width:170px;font-size:13px}
 .plan-cell-input.readable-text{min-width:150px;font-size:13px}
 .plan-cell-input.readable-brand{min-width:150px;font-size:13px}
 .plan-cell-note{min-width:180px}
@@ -530,12 +532,12 @@ td.mono{font-family:var(--mono);font-size:11px}
     <div class="tbl-container">
       <table class="final-plan-table"><thead><tr>
         <th style="width:110px">From</th><th style="width:110px">To</th>
-        <th style="width:88px">Country</th><th style="width:110px">Marketplace</th><th style="width:110px">Page</th><th style="width:120px">Zone</th><th style="width:140px">Dimension</th><th style="min-width:300px">Asset / slot</th>
+        <th style="width:88px">Country</th><th style="width:110px">Marketplace</th><th style="width:190px">Page</th><th style="width:120px">Zone</th><th style="width:140px">Dimension</th><th style="min-width:300px">Asset / slot</th>
         <th style="width:56px;text-align:center">Days</th>
         <th style="width:98px">Buy type</th>
-        <th style="width:86px;text-align:right">Rate</th>
-        <th style="width:92px;text-align:right">Gross rate</th>
-        <th style="width:92px;text-align:right">Net rate</th>
+        <th style="width:150px;text-align:right">Rate</th>
+        <th style="width:120px;text-align:right">Gross rate</th>
+        <th style="width:120px;text-align:right">Net rate</th>
         <th style="width:160px;text-align:right">Est. views</th>
         <th style="width:130px;text-align:right">Gross USD</th>
         <th style="width:170px;text-align:right">Net USD</th>
@@ -2352,13 +2354,13 @@ function renderTable(){
     <td><input class="plan-cell-input" type="date" value="${r.to||''}" onchange="updateRowField(${r.id},'to',this.value)"></td>
     <td>${isOffdeck?displayCountryCode(r.country):`<select class="plan-cell-select" onchange="updateRowField(${r.id},'country',this.value)"><option value="ae" ${r.country==='ae'?'selected':''}>AE</option><option value="sa" ${r.country==='sa'?'selected':''}>SA</option><option value="eg" ${r.country==='eg'?'selected':''}>EG</option></select>`}</td>
     <td>${(r.marketplace||getSlotMarketplace(r)||'').toUpperCase()}</td>
-    <td><input class="plan-cell-input" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value)"></td>
+    <td><input class="plan-cell-input readable-page" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value)"></td>
     <td>${r.zone||''}</td>
     <td>${r.dimension||''}</td>
     <td>${isOffdeck?`<div style="font-weight:600">${displaySlotName(r)}</div>`:slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
     <td>${isOffdeck?'OFF-DECK':`<select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)">${pricingOptionsHtml(findSlotMeta(r.country,r.slot_code)||r,r.buyType)}</select>`}</td>
-    <td>${isOffdeck?'-':`<input class="plan-cell-input" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)">`}</td>
+    <td>${isOffdeck?'-':`<input class="plan-cell-input readable-rate" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(grossRate(r),'USD')}</div></td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(netRate(r),'USD')}</div></td>
     <td>${isOffdeck?'-':`<input class="plan-cell-input readable-number" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)">`}</td>
