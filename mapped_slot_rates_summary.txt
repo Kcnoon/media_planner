@@ -1,0 +1,8 @@
+Total rows: 1480
+Matched rows: 874
+ae: 359
+bh: 6
+eg: 167
+om: 6
+qa: 6
+sa: 330

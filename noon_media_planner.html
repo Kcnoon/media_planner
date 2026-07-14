@@ -125,6 +125,7 @@ thead th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:v
 tbody td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:#fffdf5}
+.final-plan-table{min-width:2380px;table-layout:auto}
 td.mono{font-family:var(--mono);font-size:11px}
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
 .b-cpm{background:var(--blue-bg);color:var(--blue-text)}
@@ -152,10 +153,15 @@ td.mono{font-family:var(--mono);font-size:11px}
 .brand-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
 .brand-title{font-size:20px;font-weight:600;letter-spacing:-.4px}
 .empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
-.tbl-container{max-height:500px;overflow-y:auto;border-radius:var(--r-md);border:1px solid var(--border);background:#fff}
+.tbl-container{max-height:500px;overflow:auto;border-radius:var(--r-md);border:1px solid var(--border);background:#fff}
 .plan-cell-input,.plan-cell-select,.plan-cell-note{width:100%;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:7px 9px;font-size:12px;color:var(--text);font-family:var(--font);outline:none;transition:.12s}
 .plan-cell-input:focus,.plan-cell-select:focus,.plan-cell-note:focus{border-color:var(--noon);box-shadow:0 0 0 4px rgba(255,207,51,.18)}
+.plan-cell-input.readable-number{min-width:132px;text-align:right;font-size:13px;font-weight:600;letter-spacing:.01em}
+.plan-cell-input.readable-money{min-width:148px;text-align:right;font-size:13px;font-weight:600;letter-spacing:.01em}
+.plan-cell-input.readable-text{min-width:150px;font-size:13px}
+.plan-cell-input.readable-brand{min-width:150px;font-size:13px}
 .plan-cell-note{min-width:180px}
+.plan-cell-note.readable-note{min-width:250px;font-size:13px}
 .slot-meta{font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono);line-height:1.4}
 .country-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:var(--surface2);font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase}
 .plan-toolbar-note{font-size:12px;color:var(--text2);margin-top:8px}
@@ -522,7 +528,7 @@ td.mono{font-family:var(--mono);font-size:11px}
       </div>
     </div>
     <div class="tbl-container">
-      <table><thead><tr>
+      <table class="final-plan-table"><thead><tr>
         <th style="width:110px">From</th><th style="width:110px">To</th>
         <th style="width:88px">Country</th><th style="width:110px">Marketplace</th><th style="width:110px">Page</th><th style="width:120px">Zone</th><th style="width:140px">Dimension</th><th style="min-width:300px">Asset / slot</th>
         <th style="width:56px;text-align:center">Days</th>
@@ -530,13 +536,13 @@ td.mono{font-family:var(--mono);font-size:11px}
         <th style="width:86px;text-align:right">Rate</th>
         <th style="width:92px;text-align:right">Gross rate</th>
         <th style="width:92px;text-align:right">Net rate</th>
-        <th style="width:110px;text-align:right">Est. views</th>
-        <th style="width:110px;text-align:right">Gross USD</th>
-        <th style="width:110px;text-align:right">Net USD</th>
-        <th style="width:130px;text-align:right">Net local</th>
-        <th style="width:120px">Phase</th>
-        <th style="width:96px">Brand</th>
-        <th style="min-width:220px">Note</th>
+        <th style="width:160px;text-align:right">Est. views</th>
+        <th style="width:130px;text-align:right">Gross USD</th>
+        <th style="width:170px;text-align:right">Net USD</th>
+        <th style="width:150px;text-align:right">Net local</th>
+        <th style="width:180px">Phase</th>
+        <th style="width:180px">Brand</th>
+        <th style="min-width:280px">Note</th>
         <th style="width:36px"></th>
       </tr></thead><tbody id="planBody"></tbody></table>
     </div>
@@ -2355,13 +2361,13 @@ function renderTable(){
     <td>${isOffdeck?'-':`<input class="plan-cell-input" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(grossRate(r),'USD')}</div></td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(netRate(r),'USD')}</div></td>
-    <td>${isOffdeck?'-':`<input class="plan-cell-input" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)">`}</td>
+    <td>${isOffdeck?'-':`<input class="plan-cell-input readable-number" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${money2(grossAmount(r),'USD')}</div></td>
-    <td><input class="plan-cell-input" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
+    <td><input class="plan-cell-input readable-money" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
     <td><div class="slot-meta" style="font-size:12px">${money2(netAmount(r)*fxRate(S.currency||'AED'),S.currency||'AED')}</div></td>
-    <td><input class="plan-cell-input" value="${r.phase||''}" oninput="updateRowField(${r.id},'phase',this.value)"></td>
-    <td><input class="plan-cell-input" value="${r.brand||''}" oninput="updateRowField(${r.id},'brand',this.value)"></td>
-    <td><input class="plan-cell-note" value="${r.note||''}" oninput="updateRowField(${r.id},'note',this.value)" placeholder="Add note"></td>
+    <td><input class="plan-cell-input readable-text" value="${r.phase||''}" oninput="updateRowField(${r.id},'phase',this.value)"></td>
+    <td><input class="plan-cell-input readable-brand" value="${r.brand||''}" oninput="updateRowField(${r.id},'brand',this.value)"></td>
+    <td><input class="plan-cell-note readable-note" value="${r.note||''}" oninput="updateRowField(${r.id},'note',this.value)" placeholder="Add note"></td>
     <td><button class="del-btn" onclick="delRow(${r.id})">×</button></td>
   </tr>`;
   }).join('');

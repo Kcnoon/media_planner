@@ -1,0 +1,1481 @@
+Platform,category,country,slot,base_page,placement_type,cpm_rate,cpd_rate
+Noon,Air Conditioners,ae,noon_ae_clp_ac_atf,clp_g1,atf,,250
+Noon,Air Conditioners,sa,noon_sa_clp_ac_atf,clp_g1,atf,,280
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_atf,clp_g1,atf,,250
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_atf_2,clp_g1,atf,,250
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_hero_banner_3,clp_g1,hero_3,,150
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_sfu_1,clp_g1,sfu,,150
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_sfu_2,clp_g1,sfu,,150
+Noon,Appliances,ae,noon_ae_clp_appliances_clp_sfu_3,clp_g1,sfu,,150
+Noon,Appliances,ae,noon_ae_clp_appliances_mid_page_1,clp_g1,mid_upper,,
+Noon,Appliances,ae,noon_ae_clp_appliances_mid_page_2,clp_g1,mid_upper,,
+Noon,Appliances,ae,noon_ae_clp_appliances_mid_page_3,clp_g1,mid_upper,,
+Noon,Appliances,ae,noon_ae_clp_appliances_mid_page_4,clp_g1,mid_upper,,
+Noon,Appliances,eg,noon_eg_clp_appliances_clp_atf,clp_eg_a,atf,,150
+Noon,Appliances,eg,noon_eg_clp_appliances_clp_atf_2,clp_eg_a,atf,,150
+Noon,Appliances,eg,noon_eg_clp_appliances_clp_hero_banner_2,clp_eg_a,hero_2,,135
+Noon,Appliances,eg,noon_eg_clp_appliances_clp_hero_banner_3,clp_eg_a,hero_3,,115
+Noon,Appliances,eg,noon_eg_clp_appliances_clp_sfu1,clp_eg_a,sfu,,125
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_atf,clp_g1,atf,,280
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_atf_2,clp_g1,atf,,280
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_hero_banner_3,clp_g1,hero_3,,200
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_sfu_1,clp_g1,sfu,,200
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_sfu_2,clp_g1,sfu,,200
+Noon,Appliances,sa,noon_sa_clp_appliances_clp_sfu_3,clp_g1,sfu,,200
+Noon,Appliances,sa,noon_sa_clp_appliances_mid_page_1,clp_g1,mid_upper,,
+Noon,Appliances,sa,noon_sa_clp_appliances_mid_page_2,clp_g1,mid_upper,,
+Noon,Appliances,sa,noon_sa_clp_appliances_mid_page_3,clp_g1,mid_upper,,
+Noon,Appliances,sa,noon_sa_clp_appliances_mid_page_4,clp_g1,mid_upper,,
+Noon,Appliances,ae,noon_ae_clp_appliances_brand_carousel,clp_g1,brand_carousel,,
+Noon,Appliances,sa,noon_sa_clp_appliances_brand_carousel,clp_g1,brand_carousel,,
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_atf,clp_g2,atf,,180
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_sfu_1,clp_g2,sfu,,150
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_sfu_2,clp_g2,sfu,,150
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_sfu_3,clp_g2,sfu,,150
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_atf,clp_eg_a,atf,,150
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_hero_banner_2,clp_eg_a,hero_2,,135
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_hero_banner_3,clp_eg_a,hero_3,,115
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_hero_banner_4,clp_eg_a,hero_4,,
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_hero_banner_5,clp_eg_a,hero_5,,
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_hero_banner_6,clp_eg_a,hero_6,,
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_sfu1,clp_eg_a,sfu,,125
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_sfu2,clp_eg_a,sfu,,125
+Noon,Audio Video,eg,noon_eg_clp_audio_video_clp_sfu3,clp_eg_a,sfu,,125
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_atf,clp_g2,atf,,180
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_sfu_1,clp_g2,sfu,,130
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_sfu_2,clp_g2,sfu,,130
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_sfu_3,clp_g2,sfu,,130
+Noon,Audio Video,ae,noon_ae_clp_audio_video_clp_atf_2,clp_g2,atf,,180
+Noon,Audio Video,sa,noon_sa_clp_audio_video_clp_atf_2,clp_g2,atf,,180
+Noon,Audio Video,ae,noon_ae_clp_audio_video_brand_carousel,clp_g2,brand_carousel,,
+Noon,Audio Video,sa,noon_sa_clp_audio_video_brand_carousel,clp_g2,brand_carousel,,
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_atf,clp_g3,atf,,130
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_sfu_1,clp_g3,sfu,,125
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_sfu_2,clp_g3,sfu,,125
+Noon,Automotive,ae,noon_ae_clp_automotive_clp_sfu_3,clp_g3,sfu,,125
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_atf,clp_eg_c,atf,,90
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Automotive,eg,noon_eg_clp_automotive_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_atf,clp_g3,atf,,125
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_sfu_1,clp_g3,sfu,,90
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_sfu_2,clp_g3,sfu,,90
+Noon,Automotive,sa,noon_sa_clp_automotive_clp_sfu_3,clp_g3,sfu,,90
+Noon,av_bonanza,ae,noon_ae_av_bonanza_hero_banner_1,clp_g2,hero_1,,
+Noon,av_bonanza,ae,noon_ae_av_bonanza_hero_banner_2,clp_g2,hero_2,,180
+Noon,av_bonanza,ae,noon_ae_av_bonanza_hero_banner_3,clp_g2,hero_3,,110
+Noon,av_bonanza,ae,noon_ae_av_bonanza_hero_banner_4,clp_g2,hero_4,,
+Noon,av_bonanza,ae,noon_ae_av_bonanza_atf_1,clp_g2,atf,,180
+Noon,av_bonanza,ae,noon_ae_av_bonanza_atf_2,clp_g2,atf,,180
+Noon,av_bonanza,ae,noon_ae_av_bonanza_sfu_1,clp_g2,sfu,,150
+Noon,av_bonanza,ae,noon_ae_av_bonanza_sfu_2,clp_g2,sfu,,150
+Noon,av_bonanza,ae,noon_ae_av_bonanza_sfu_3,clp_g2,sfu,,150
+Noon,av_bonanza,ae,noon_ae_av_bonanza_brand_carousel,clp_g2,brand_carousel,,
+Noon,av_bonanza,ae,noon_ae_av_bonanza_hero_banner_5,clp_g2,hero_5,,
+Noon,av_bonanza,ae,noon_ae_av_bonanza_hero_banner_6,clp_g2,hero_6,,
+Noon,Baby,ae,noon_ae_clp_baby_clp_atf,clp_g3,atf,,130
+Noon,Baby,ae,noon_ae_clp_baby_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Baby,ae,noon_ae_clp_baby_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Baby,ae,noon_ae_clp_baby_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Baby,ae,noon_ae_clp_baby_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Baby,ae,noon_ae_clp_baby_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Baby,ae,noon_ae_clp_baby_clp_sfu_1,clp_g3,sfu,,125
+Noon,Baby,ae,noon_ae_clp_baby_clp_sfu_2,clp_g3,sfu,,125
+Noon,Baby,ae,noon_ae_clp_baby_clp_sfu_3,clp_g3,sfu,,125
+Noon,Baby,eg,noon_eg_clp_baby_clp_atf,clp_eg_c,atf,,90
+Noon,Baby,eg,noon_eg_clp_baby_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Baby,eg,noon_eg_clp_baby_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Baby,eg,noon_eg_clp_baby_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Baby,eg,noon_eg_clp_baby_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Baby,eg,noon_eg_clp_baby_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Baby,eg,noon_eg_clp_baby_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Baby,eg,noon_eg_clp_baby_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Baby,eg,noon_eg_clp_baby_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Baby,sa,noon_sa_clp_baby_clp_atf,clp_g3,atf,,125
+Noon,Baby,sa,noon_sa_clp_baby_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Baby,sa,noon_sa_clp_baby_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Baby,sa,noon_sa_clp_baby_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Baby,sa,noon_sa_clp_baby_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Baby,sa,noon_sa_clp_baby_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Baby,sa,noon_sa_clp_baby_clp_sfu_1,clp_g3,sfu,,90
+Noon,Baby,sa,noon_sa_clp_baby_clp_sfu_2,clp_g3,sfu,,90
+Noon,Baby,sa,noon_sa_clp_baby_clp_sfu_3,clp_g3,sfu,,90
+Noon,back to outdoor sale,ae,noon_ae_back_outdoor_hero_banner_2,,hero_2,,
+Noon,back to outdoor sale,ae,noon_ae_back_outdoor_hero_banner_3,,hero_3,,
+Noon,back to outdoor sale,ae,noon_ae_back_outdoor_sfu_1,,sfu,,
+Noon,back to outdoor sale,ae,noon_ae_back_outdoor_sfu_3,,sfu,,
+Noon,back to outdoor sale,ae,noon_ae_back_outdoor_sfu_2,,sfu,,
+Noon,back to outdoor sale,sa,noon_sa_back_outdoor_hero_banner_2,,hero_2,,
+Noon,back to outdoor sale,sa,noon_sa_back_outdoor_hero_banner_3,,hero_3,,
+Noon,back to outdoor sale,sa,noon_sa_back_outdoor_sfu_1,,sfu,,
+Noon,back to outdoor sale,sa,noon_sa_back_outdoor_sfu_2,,sfu,,
+Noon,back to outdoor sale,sa,noon_sa_back_outdoor_sfu_3,,sfu,,
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_atf,clp_g3,atf,,130
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_sfu_1,clp_g3,sfu,,125
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_sfu_2,clp_g3,sfu,,125
+Noon,Beauty,ae,noon_ae_clp_beauty_clp_sfu_3,clp_g3,sfu,,125
+Noon,Beauty,ae,noon_ae_clp_beauty_lifestyle_spot_1,clp_g3,,,
+Noon,Beauty,ae,noon_ae_clp_beauty_lifestyle_spot_2,clp_g3,,,
+Noon,Beauty,ae,noon_ae_clp_beauty_lifestyle_spot_3,clp_g3,,,
+Noon,Beauty,ae,noon_ae_clp_beauty_lifestyle_spot_4,clp_g3,,,
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_atf,clp_eg_a,atf,,150
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_hero_banner_2,clp_eg_a,hero_2,,135
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_hero_banner_3,clp_eg_a,hero_3,,115
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_hero_banner_4,clp_eg_a,hero_4,,
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_hero_banner_5,clp_eg_a,hero_5,,
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_hero_banner_6,clp_eg_a,hero_6,,
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_sfu1,clp_eg_a,sfu,,125
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_sfu2,clp_eg_a,sfu,,125
+Noon,Beauty,eg,noon_eg_clp_beauty_clp_sfu3,clp_eg_a,sfu,,125
+Noon,Beauty,eg,noon_eg_clp_beauty_lifestyle_spot_1,clp_eg_a,,,
+Noon,Beauty,eg,noon_eg_clp_beauty_lifestyle_spot_2,clp_eg_a,,,
+Noon,Beauty,eg,noon_eg_clp_beauty_lifestyle_spot_3,clp_eg_a,,,
+Noon,Beauty,eg,noon_eg_clp_beauty_lifestyle_spot_4,clp_eg_a,,,
+Noon,Beauty,eg,noon_eg_clp_beauty_mid_page_1,clp_eg_a,mid_upper,,
+Noon,Beauty,eg,noon_eg_clp_beauty_mid_page_2,clp_eg_a,mid_upper,,
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_atf,clp_g3,atf,,125
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_sfu_1,clp_g3,sfu,,90
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_sfu_2,clp_g3,sfu,,90
+Noon,Beauty,sa,noon_sa_clp_beauty_clp_sfu_3,clp_g3,sfu,,90
+Noon,Beauty,sa,noon_sa_clp_beauty_lifestyle_spot_1,clp_g3,,,
+Noon,Beauty,sa,noon_sa_clp_beauty_lifestyle_spot_2,clp_g3,,,
+Noon,Beauty,sa,noon_sa_clp_beauty_lifestyle_spot_3,clp_g3,,,
+Noon,Beauty,sa,noon_sa_clp_beauty_lifestyle_spot_4,clp_g3,,,
+Noon,Beauty,ae,noon_ae_clp_beauty_brand_carousel,clp_g3,brand_carousel,,
+Noon,Beauty,sa,noon_sa_clp_beauty_brand_carousel,clp_g3,brand_carousel,,
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_atf,clp_g3,atf,,130
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_sfu_1,clp_g3,sfu,,125
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_sfu_2,clp_g3,sfu,,125
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_sfu_3,clp_g3,sfu,,125
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_atf,clp_g3,atf,,125
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_sfu_1,clp_g3,sfu,,90
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_sfu_2,clp_g3,sfu,,90
+Noon,Beauty Tools,sa,noon_sa_clp_beauty_tools_clp_sfu_3,clp_g3,sfu,,90
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_hero_banner_1,clp_g2,hero_1,,
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_hero_banner_2,clp_g2,hero_2,,180
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_hero_banner_3,clp_g2,hero_3,,110
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_hero_banner_4,clp_g2,hero_4,,
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_atf_1,clp_g2,atf,,180
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_atf_2,clp_g2,atf,,180
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_sfu_1,clp_g2,sfu,,150
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_sfu_2,clp_g2,sfu,,150
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_sfu_3,clp_g2,sfu,,150
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_brand_carousel,clp_g2,brand_carousel,,
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_hero_banner_5,clp_g2,hero_5,,
+Noon,camera_bonanza,ae,noon_ae_camera_bonanza_hero_banner_6,clp_g2,hero_6,,
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_atf,clp_g2,atf,,180
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_sfu_1,clp_g2,sfu,,150
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_sfu_2,clp_g2,sfu,,150
+Noon,Cameras,ae,noon_ae_clp_cameras_clp_sfu_3,clp_g2,sfu,,150
+Noon,Cameras,eg,noon_eg_clp_cameras_clp_atf,clp_eg_b,atf,,120
+Noon,Cameras,eg,noon_eg_clp_cameras_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Cameras,eg,noon_eg_clp_cameras_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Cameras,eg,noon_eg_clp_cameras_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Cameras,eg,noon_eg_clp_cameras_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Cameras,eg,noon_eg_clp_cameras_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_atf,clp_g2,atf,,180
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_sfu_1,clp_g2,sfu,,130
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_sfu_2,clp_g2,sfu,,130
+Noon,Cameras,sa,noon_sa_clp_cameras_clp_sfu_3,clp_g2,sfu,,130
+Noon,Cameras,ae,noon_ae_clp_cameras_atf_2,clp_g2,atf,,180
+Noon,Cameras,ae,noon_ae_clp_camera_mid_page_1,clp_g2,mid_upper,,
+Noon,Cameras,ae,noon_ae_clp_camera_mid_page_2,clp_g2,mid_upper,,
+Noon,Cameras,ae,noon_ae_clp_camera_mid_page_3,clp_g2,mid_upper,,
+Noon,Cameras,ae,noon_ae_clp_camera_mid_page_4,clp_g2,mid_upper,,
+Noon,Cameras,sa,noon_sa_clp_cameras_atf_2,clp_g2,atf,,180
+Noon,Cameras,sa,noon_sa_clp_camera_mid_page_1,clp_g2,mid_upper,,
+Noon,Cameras,sa,noon_sa_clp_camera_mid_page_2,clp_g2,mid_upper,,
+Noon,Cameras,sa,noon_sa_clp_camera_mid_page_3,clp_g2,mid_upper,,
+Noon,Cameras,sa,noon_sa_clp_camera_mid_page_4,clp_g2,mid_upper,,
+Noon,Clearance,ae,noon_ae_clearance_sfu_1,,sfu,,
+Noon,Clearance,ae,noon_ae_clearance_top_fold_unit_1,,sfu,,
+Noon,Clearance,sa,noon_sa_clearance_sfu_1,,sfu,,
+Noon,Clearance,sa,noon_sa_clearance_top_fold_unit_1,,sfu,,
+Supermall,clp_beauty_supermall,ae,supermall_ae_clp_beauty_hero_banner_2,clp,hero_2,,20
+Supermall,clp_beauty_supermall,ae,supermall_ae_clp_beauty_hero_banner_3,clp,hero_3,,15
+Supermall,clp_beauty_supermall,ae,supermall_ae_clp_beauty_hero_banner_4,clp,hero_4,,15
+Supermall,clp_beauty_supermall,ae,supermall_ae_clp_beauty_sfu,clp,sfu,,17
+Supermall,clp_beauty_supermall,sa,supermall_sa_clp_beauty_hero_banner_2,clp,hero_2,,20
+Supermall,clp_beauty_supermall,sa,supermall_sa_clp_beauty_hero_banner_3,clp,hero_3,,15
+Supermall,clp_beauty_supermall,sa,supermall_sa_clp_beauty_hero_banner_4,clp,hero_4,,15
+Supermall,clp_beauty_supermall,sa,supermall_sa_clp_beauty_sfu,clp,sfu,,16
+Supermall,clp_grooming_supermall,ae,supermall_ae_clp_grooming_hero_banner_2,clp,hero_2,,20
+Supermall,clp_grooming_supermall,ae,supermall_ae_clp_grooming_hero_banner_3,clp,hero_3,,15
+Supermall,clp_grooming_supermall,ae,supermall_ae_clp_grooming_hero_banner_4,clp,hero_4,,15
+Supermall,clp_grooming_supermall,ae,supermall_ae_clp_grooming_sfu,clp,sfu,,17
+Supermall,clp_grooming_supermall,ae,supermall_ae_clp_grooming_atf,clp,atf,,17
+Supermall,clp_grooming_supermall,sa,supermall_sa_clp_grooming_hero_banner_2,clp,hero_2,,20
+Supermall,clp_grooming_supermall,sa,supermall_sa_clp_grooming_hero_banner_3,clp,hero_3,,15
+Supermall,clp_grooming_supermall,sa,supermall_sa_clp_grooming_hero_banner_4,clp,hero_4,,15
+Supermall,clp_grooming_supermall,sa,supermall_sa_clp_grooming_sfu,clp,sfu,,16
+Supermall,clp_grooming_supermall,sa,supermall_sa_clp_grooming_atf,clp,atf,,16
+Supermall,clp_haircare_supermall,ae,supermall_ae_clp_haircare_hero_banner_2,clp,hero_2,,20
+Supermall,clp_haircare_supermall,ae,supermall_ae_clp_haircare_hero_banner_3,clp,hero_3,,15
+Supermall,clp_haircare_supermall,ae,supermall_ae_clp_haircare_hero_banner_4,clp,hero_4,,15
+Supermall,clp_haircare_supermall,ae,supermall_ae_clp_haircare_sfu,clp,sfu,,17
+Supermall,clp_haircare_supermall,ae,supermall_ae_clp_haircare_atf,clp,atf,,17
+Supermall,clp_haircare_supermall,sa,supermall_sa_clp_haircare_hero_banner_2,clp,hero_2,,20
+Supermall,clp_haircare_supermall,sa,supermall_sa_clp_haircare_hero_banner_3,clp,hero_3,,15
+Supermall,clp_haircare_supermall,sa,supermall_sa_clp_haircare_hero_banner_4,clp,hero_4,,15
+Supermall,clp_haircare_supermall,sa,supermall_sa_clp_haircare_sfu,clp,sfu,,16
+Supermall,clp_haircare_supermall,sa,supermall_sa_clp_haircare_atf,clp,atf,,16
+Supermall,clp_makeup_supermall,ae,supermall_ae_clp_makeup_hero_banner_2,clp,hero_2,,20
+Supermall,clp_makeup_supermall,ae,supermall_ae_clp_makeup_hero_banner_3,clp,hero_3,,15
+Supermall,clp_makeup_supermall,ae,supermall_ae_clp_makeup_hero_banner_4,clp,hero_4,,15
+Supermall,clp_makeup_supermall,ae,supermall_ae_clp_makeup_sfu,clp,sfu,,17
+Supermall,clp_makeup_supermall,ae,supermall_ae_clp_makeup_atf,clp,atf,,17
+Supermall,clp_makeup_supermall,sa,supermall_sa_clp_makeup_hero_banner_2,clp,hero_2,,20
+Supermall,clp_makeup_supermall,sa,supermall_sa_clp_makeup_hero_banner_3,clp,hero_3,,15
+Supermall,clp_makeup_supermall,sa,supermall_sa_clp_makeup_hero_banner_4,clp,hero_4,,15
+Supermall,clp_makeup_supermall,sa,supermall_sa_clp_makeup_sfu,clp,sfu,,16
+Supermall,clp_makeup_supermall,sa,supermall_sa_clp_makeup_atf,clp,atf,,16
+Supermall,clp_men_fragrance_supermall,ae,supermall_ae_clp_men_fragrance_hero_banner_2,clp,hero_2,,20
+Supermall,clp_men_fragrance_supermall,ae,supermall_ae_clp_men_fragrance_hero_banner_3,clp,hero_3,,15
+Supermall,clp_men_fragrance_supermall,ae,supermall_ae_clp_men_fragrance_hero_banner_4,clp,hero_4,,15
+Supermall,clp_men_fragrance_supermall,ae,supermall_ae_clp_men_fragrance_sfu,clp,sfu,,17
+Supermall,clp_men_fragrance_supermall,ae,supermall_ae_clp_men_fragrance_atf,clp,atf,,17
+Supermall,clp_men_fragrance_supermall,sa,supermall_sa_clp_men_fragrance_hero_banner_2,clp,hero_2,,20
+Supermall,clp_men_fragrance_supermall,sa,supermall_sa_clp_men_fragrance_hero_banner_3,clp,hero_3,,15
+Supermall,clp_men_fragrance_supermall,sa,supermall_sa_clp_men_fragrance_hero_banner_4,clp,hero_4,,15
+Supermall,clp_men_fragrance_supermall,sa,supermall_sa_clp_men_fragrance_sfu,clp,sfu,,16
+Supermall,clp_men_fragrance_supermall,sa,supermall_sa_clp_men_fragrance_atf,clp,atf,,16
+Supermall,clp_skincare_supermall,ae,supermall_ae_clp_skincare_hero_banner_2,clp,hero_2,,20
+Supermall,clp_skincare_supermall,ae,supermall_ae_clp_skincare_hero_banner_3,clp,hero_3,,15
+Supermall,clp_skincare_supermall,ae,supermall_ae_clp_skincare_hero_banner_4,clp,hero_4,,15
+Supermall,clp_skincare_supermall,ae,supermall_ae_clp_skincare_sfu,clp,sfu,,17
+Supermall,clp_skincare_supermall,ae,supermall_ae_clp_skincare_atf,clp,atf,,17
+Supermall,clp_skincare_supermall,sa,supermall_sa_clp_skincare_hero_banner_2,clp,hero_2,,20
+Supermall,clp_skincare_supermall,sa,supermall_sa_clp_skincare_hero_banner_3,clp,hero_3,,15
+Supermall,clp_skincare_supermall,sa,supermall_sa_clp_skincare_hero_banner_4,clp,hero_4,,15
+Supermall,clp_skincare_supermall,sa,supermall_sa_clp_skincare_sfu,clp,sfu,,16
+Supermall,clp_skincare_supermall,sa,supermall_sa_clp_skincare_atf,clp,atf,,16
+Supermall,clp_women_fragrance_supermall,ae,supermall_ae_clp_women_fragrance_hero_banner_2,clp,hero_2,,20
+Supermall,clp_women_fragrance_supermall,ae,supermall_ae_clp_women_fragrance_hero_banner_3,clp,hero_3,,15
+Supermall,clp_women_fragrance_supermall,ae,supermall_ae_clp_women_fragrance_hero_banner_4,clp,hero_4,,15
+Supermall,clp_women_fragrance_supermall,ae,supermall_ae_clp_women_fragrance_sfu,clp,sfu,,17
+Supermall,clp_women_fragrance_supermall,ae,supermall_ae_clp_women_fragrance_atf,clp,atf,,17
+Supermall,clp_women_fragrance_supermall,sa,supermall_sa_clp_women_fragrance_hero_banner_2,clp,hero_2,,20
+Supermall,clp_women_fragrance_supermall,sa,supermall_sa_clp_women_fragrance_hero_banner_3,clp,hero_3,,15
+Supermall,clp_women_fragrance_supermall,sa,supermall_sa_clp_women_fragrance_hero_banner_4,clp,hero_4,,15
+Supermall,clp_women_fragrance_supermall,sa,supermall_sa_clp_women_fragrance_sfu,clp,sfu,,16
+Supermall,clp_women_fragrance_supermall,sa,supermall_sa_clp_women_fragrance_atf,clp,atf,,16
+Noon,Computers,ae,noon_ae_clp_computers_clp_atf,,atf,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_atf_2,,atf,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_hero_banner_2,,hero_2,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_hero_banner_3,,hero_3,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_hero_banner_4,,hero_4,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_hero_banner_5,,hero_5,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_hero_banner_6,,hero_6,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_sfu_1,,sfu,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_sfu_2,,sfu,,
+Noon,Computers,ae,noon_ae_clp_computers_clp_sfu_3,,sfu,,
+Noon,Computers,ae,noon_ae_clp_computers_mid_page_1,,mid_upper,,
+Noon,Computers,ae,noon_ae_clp_computers_mid_page_2,,mid_upper,,
+Noon,Computers,ae,noon_ae_clp_computers_mid_page_3,,mid_upper,,
+Noon,Computers,ae,noon_ae_clp_computers_mid_page_4,,mid_upper,,
+Noon,Computers,eg,noon_eg_clp_computers_clp_atf,clp_eg_b,atf,,120
+Noon,Computers,eg,noon_eg_clp_computers_clp_atf_2,clp_eg_b,atf,,120
+Noon,Computers,eg,noon_eg_clp_computers_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Computers,eg,noon_eg_clp_computers_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Computers,eg,noon_eg_clp_computers_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Computers,eg,noon_eg_clp_computers_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Computers,eg,noon_eg_clp_computers_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Computers,eg,noon_eg_clp_computers_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Computers,eg,noon_eg_clp_computers_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Computers,eg,noon_eg_clp_computers_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Computers,sa,noon_sa_clp_computers_clp_atf,,atf,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_atf_2,,atf,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_hero_banner_2,,hero_2,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_hero_banner_3,,hero_3,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_hero_banner_4,,hero_4,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_hero_banner_5,,hero_5,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_hero_banner_6,,hero_6,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_sfu_1,,sfu,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_sfu_2,,sfu,,
+Noon,Computers,sa,noon_sa_clp_computers_clp_sfu_3,,sfu,,
+Noon,Computers,sa,noon_sa_clp_computers_mid_page_1,,mid_upper,,
+Noon,Computers,sa,noon_sa_clp_computers_mid_page_2,,mid_upper,,
+Noon,Computers,sa,noon_sa_clp_computers_mid_page_3,,mid_upper,,
+Noon,Computers,sa,noon_sa_clp_computers_mid_page_4,,mid_upper,,
+Noon,Deals,sa,noon_sa_deals_atf,,atf,,
+Noon,Deals,sa,noon_sa_deals_sfu1,,sfu,,
+Noon,Deals,sa,noon_sa_deals_top_fold_unit_1,,sfu,,
+Noon,Deals,ae,noon_ae_deals_atf,,atf,,
+Noon,Deals,ae,noon_ae_deals_sfu1,,sfu,,
+Noon,Deals,ae,noon_ae_deals_top_fold_unit_1,,sfu,,
+Noon,Deals Page,sa,noon_sa_deals_hero_banner_2,,hero_2,,
+Noon,Deals Page,sa,noon_sa_deals_hero_banner_3,,hero_3,,
+Noon,Deals Page,sa,noon_sa_deals_atf,,atf,,
+Noon,Deals Page,ae,noon_ae_deals_hero_banner_2,,hero_2,,
+Noon,Deals Page,ae,noon_ae_deals_hero_banner_3,,hero_3,,
+Noon,Deals Page,ae,noon_ae_deals_atf,,atf,,
+Noon,Deals Page,ae,noon_ae_deals_brand_carousel,,brand_carousel,,
+Noon,Deals Page,sa,noon_sa_deals_brand_carousel,,brand_carousel,,
+Noon,EID Sale,ae,noon_ae_eid_sale_atf,sale_page,atf,,370
+Noon,EID Sale,ae,noon_ae_eid_sale_hero_banner_2,sale_page,hero_2,,260
+Noon,EID Sale,ae,noon_ae_eid_sale_hero_banner_3,sale_page,hero_3,,260
+Noon,EID Sale,sa,noon_sa_eid_sale_hero_banner_2,sale_page,hero_2,,350
+Noon,EID Sale,sa,noon_sa_eid_sale_hero_banner_3,sale_page,hero_3,,350
+Noon,EID Sale,sa,noon_sa_eid_sale_atf,sale_page,atf,,350
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_atf,clp_g1,atf,,250
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_atf_2,clp_g1,atf,,250
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_hero_banner_3,clp_g1,hero_3,,150
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_sfu_1,clp_g1,sfu,,150
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_sfu_2,clp_g1,sfu,,150
+Noon,Electronics,ae,noon_ae_clp_electronics_clp_sfu_3,clp_g1,sfu,,150
+Noon,Electronics,ae,noon_ae_clp_electronics_mid_page_1,clp_g1,mid_upper,,
+Noon,Electronics,ae,noon_ae_clp_electronics_mid_page_2,clp_g1,mid_upper,,
+Noon,Electronics,ae,noon_ae_clp_electronics_mid_page_3,clp_g1,mid_upper,,
+Noon,Electronics,ae,noon_ae_clp_electronics_mid_page_4,clp_g1,mid_upper,,
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_atf,clp_eg_a,atf,,150
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_atf_2,clp_eg_a,atf,,150
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_hero_banner_2,clp_eg_a,hero_2,,135
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_hero_banner_3,clp_eg_a,hero_3,,115
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_hero_banner_4,clp_eg_a,hero_4,,
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_hero_banner_5,clp_eg_a,hero_5,,
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_hero_banner_6,clp_eg_a,hero_6,,
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_sfu1,clp_eg_a,sfu,,125
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_sfu2,clp_eg_a,sfu,,125
+Noon,Electronics,eg,noon_eg_clp_electronics_clp_sfu3,clp_eg_a,sfu,,125
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_atf,clp_g1,atf,,280
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_atf_2,clp_g1,atf,,280
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_hero_banner_3,clp_g1,hero_3,,200
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_sfu_1,clp_g1,sfu,,200
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_sfu_2,clp_g1,sfu,,200
+Noon,Electronics,sa,noon_sa_clp_electronics_clp_sfu_3,clp_g1,sfu,,200
+Noon,Electronics,sa,noon_sa_clp_electronics_mid_page_1,clp_g1,mid_upper,,
+Noon,Electronics,sa,noon_sa_clp_electronics_mid_page_2,clp_g1,mid_upper,,
+Noon,Electronics,sa,noon_sa_clp_electronics_mid_page_3,clp_g1,mid_upper,,
+Noon,Electronics,sa,noon_sa_clp_electronics_mid_page_4,clp_g1,mid_upper,,
+Noon,Electronics,ae,noon_ae_clp_electronics_brand_carousel,clp_g1,brand_carousel,,
+Noon,Electronics,sa,noon_sa_clp_electronics_brand_carousel,clp_g1,brand_carousel,,
+Noon,Euro24,ae,noon_ae_clp_euro24_clp_atf,,atf,,
+Noon,Euro24,ae,noon_ae_clp_euro24_clp_hero_banner_2,,hero_2,,
+Noon,Euro24,ae,noon_ae_clp_euro24_clp_hero_banner_3,,hero_3,,
+Noon,Euro24,ae,noon_ae_clp_euro24_sfu_1,,sfu,,
+Noon,Euro24,ae,noon_ae_clp_euro24_sfu_2,,sfu,,
+Noon,Euro24,ae,noon_ae_clp_euro24_sfu_3,,sfu,,
+Noon,Euro24,sa,noon_sa_clp_euro24_clp_atf,,atf,,
+Noon,Euro24,sa,noon_sa_clp_euro24_clp_hero_banner_2,,hero_2,,
+Noon,Euro24,sa,noon_sa_clp_euro24_clp_hero_banner_3,,hero_3,,
+Noon,Euro24,sa,noon_sa_clp_euro24_sfu_1,,sfu,,
+Noon,Euro24,sa,noon_sa_clp_euro24_sfu_2,,sfu,,
+Noon,Euro24,sa,noon_sa_clp_euro24_sfu_3,,sfu,,
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_atf,clp_g2,atf,,180
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_sfu_1,clp_g2,sfu,,150
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_sfu_2,clp_g2,sfu,,150
+Noon,Fragrance,ae,noon_ae_clp_fragrance_clp_sfu_3,clp_g2,sfu,,150
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_atf,clp_eg_b,atf,,120
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Fragrance,eg,noon_eg_clp_fragrance_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_atf,clp_g2,atf,,180
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_sfu_1,clp_g2,sfu,,130
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_sfu_2,clp_g2,sfu,,130
+Noon,Fragrance,sa,noon_sa_clp_fragrance_clp_sfu_3,clp_g2,sfu,,130
+Noon,Fragrance,ae,noon_ae_clp_men_fragrance_brand_carousel,clp_g2,brand_carousel,,
+Noon,Fragrance,ae,noon_ae_clp_womens_fragrance_brand_carousel,clp_g2,brand_carousel,,
+Noon,Fragrance,sa,noon_sa_clp_men_fragrance_brand_carousel,clp_g2,brand_carousel,,
+Noon,Fragrance,sa,noon_sa_clp_women_fragrance_brand_carousel,clp_g2,brand_carousel,,
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_atf,clp_g3,atf,,130
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_atf_2,clp_g3,atf,,130
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_sfu_1,clp_g3,sfu,,125
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_sfu_2,clp_g3,sfu,,125
+Noon,Furniture,ae,noon_ae_clp_furniture_clp_sfu_3,clp_g3,sfu,,125
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_atf,clp_g3,atf,,125
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_atf_2,clp_g3,atf,,125
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_sfu_1,clp_g3,sfu,,90
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_sfu_2,clp_g3,sfu,,90
+Noon,Furniture,sa,noon_sa_clp_furniture_clp_sfu_3,clp_g3,sfu,,90
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_atf,clp_g3,atf,,130
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_sfu_1,clp_g3,sfu,,125
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_sfu_2,clp_g3,sfu,,125
+Noon,Gaming,ae,noon_ae_clp_gaming_clp_sfu_3,clp_g3,sfu,,125
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_atf,clp_eg_c,atf,,90
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Gaming,eg,noon_eg_clp_gaming_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_atf,clp_g3,atf,,125
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_sfu_1,clp_g3,sfu,,90
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_sfu_2,clp_g3,sfu,,90
+Noon,Gaming,sa,noon_sa_clp_gaming_clp_sfu_3,clp_g3,sfu,,90
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_atf,clp_g3,atf,,130
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_sfu_1,clp_g3,sfu,,125
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_sfu_2,clp_g3,sfu,,125
+Noon,Grocery,ae,noon_ae_clp_grocery_clp_sfu_3,clp_g3,sfu,,125
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_atf,clp_eg_c,atf,,90
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_hero_banner_1,clp_eg_c,hero_1,,
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Grocery,eg,noon_eg_clp_grocery_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Grocery,eg,noon_eg_clp_grocery_mid_page_1,clp_eg_c,mid_upper,,
+Noon,Grocery,eg,noon_eg_clp_grocery_mid_page_2,clp_eg_c,mid_upper,,
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_atf,clp_g3,atf,,125
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_sfu_1,clp_g3,sfu,,90
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_sfu_2,clp_g3,sfu,,90
+Noon,Grocery,sa,noon_sa_clp_grocery_clp_sfu_3,clp_g3,sfu,,90
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_atf,clp_g3,atf,,130
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_sfu_1,clp_g3,sfu,,125
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_sfu_2,clp_g3,sfu,,125
+Noon,Hair Care,ae,noon_ae_clp_hair_care_clp_sfu_3,clp_g3,sfu,,125
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_atf,clp_g3,atf,,125
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_sfu_1,clp_g3,sfu,,90
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_sfu_2,clp_g3,sfu,,90
+Noon,Hair Care,sa,noon_sa_clp_hair_care_clp_sfu_3,clp_g3,sfu,,90
+Noon,Halloween,ae,noon_ae_clp_halloween_clp_atf,,atf,,
+Noon,Halloween,ae,noon_ae_clp_halloween_clp_hero_banner_2,,hero_2,,
+Noon,Halloween,ae,noon_ae_clp_halloween_clp_hero_banner_3,,hero_3,,
+Noon,Halloween,ae,noon_ae_clp_halloween_sfu_1,,sfu,,
+Noon,Halloween,ae,noon_ae_clp_halloween_sfu_2,,sfu,,
+Noon,Halloween,ae,noon_ae_clp_halloween_sfu_3,,sfu,,
+Noon,Halloween,sa,noon_sa_clp_halloween_clp_atf,,atf,,
+Noon,Halloween,sa,noon_sa_clp_halloween_clp_hero_banner_2,,hero_2,,
+Noon,Halloween,sa,noon_sa_clp_halloween_clp_hero_banner_3,,hero_3,,
+Noon,Halloween,sa,noon_sa_clp_halloween_sfu_1,,sfu,,
+Noon,Halloween,sa,noon_sa_clp_halloween_sfu_2,,sfu,,
+Noon,Halloween,sa,noon_sa_clp_halloween_sfu_3,,sfu,,
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_atf,clp_g3,atf,,130
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_sfu_1,clp_g3,sfu,,125
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_sfu_2,clp_g3,sfu,,125
+Noon,Head Phone,ae,noon_ae_clp_head_phone_clp_sfu_3,clp_g3,sfu,,125
+Noon,Head Phone,eg,noon_eg_clp_head_phone_clp_atf,clp_eg_b,atf,,120
+Noon,Head Phone,eg,noon_eg_clp_head_phone_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Head Phone,eg,noon_eg_clp_head_phone_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Head Phone,eg,noon_eg_clp_head_phone_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Head Phone,eg,noon_eg_clp_head_phone_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Head Phone,eg,noon_eg_clp_head_phone_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_atf,clp_g3,atf,,125
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_sfu_1,clp_g3,sfu,,90
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_sfu_2,clp_g3,sfu,,90
+Noon,Head Phone,sa,noon_sa_clp_head_phone_clp_sfu_3,clp_g3,sfu,,90
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_atf,clp_g3,atf,,130
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_sfu1,clp_g3,sfu,,125
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_sfu2,clp_g3,sfu,,125
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_clp_sfu3,clp_g3,sfu,,125
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_atf,clp_eg_c,atf,,90
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Health Nutrition,eg,noon_eg_clp_health_nutrition_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_clp_atf,clp_g3,atf,,125
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Health Nutrition,ae,noon_ae_clp_health_nutrition_brand_carousel,clp_g3,brand_carousel,,
+Noon,Health Nutrition,sa,noon_sa_clp_health_nutrition_brand_carousel,clp_g3,brand_carousel,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_atf,clp_g3,atf,,130
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_atf_2,clp_g3,atf,,130
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_sfu_1,clp_g3,sfu,,125
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_sfu_2,clp_g3,sfu,,125
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_clp_sfu_3,clp_g3,sfu,,125
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_lower_mid_page,clp_g3,,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_mid_page_1,clp_g3,mid_upper,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_mid_page_2,clp_g3,mid_upper,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_mid_page_3,clp_g3,mid_upper,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_mid_page_4,clp_g3,mid_upper,,
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_atf,clp_eg_c,atf,,90
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Home & Kitchen,eg,noon_eg_clp_home_kitchen_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_atf,clp_g3,atf,,125
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_atf_2,clp_g3,atf,,125
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_sfu_1,clp_g3,sfu,,90
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_sfu_2,clp_g3,sfu,,90
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_clp_sfu_3,clp_g3,sfu,,90
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_lower_mid_page,clp_g3,,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_mid_page_1,clp_g3,mid_upper,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_mid_page_2,clp_g3,mid_upper,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_mid_page_3,clp_g3,mid_upper,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_mid_page_4,clp_g3,mid_upper,,
+Noon,Home & Kitchen,sa,noon_sa_clp_home_kitchen_brand_carousel,clp_g3,brand_carousel,,
+Noon,Home & Kitchen,ae,noon_ae_clp_home_kitchen_brand_carousel,clp_g3,brand_carousel,,
+Noon,home_page,ae,ae_interstitial_ad,homepage,interstitial,15,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_2,homepage,hero_2,11,7300
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_3,homepage,hero_3,11,5800
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_4,homepage,hero_4,11,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_4_cpd,homepage,hero_4,11,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_5,homepage,hero_5,11,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_6,homepage,hero_6,11,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_6_cpd,homepage,hero_6,11,
+Noon,home_page,ae,noon_ae_home_page_hp_sfu1,homepage,top_fold_1,12,
+Noon,home_page,ae,noon_ae_home_page_hp_sfu2,homepage,top_fold_2,12,
+Noon,home_page,ae,noon_ae_home_page_hp_sfu3,homepage,sfu,10,
+Noon,home_page,ae,noon_ae_lower_mid_page,,,,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_2,homepage,hero_2,,700
+Noon,home_page,ae,noon_ae_top_fold_1,,sfu,,
+Noon,home_page,ae,noon_ae_top_fold_2,,sfu,,
+Noon,home_page,ae,noon_ae_top_fold_2_cpd,,sfu,,
+Noon,home_page,ae,noon_ae_upper_mid_page_1,,mid_upper,,
+Noon,home_page,ae,noon_ae_upper_mid_page_2,,mid_upper,,
+Noon,home_page,ae,noon_ae_upper_mid_page_2_cpd,,mid_upper,,
+Noon,home_page,ae,noon_ae_upper_mid_page_3,,mid_upper,,
+Noon,home_page,ae,noon_ae_video_popup,,,,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_3,homepage,hero_3,,620
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_4,homepage,hero_4,3.50,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_4_cpd,homepage,hero_4,3.50,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_5,homepage,hero_5,3.00,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_6,homepage,hero_6,3.00,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_7,homepage,hero_7,,
+Noon,home_page,eg,noon_eg_home_page_hp_sfu1,homepage,top_fold_1,,1700
+Noon,home_page,eg,noon_eg_home_page_hp_sfu2,homepage,top_fold_2,3.50,
+Noon,home_page,eg,noon_eg_home_page_hp_sfu3,homepage,sfu,2.50,
+Noon,home_page,eg,noon_eg_home_page_hp_sfu3_cpd,homepage,sfu,2.50,
+Noon,home_page,eg,noon_eg_lower_mid_page,,,,
+Noon,home_page,eg,noon_eg_top_fold_1,,sfu,,
+Noon,home_page,sa,noon_sa_top_fold_1,,sfu,,
+Noon,home_page,eg,noon_eg_top_fold_2,,sfu,,
+Noon,home_page,eg,noon_eg_top_fold_2_cpd,,sfu,,
+Noon,home_page,eg,noon_eg_upper_mid_page_1,,mid_upper,,
+Noon,home_page,eg,noon_eg_upper_mid_page_2,,mid_upper,,
+Noon,home_page,eg,noon_eg_upper_mid_page_2_cpd,,mid_upper,,
+Noon,home_page,eg,noon_eg_upper_mid_page_3,,mid_upper,,
+Noon,home_page,eg,noon_eg_video_popup,,,,
+Noon,home_page,eg,eg_interstitial_ad,homepage,interstitial,,
+Noon,home_page,sa,noon_sa_video_popup,,,,
+Noon,home_page,sa,sa_interstitial_ad,homepage,interstitial,14,
+Noon,home_page,sa,noon_sa_top_fold_2,,sfu,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_2,homepage,hero_2,10,12000
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_3,homepage,hero_3,10,8000
+Noon,home_page,sa,noon_sa_top_fold_2_cpd,,sfu,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_4,homepage,hero_4,10,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_4_cpd,homepage,hero_4,10,
+Noon,home_page,sa,noon_sa_home_page_hp_sfu1,homepage,top_fold_1,11,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_5,homepage,hero_5,10,
+Noon,home_page,sa,noon_sa_home_page_hp_sfu2,homepage,top_fold_2,11,
+Noon,home_page,sa,noon_sa_home_page_hp_sfu3,homepage,sfu,7,
+Noon,home_page,sa,noon_sa_home_page_hp_sfu3_cpd,homepage,sfu,7,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_6,homepage,hero_6,10,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_6_cpd,homepage,hero_6,10,
+Noon,home_page,sa,noon_sa_upper_mid_page_1,,mid_upper,,
+Noon,home_page,sa,noon_sa_upper_mid_page_2,,mid_upper,,
+Noon,home_page,sa,noon_sa_upper_mid_page_2_cpd,,mid_upper,,
+Noon,home_page,sa,noon_sa_upper_mid_page_3,,mid_upper,,
+Noon,home_page,sa,noon_sa_lower_mid_page,,,,
+Noon,home_page,bh,noon_bh_video_popup,,,,
+Noon,home_page,qa,noon_qa_video_popup,,,,
+Noon,home_page,kw,noon_kw_video_popup,,,,
+Noon,home_page,om,noon_om_video_popup,,,,
+Noon,home_page,kw,noon_kw_home_page_hp_hero_banner_2,homepage,hero_2,,
+Noon,home_page,om,noon_om_home_page_hp_hero_banner_2,homepage,hero_2,,100
+Noon,home_page,qa,noon_qa_home_page_hp_hero_banner_2,homepage,hero_2,,400
+Noon,home_page,bh,noon_bh_home_page_hp_hero_banner_2,homepage,hero_2,,90
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_7,homepage,hero_7,,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_8,homepage,hero_8,,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_9,homepage,hero_9,,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_10,homepage,hero_10,,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_11,homepage,hero_11,9,
+Noon,home_page,ae,noon_ae_home_page_hp_hero_banner_12,homepage,hero_12,9,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_8,homepage,hero_8,,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_9,homepage,hero_9,,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_10,homepage,hero_10,,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_11,homepage,hero_11,,
+Noon,home_page,eg,noon_eg_home_page_hp_hero_banner_12,homepage,hero_12,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_7,homepage,hero_7,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_8,homepage,hero_8,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_9,homepage,hero_9,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_10,homepage,hero_10,,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_11,homepage,hero_11,9,
+Noon,home_page,sa,noon_sa_home_page_hp_hero_banner_12,homepage,hero_12,9,
+Noon,home_page,ae,noon_ae_hp_home_page_brand_carousel,homepage,brand_carousel,,1700
+Noon,home_page,sa,noon_sa_hp_home_page_brand_carousel,homepage,brand_carousel,,1500
+Noon,home_page,kw,noon_kw_home_page_hp_hero_banner_3,homepage,hero_3,,
+Noon,home_page,kw,noon_kw_home_page_hp_hero_banner_4,homepage,hero_4,,
+Noon,home_page,kw,noon_kw_home_page_hp_hero_banner_5,homepage,hero_5,,
+Noon,home_page,kw,noon_kw_home_page_hp_hero_banner_6,homepage,hero_6,,
+Noon,home_page,bh,noon_bh_home_page_hp_hero_banner_3,homepage,hero_3,,90
+Noon,home_page,bh,noon_bh_home_page_hp_hero_banner_4,homepage,hero_4,,30
+Noon,home_page,bh,noon_bh_home_page_hp_hero_banner_5,homepage,hero_5,,30
+Noon,home_page,bh,noon_bh_home_page_hp_hero_banner_6,homepage,hero_6,,30
+Noon,home_page,qa,noon_qa_home_page_hp_hero_banner_3,homepage,hero_3,,400
+Noon,home_page,qa,noon_qa_home_page_hp_hero_banner_4,homepage,hero_4,,100
+Noon,home_page,qa,noon_qa_home_page_hp_hero_banner_5,homepage,hero_5,,100
+Noon,home_page,qa,noon_qa_home_page_hp_hero_banner_6,homepage,hero_6,,100
+Noon,home_page,om,noon_om_home_page_hp_hero_banner_3,homepage,hero_3,,100
+Noon,home_page,om,noon_om_home_page_hp_hero_banner_4,homepage,hero_4,,40
+Noon,home_page,om,noon_om_home_page_hp_hero_banner_5,homepage,hero_5,,40
+Noon,home_page,om,noon_om_home_page_hp_hero_banner_6,homepage,hero_6,,40
+Noon,home_page,bh, bh_interstitial_ad,homepage,interstitial,15,
+Noon,home_page,qa,qa_interstitial_ad,homepage,interstitial,15,
+Noon,home_page,kw,kw_interstitial_ad,homepage,interstitial,,
+Noon,home_page,om,om_interstitial_ad,homepage,interstitial,15,
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_atf,clp_g2,atf,,180
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_sfu_1,clp_g2,sfu,,150
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_sfu_2,clp_g2,sfu,,150
+Noon,Kids Fashion,ae,noon_ae_clp_kids_fashion_clp_sfu_3,clp_g2,sfu,,150
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_atf,clp_eg_b,atf,,120
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_sfu_1,clp_eg_b,sfu,,90
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_sfu_2,clp_eg_b,sfu,,90
+Noon,Kids Fashion,eg,noon_eg_clp_kids_fashion_clp_sfu_3,clp_eg_b,sfu,,90
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_atf,clp_g2,atf,,180
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_sfu_1,clp_g2,sfu,,130
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_sfu_2,clp_g2,sfu,,130
+Noon,Kids Fashion,sa,noon_sa_clp_kids_fashion_clp_sfu_3,clp_g2,sfu,,130
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_atf,clp_g3,atf,,130
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_atf_2,clp_g3,atf,,130
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_sfu_1,clp_g3,sfu,,125
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_sfu_2,clp_g3,sfu,,125
+Noon,Kitchen & Dining,ae,noon_ae_clp_kitchen_dining_clp_sfu_3,clp_g3,sfu,,125
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_atf,clp_eg_c,atf,,90
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Kitchen & Dining,eg,noon_eg_clp_kitchen_dining_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_atf,clp_g3,atf,,125
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_atf_2,clp_g3,atf,,125
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_sfu_1,clp_g3,sfu,,90
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_sfu_2,clp_g3,sfu,,90
+Noon,Kitchen & Dining,sa,noon_sa_clp_kitchen_dining_clp_sfu_3,clp_g3,sfu,,90
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_clp_atf,clp_g1,atf,,250
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_clp_hero_banner_3,clp_g1,hero_3,,150
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_clp_sfu1,clp_g1,sfu,,150
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_clp_sfu2,clp_g1,sfu,,150
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_clp_sfu3,clp_g1,sfu,,150
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_clp_atf,clp_g1,atf,,280
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_clp_hero_banner_3,clp_g1,hero_3,,200
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_clp_sfu1,clp_g1,sfu,,200
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_clp_sfu2,clp_g1,sfu,,200
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_clp_sfu3,clp_g1,sfu,,200
+Noon,Kitchen Appliances,ae,noon_ae_clp_kitchen_appliances_brand_carousel,clp_g1,brand_carousel,,
+Noon,Kitchen Appliances,sa,noon_sa_clp_kitchen_appliances_brand_carousel,clp_g1,brand_carousel,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_atf,clp_g1,atf,,250
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_3,clp_g1,hero_3,,150
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_sfu1,clp_g1,sfu,,150
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_sfu2,clp_g1,sfu,,150
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_sfu3,clp_g1,sfu,,150
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_atf,clp_g1,atf,,280
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_3,clp_g1,hero_3,,200
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_sfu1,clp_g1,sfu,,200
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_sfu2,clp_g1,sfu,,200
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_sfu3,clp_g1,sfu,,200
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_1,clp_g1,hero_1,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_7,clp_g1,hero_7,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_hero_banner_8,clp_g1,hero_8,,
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_clp_atf_2,clp_g1,atf,,250
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_1,clp_g1,hero_1,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_7,clp_g1,hero_7,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_hero_banner_8,clp_g1,hero_8,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_clp_atf_2,clp_g1,atf,,280
+Noon,Large Appliances,ae,noon_ae_clp_large_appliances_brand_carousel,clp_g1,brand_carousel,,
+Noon,Large Appliances,sa,noon_sa_clp_large_appliances_brand_carousel,clp_g1,brand_carousel,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_1,clp_g1,hero_1,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_2,clp_g1,hero_2,,250
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_3,clp_g1,hero_3,,150
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_4,clp_g1,hero_4,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_atf_1,clp_g1,atf,,250
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_atf_2,clp_g1,atf,,250
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_sfu_1,clp_g1,sfu,,150
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_sfu_2,clp_g1,sfu,,150
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_sfu_3,clp_g1,sfu,,150
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_brand_carousel,clp_g1,brand_carousel,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_5,clp_g1,hero_5,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_6,clp_g1,hero_6,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_7,clp_g1,hero_7,,
+Noon,large_appliances_bonanza,ae,noon_ae_large_appliances_bonanza_hero_banner_8,clp_g1,hero_8,,
+Noon,Makeup,ae,noon_ae_clp_makeup_hero_banner_2,clp_g3,hero_2,,130
+Noon,Makeup,ae,noon_ae_clp_makeup_hero_banner_3,clp_g3,hero_3,,75
+Noon,Makeup,ae,noon_ae_clp_makeup_hero_banner_4,clp_g3,hero_4,,
+Noon,Makeup,ae,noon_ae_clp_makeup_hero_banner_5,clp_g3,hero_5,,
+Noon,Makeup,ae,noon_ae_clp_makeup_hero_banner_6,clp_g3,hero_6,,
+Noon,Makeup,ae,noon_ae_clp_makeup_atf,clp_g3,atf,,130
+Noon,Makeup,ae,noon_ae_clp_makeup_sfu_1,clp_g3,sfu,,125
+Noon,Makeup,ae,noon_ae_clp_makeup_sfu_2,clp_g3,sfu,,125
+Noon,Makeup,ae,noon_ae_clp_makeup_sfu_3,clp_g3,sfu,,125
+Noon,Makeup,sa,noon_sa_clp_makeup_hero_banner_2,clp_g3,hero_2,,125
+Noon,Makeup,sa,noon_sa_clp_makeup_hero_banner_3,clp_g3,hero_3,,100
+Noon,Makeup,sa,noon_sa_clp_makeup_hero_banner_4,clp_g3,hero_4,,
+Noon,Makeup,sa,noon_sa_clp_makeup_hero_banner_5,clp_g3,hero_5,,
+Noon,Makeup,sa,noon_sa_clp_makeup_hero_banner_6,clp_g3,hero_6,,
+Noon,Makeup,sa,noon_sa_clp_makeup_atf,clp_g3,atf,,125
+Noon,Makeup,sa,noon_sa_clp_makeup_sfu_1,clp_g3,sfu,,90
+Noon,Makeup,sa,noon_sa_clp_makeup_sfu_2,clp_g3,sfu,,90
+Noon,Makeup,sa,noon_sa_clp_makeup_sfu_3,clp_g3,sfu,,90
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_atf,clp_g2,atf,,180
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_sfu_1,clp_g2,sfu,,150
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_sfu_2,clp_g2,sfu,,150
+Noon,Men Watches,ae,noon_ae_clp_men_watches_clp_sfu_3,clp_g2,sfu,,150
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_atf,clp_eg_b,atf,,120
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Men Watches,eg,noon_eg_clp_men_watches_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_atf,clp_g2,atf,,180
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_sfu_1,clp_g2,sfu,,130
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_sfu_2,clp_g2,sfu,,130
+Noon,Men Watches,sa,noon_sa_clp_men_watches_clp_sfu_3,clp_g2,sfu,,130
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_hero_banner_2,,hero_2,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_hero_banner_3,,hero_3,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_hero_banner_4,,hero_4,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_hero_banner_5,,hero_5,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_hero_banner_6,,hero_6,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_atf,,atf,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_sfu_1,,sfu,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_sfu_2,,sfu,,
+Noon,Mens Care,ae,noon_ae_clp_mens_care_clp_sfu_3,,sfu,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_hero_banner_2,,hero_2,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_hero_banner_3,,hero_3,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_hero_banner_4,,hero_4,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_hero_banner_5,,hero_5,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_hero_banner_6,,hero_6,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_atf,,atf,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_sfu_1,,sfu,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_sfu_2,,sfu,,
+Noon,Mens Care,sa,noon_sa_clp_mens_care_clp_sfu_3,,sfu,,
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_atf,clp_g2,atf,,180
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_sfu_1,clp_g2,sfu,,150
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_sfu_2,clp_g2,sfu,,150
+Noon,Mens eyewear,ae,noon_ae_clp_mens_eyewear_clp_sfu_3,clp_g2,sfu,,150
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_atf,clp_g2,atf,,180
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_sfu_1,clp_g2,sfu,,130
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_sfu_2,clp_g2,sfu,,130
+Noon,Mens eyewear,sa,noon_sa_clp_mens_eyewear_clp_sfu_3,clp_g2,sfu,,130
+Noon,Mens eyewear,eg,noon_eg_clp_mens_eyewear_clp_hero_banner_2,,hero_2,,
+Noon,Mens eyewear,eg,noon_eg_clp_mens_eyewear_clp_atf,,atf,,
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_atf,clp_g2,atf,,180
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_sfu_1,clp_g2,sfu,,150
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_sfu_2,clp_g2,sfu,,150
+Noon,Mens Fashion,ae,noon_ae_clp_men_s_fashion_clp_sfu_3,clp_g2,sfu,,150
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_atf,clp_eg_b,atf,,120
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Mens Fashion,eg,noon_eg_clp_mens_fashion_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_atf,clp_g2,atf,,180
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_sfu_1,clp_g2,sfu,,130
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_sfu_2,clp_g2,sfu,,130
+Noon,Mens Fashion,sa,noon_sa_clp_men_s_fashion_clp_sfu_3,clp_g2,sfu,,130
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_atf,clp_g1,atf,,250
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_atf_2,clp_g1,atf,,250
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_hero_banner_3,clp_g1,hero_3,,150
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_sfu_1,clp_g1,sfu,,150
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_sfu_2,clp_g1,sfu,,150
+Noon,Mobiles,ae,noon_ae_clp_mobiles_clp_sfu_3,clp_g1,sfu,,150
+Noon,Mobiles,ae,noon_ae_clp_mobiles_mid_page_1,clp_g1,mid_upper,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_mid_page_2,clp_g1,mid_upper,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_mid_page_3,clp_g1,mid_upper,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_mid_page_4,clp_g1,mid_upper,,
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_atf,clp_eg_a,atf,,150
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_atf_2,clp_eg_a,atf,,150
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_hero_banner_2,clp_eg_a,hero_2,,135
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_hero_banner_3,clp_eg_a,hero_3,,115
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_hero_banner_4,clp_eg_a,hero_4,,
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_hero_banner_5,clp_eg_a,hero_5,,
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_hero_banner_6,clp_eg_a,hero_6,,
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_sfu1,clp_eg_a,sfu,,125
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_sfu2,clp_eg_a,sfu,,125
+Noon,Mobiles,eg,noon_eg_clp_mobiles_clp_sfu3,clp_eg_a,sfu,,125
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_atf,clp_g1,atf,,280
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_atf_2,clp_g1,atf,,280
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_hero_banner_2,clp_g1,hero_2,,250
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_hero_banner_3,clp_g1,hero_3,,200
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_hero_banner_4,clp_g1,hero_4,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_hero_banner_5,clp_g1,hero_5,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_hero_banner_6,clp_g1,hero_6,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_sfu_1,clp_g1,sfu,,200
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_sfu_2,clp_g1,sfu,,200
+Noon,Mobiles,sa,noon_sa_clp_mobiles_clp_sfu_3,clp_g1,sfu,,200
+Noon,Mobiles,sa,noon_sa_clp_mobiles_mid_page_1,clp_g1,mid_upper,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_mid_page_2,clp_g1,mid_upper,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_mid_page_3,clp_g1,mid_upper,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_mid_page_4,clp_g1,mid_upper,,
+Noon,Mobiles,ae,noon_ae_clp_mobiles_brand_carousel,clp_g1,brand_carousel,,
+Noon,Mobiles,sa,noon_sa_clp_mobiles_brand_carousel,clp_g1,brand_carousel,,
+Noon,Music,ae,noon_ae_clp_music_media_clp_atf,clp_g2,atf,,180
+Noon,Music,ae,noon_ae_clp_music_media_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Music,ae,noon_ae_clp_music_media_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Music,ae,noon_ae_clp_music_media_clp_sfu_1,clp_g2,sfu,,150
+Noon,Music,ae,noon_ae_clp_music_media_clp_sfu_2,clp_g2,sfu,,150
+Noon,Music,ae,noon_ae_clp_music_media_clp_sfu_3,clp_g2,sfu,,150
+Noon,Music,eg,noon_eg_clp_music_media_clp_atf,,atf,,
+Noon,Music,eg,noon_eg_clp_music_media_clp_hero_banner_2,,hero_2,,
+Noon,Music,eg,noon_eg_clp_music_media_clp_hero_banner_3,,hero_3,,
+Noon,Music,eg,noon_eg_clp_music_media_clp_sfu1,,sfu,,
+Noon,Music,eg,noon_eg_clp_music_media_clp_sfu2,,sfu,,
+Noon,Music,eg,noon_eg_clp_music_media_clp_sfu3,,sfu,,
+Noon,Music,sa,noon_sa_clp_music_media_clp_atf,clp_g2,atf,,180
+Noon,Music,sa,noon_sa_clp_music_media_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Music,sa,noon_sa_clp_music_media_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Music,sa,noon_sa_clp_music_media_clp_sfu_1,clp_g2,sfu,,130
+Noon,Music,sa,noon_sa_clp_music_media_clp_sfu_2,clp_g2,sfu,,130
+Noon,Music,sa,noon_sa_clp_music_media_clp_sfu_3,clp_g2,sfu,,130
+Noon,My_Account,ae,noon_ae_my_account_sfu2,,sfu,,
+Noon,My_Account,sa,noon_sa_my_account_sfu2,,sfu,,
+Noon,New year New me,sa,noon_sa_new_year_new_me_hero_banner_3,,hero_3,,
+Noon,New year New me,sa,noon_ae_new_year_new_me_hero_banner_4,,hero_4,,
+Noon,New year New me,ae,noon_ae_new_year_new_me_hero_banner_3,,hero_3,,
+Noon,New year New me,ae,noon_sa_new_year_new_me_hero_banner_4,,hero_4,,
+Noon,noon_non_sale_events,ae,noon_ae_non_sale_events_hero_banner_2,sale_page,hero_2,,260
+Noon,noon_non_sale_events,ae,noon_ae_non_sale_events_hero_banner_3,sale_page,hero_3,,260
+Noon,noon_non_sale_events,ae,noon_ae_non_sale_events_atf,sale_page,atf,,370
+Noon,noon_non_sale_events,ae,noon_ae_non_sale_events_brand_carousel,sale_page,brand_carousel,,470
+Noon,noon_non_sale_events,sa,noon_sa_non_sale_events_hero_banner_2,sale_page,hero_2,,350
+Noon,noon_non_sale_events,sa,noon_sa_non_sale_events_hero_banner_3,sale_page,hero_3,,350
+Noon,noon_non_sale_events,sa,noon_sa_non_sale_events_atf,sale_page,atf,,350
+Noon,noon_non_sale_events,sa,noon_sa_non_sale_events_brand_carousel,sale_page,brand_carousel,,400
+Noon,Order_confirmation,eg,noon_eg_order_confirmation_top_fold,thankyou,sfu,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_atf,clp_g3,atf,,130
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_1,clp_g3,hero_1,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_7,clp_g3,hero_7,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_hero_banner_8,clp_g3,hero_8,,
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_sfu_1,clp_g3,sfu,,125
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_sfu_2,clp_g3,sfu,,125
+Noon,Pet store,ae,noon_ae_clp_pet_store_clp_sfu_3,clp_g3,sfu,,125
+Noon,Presearch,ae,noon_ae_presearch,homepage,presearch,9,
+Noon,Presearch,eg,noon_eg_presearch,homepage,presearch,3.00,
+Noon,Presearch,sa,noon_sa_presearch,homepage,presearch,13,
+Noon,Presearch,ae,noon_ae_presearch_2,homepage,presearch,9,
+Noon,Presearch,sa,noon_sa_presearch_2,homepage,presearch,13,
+Noon,Presearch,eg,noon_eg_presearch_2,homepage,presearch,3.00,
+Noon,Ramadan Essentials,ae,noon_ae_ramadan_hero_banner_2,,hero_2,,
+Noon,Ramadan Essentials,ae,noon_ae_ramadan_hero_banner_3,,hero_3,,
+Noon,Ramadan Essentials,ae,noon_ae_ramadan_atf,,atf,,
+Noon,Ramadan Essentials,ae,noon_ae_ramadan_brand_carousel,,brand_carousel,,
+Noon,Ramadan Essentials,sa,noon_sa_ramadan_hero_banner_2,,hero_2,,
+Noon,Ramadan Essentials,sa,noon_sa_ramadan_hero_banner_3,,hero_3,,
+Noon,Ramadan Essentials,sa,noon_sa_ramadan_atf,,atf,,
+Noon,Ramadan Essentials,sa,noon_sa_ramadan_brand_carousel,,brand_carousel,,
+Noon,rocket_home_page,ae,rocket_ae_homepage_hp_hero_banner_3,,hero_3,,
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_atf,sale_page,atf,,370
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_atf_2,sale_page,atf,,370
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_hero_banner_1,sale_page,hero_1,,260
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_hero_banner_2,sale_page,hero_2,,260
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_hero_banner_3,sale_page,hero_3,,260
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_hero_banner_4,sale_page,hero_4,,260
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_sfu1,sale_page,sfu,,150
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_sfu2,sale_page,sfu,,150
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_sfu3,sale_page,sfu,,150
+Noon,Salepage_Regular,eg,noon_eg_salepage_regular_spr_atf,sale_page,atf,,
+Noon,Salepage_Regular,eg,noon_eg_salepage_regular_spr_atf_2,sale_page,atf,,
+Noon,Salepage_Regular,eg,noon_eg_salepage_regular_spr_hero_banner_2,sale_page,hero_2,,
+Noon,Salepage_Regular,eg,noon_eg_salepage_regular_spr_hero_banner_3,sale_page,hero_3,,
+Noon,Salepage_Regular,eg,noon_eg_salepage_regular_spr_hero_banner_4,sale_page,hero_4,,
+Noon,Salepage_Regular,eg,noon_eg_salepage_regular_spr_sfu1,sale_page,sfu,,
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_atf,sale_page,atf,,350
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_atf_2,sale_page,atf,,350
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_hero_banner_1,sale_page,hero_1,,350
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_hero_banner_2,sale_page,hero_2,,350
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_hero_banner_3,sale_page,hero_3,,350
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_hero_banner_4,sale_page,hero_4,,350
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_sfu1,sale_page,sfu,,150
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_sfu2,sale_page,sfu,,150
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_sfu3,sale_page,sfu,,150
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_hero_banner_5,sale_page,hero_5,,170
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_hero_banner_6,sale_page,hero_6,,170
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_spr_atf_3,sale_page,atf,,350
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_hero_banner_5,sale_page,hero_5,,200
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_hero_banner_6,sale_page,hero_6,,200
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_spr_atf_3,sale_page,atf,,370
+Noon,Salepage_Regular,ae,noon_ae_salepage_regular_brand_carousel,sale_page,brand_carousel,,470
+Noon,Salepage_Regular,sa,noon_sa_salepage_regular_brand_carousel,sale_page,brand_carousel,,400
+Noon,search,ae,noon_ae_search_search_page_pca_banner_1,,,,
+Noon,search,ae,noon_ae_search_search_page_pca_banner_2,,,,
+Noon,search,ae,noon_ae_search_search_page_pca_banner_3,,,,
+Noon,search,eg,noon_eg_search_search_page_pca_banner_1,,,,
+Noon,search,eg,noon_eg_search_search_page_pca_banner_2,,,,
+Noon,search,eg,noon_eg_search_search_page_pca_banner_3,,,,
+Noon,search,sa,noon_sa_search_search_page_pca_banner_1,,,,
+Noon,search,sa,noon_sa_search_search_page_pca_banner_2,,,,
+Noon,search,sa,noon_sa_search_search_page_pca_banner_3,,,,
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_atf,clp_g3,atf,,130
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_sfu_1,clp_g3,sfu,,125
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_sfu_2,clp_g3,sfu,,125
+Noon,Skincare,ae,noon_ae_clp_skincare_clp_sfu_3,clp_g3,sfu,,125
+Noon,Skincare,eg,noon_eg_clp_skincare_clp_atf,,atf,,
+Noon,Skincare,eg,noon_eg_clp_skincare_clp_hero_banner_2,,hero_2,,
+Noon,Skincare,eg,noon_eg_clp_skincare_clp_hero_banner_3,,hero_3,,
+Noon,Skincare,eg,noon_eg_clp_skincare_clp_hero_banner_4,,hero_4,,
+Noon,Skincare,eg,noon_eg_clp_skincare_clp_hero_banner_5,,hero_5,,
+Noon,Skincare,eg,noon_eg_clp_skincare_clp_hero_banner_6,,hero_6,,
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_atf,clp_g3,atf,,125
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_sfu_1,clp_g3,sfu,,90
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_sfu_2,clp_g3,sfu,,90
+Noon,Skincare,sa,noon_sa_clp_skincare_clp_sfu_3,clp_g3,sfu,,90
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_hero_banner_1,clp_g1,hero_1,,
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_hero_banner_2,clp_g1,hero_2,,250
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_hero_banner_3,clp_g1,hero_3,,150
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_hero_banner_4,clp_g1,hero_4,,
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_atf_1,clp_g1,atf,,250
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_atf_2,clp_g1,atf,,250
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_sfu_1,clp_g1,sfu,,150
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_sfu_2,clp_g1,sfu,,150
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_sfu_3,clp_g1,sfu,,150
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_brand_carousel,clp_g1,brand_carousel,,
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_hero_banner_5,clp_g1,hero_5,,
+Noon,small_appliances_bonanza,ae,noon_ae_small_appliances_bonanza_hero_banner_6,clp_g1,hero_6,,
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_atf,clp_g3,atf,,130
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_sfu_1,clp_g3,sfu,,125
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_sfu_2,clp_g3,sfu,,125
+Noon,Sports & Outdoors,ae,noon_ae_clp_sports_outdoors_clp_sfu_3,clp_g3,sfu,,125
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_atf,clp_eg_c,atf,,90
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Sports & Outdoors,eg,noon_eg_clp_sports_outdoors_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_atf,clp_g3,atf,,125
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_sfu_1,clp_g3,sfu,,90
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_sfu_2,clp_g3,sfu,,90
+Noon,Sports & Outdoors,sa,noon_sa_clp_sports_outdoors_clp_sfu_3,clp_g3,sfu,,90
+Noon,sports_wear,eg,noon_eg_clp_sports_wear_clp_hero_banner_2,,hero_2,,
+Noon,sports_wear,eg,noon_eg_clp_sports_wear_clp_atf,,atf,,
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_atf,clp_g3,atf,,130
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_sfu_1,clp_g3,sfu,,125
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_sfu_2,clp_g3,sfu,,125
+Noon,Stationery,ae,noon_ae_clp_stationery_clp_sfu_3,clp_g3,sfu,,125
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_atf,clp_eg_c,atf,,90
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Stationery,eg,noon_eg_clp_stationery_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_atf,clp_g3,atf,,125
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_sfu_1,clp_g3,sfu,,90
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_sfu_2,clp_g3,sfu,,90
+Noon,Stationery,sa,noon_sa_clp_stationery_clp_sfu_3,clp_g3,sfu,,90
+Supermall,Super Mall Beauty Page,ae,supermall_ae_clp_beauty_atf,clp,atf,,17
+Supermall,Super Mall Beauty Page,sa,supermall_sa_clp_beauty_atf,clp,atf,,16
+Supermall,Super Mall Health Page,ae,supermall_ae_clp_health_atf,clp,atf,,17
+Supermall,Super Mall Health Page,sa,supermall_sa_clp_health_atf,clp,atf,,16
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_atf,homepage,atf,,265
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_hero_banner_2,homepage,hero_2,14,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_hero_banner_3,homepage,hero_3,14,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_hero_banner_4,homepage,hero_4,14,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_hero_banner_5,homepage,hero_5,13,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_hero_banner_6,homepage,hero_6,12,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_strip_slider_1,homepage,strip_1,14,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_strip_slider_2,homepage,strip_2,13,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_strip_slider_3,homepage,strip_3,12,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_strip_slider_4,homepage,strip_4_5,9,
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_strip_slider_5,homepage,strip_4_5,9,
+Supermall,Super Mall Home Page,ae,supermall_ae_sfu_1,homepage,sfu,9,
+Supermall,Super Mall Home Page,ae,supermall_ae_sfu_2,homepage,sfu,9,
+Supermall,Super Mall Home Page,ae,supermall_ae_sfu_3,homepage,sfu,9,
+Supermall,Super Mall Home Page,ae,supermall_ae_upper_mid_page_1,homepage,mid_upper,,
+Supermall,Super Mall Home Page,ae,supermall_ae_upper_mid_page_2,homepage,mid_upper,,
+Supermall,Super Mall Home Page,ae,supermall_ae_upper_mid_page_3,homepage,mid_upper,,
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_atf,homepage,atf,,245
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_hero_banner_2,homepage,hero_2,14,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_hero_banner_3,homepage,hero_3,14,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_hero_banner_4,homepage,hero_4,14,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_hero_banner_5,homepage,hero_5,13,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_hero_banner_6,homepage,hero_6,12,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_strip_slider_1,homepage,strip_1,14,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_strip_slider_2,homepage,strip_2,13,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_strip_slider_3,homepage,strip_3,12,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_strip_slider_4,homepage,strip_4_5,9,
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_strip_slider_5,homepage,strip_4_5,9,
+Supermall,Super Mall Home Page,sa,supermall_sa_sfu_1,homepage,sfu,9,
+Supermall,Super Mall Home Page,sa,supermall_sa_sfu_2,homepage,sfu,9,
+Supermall,Super Mall Home Page,sa,supermall_sa_sfu_3,homepage,sfu,9,
+Supermall,Super Mall Home Page,sa,supermall_sa_upper_mid_page_1,homepage,mid_upper,,
+Supermall,Super Mall Home Page,sa,supermall_sa_upper_mid_page_2,homepage,mid_upper,,
+Supermall,Super Mall Home Page,sa,supermall_sa_upper_mid_page_3,homepage,mid_upper,,
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_atf_1,homepage,atf,,245
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_in_focus_2,homepage,in_focus_2,,45
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_in_focus_3,homepage,in_focus_3,,55
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_in_focus_4,homepage,in_focus_4,,40
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_in_focus_5,homepage,in_focus_5,,25
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_mid_page_slider_1,homepage,mid_upper,,
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_mid_page_slider_2,homepage,mid_upper,,
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_mid_page_slider_3,homepage,mid_upper,,
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_atf_1,homepage,atf,,265
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_in_focus_2,homepage,in_focus_2,,45
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_in_focus_3,homepage,in_focus_3,,35
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_in_focus_4,homepage,in_focus_4,,40
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_in_focus_5,homepage,in_focus_5,,25
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_mid_page_slider_1,homepage,mid_upper,,
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_mid_page_slider_2,homepage,mid_upper,,
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_mid_page_slider_3,homepage,mid_upper,,
+Supermall,Super Mall Home Page,ae,supermall_ae_home_page_floating_button,homepage,floating_button,,825
+Supermall,Super Mall Home Page,ae,supermall_ae_homepage_hp_hero_banner_1,homepage,hero_1,,
+Supermall,Super Mall Home Page,sa,supermall_sa_home_page_floating_button,homepage,floating_button,,585
+Supermall,Super Mall Home Page,sa,supermall_sa_homepage_hp_hero_banner_1,homepage,hero_1,,
+Noon,Tablet,ae,noon_ae_clp_tablet_clp_atf,clp_g2,atf,,180
+Noon,Tablet,ae,noon_ae_clp_tablet_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Tablet,ae,noon_ae_clp_tablet_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Tablet,ae,noon_ae_clp_tablet_clp_sfu1,clp_g2,sfu,,150
+Noon,Tablet,ae,noon_ae_clp_tablet_clp_sfu2,clp_g2,sfu,,150
+Noon,Tablet,ae,noon_ae_clp_tablet_clp_sfu3,clp_g2,sfu,,150
+Noon,Tablet,sa,noon_sa_clp_tablet_clp_atf,clp_g2,atf,,180
+Noon,Tablet,sa,noon_sa_clp_tablet_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Tablet,sa,noon_sa_clp_tablet_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Tablet,sa,noon_sa_clp_tablet_clp_sfu1,clp_g2,sfu,,130
+Noon,Tablet,sa,noon_sa_clp_tablet_clp_sfu2,clp_g2,sfu,,130
+Noon,Tablet,sa,noon_sa_clp_tablet_clp_sfu3,clp_g2,sfu,,130
+Noon,Thankyou_Page,ae,noon_ae_order_confirmation_sfu,thankyou,sfu,11,
+Noon,Thankyou_Page,eg,noon_eg_order_confirmation_sfu,thankyou,sfu,,
+Noon,Thankyou_Page,sa,noon_sa_order_confirmation_sfu,thankyou,sfu,11,
+Noon,Thankyou_Page,ae,noon_ae_order_confirmation_carousel_2,thankyou,,,
+Noon,Thankyou_Page,ae,noon_ae_order_confirmation_carousel_3,thankyou,,,
+Noon,Thankyou_Page,sa,noon_sa_order_confirmation_carousel_2,thankyou,,,
+Noon,Thankyou_Page,sa,noon_sa_order_confirmation_carousel_3,thankyou,,,
+Noon,Tools & Home improvement,ae,noon_ae_clp_tools_home_improvement_clp_atf,clp_g3,atf,,130
+Noon,Tools & Home improvement,ae,noon_ae_clp_tools_home_improvement_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Tools & Home improvement,ae,noon_ae_clp_tools_home_improvement_clp_sfu_1,clp_g3,sfu,,125
+Noon,Tools & Home improvement,ae,noon_ae_clp_tools_home_improvement_clp_sfu_2,clp_g3,sfu,,125
+Noon,Tools & Home improvement,ae,noon_ae_clp_tools_home_improvement_clp_sfu_3,clp_g3,sfu,,125
+Noon,Tools & Home improvement,eg,noon_eg_clp_tools_home_improvement_clp_atf,,atf,,
+Noon,Tools & Home improvement,eg,noon_eg_clp_tools_home_improvement_clp_hero_banner_2,,hero_2,,
+Noon,Tools & Home improvement,eg,noon_eg_clp_tools_home_improvement_clp_sfu1,,sfu,,
+Noon,Tools & Home improvement,eg,noon_eg_clp_tools_home_improvement_clp_sfu2,,sfu,,
+Noon,Tools & Home improvement,eg,noon_eg_clp_tools_home_improvement_clp_sfu3,,sfu,,
+Noon,Tools & Home improvement,sa,noon_sa_clp_tools_home_improvement_clp_atf,clp_g3,atf,,125
+Noon,Tools & Home improvement,sa,noon_sa_clp_tools_home_improvement_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Tools & Home improvement,sa,noon_sa_clp_tools_home_improvement_clp_sfu_1,clp_g3,sfu,,90
+Noon,Tools & Home improvement,sa,noon_sa_clp_tools_home_improvement_clp_sfu_2,clp_g3,sfu,,90
+Noon,Tools & Home improvement,sa,noon_sa_clp_tools_home_improvement_clp_sfu_3,clp_g3,sfu,,90
+Noon,Toys,ae,noon_ae_clp_toys_clp_atf,clp_g3,atf,,130
+Noon,Toys,ae,noon_ae_clp_toys_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Toys,ae,noon_ae_clp_toys_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Toys,ae,noon_ae_clp_toys_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Toys,ae,noon_ae_clp_toys_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Toys,ae,noon_ae_clp_toys_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Toys,ae,noon_ae_clp_toys_clp_sfu_1,clp_g3,sfu,,125
+Noon,Toys,ae,noon_ae_clp_toys_clp_sfu_2,clp_g3,sfu,,125
+Noon,Toys,ae,noon_ae_clp_toys_clp_sfu_3,clp_g3,sfu,,125
+Noon,Toys,eg,noon_eg_clp_toys_clp_atf,clp_eg_c,atf,,90
+Noon,Toys,eg,noon_eg_clp_toys_clp_hero_banner_2,clp_eg_c,hero_2,,75
+Noon,Toys,eg,noon_eg_clp_toys_clp_hero_banner_3,clp_eg_c,hero_3,,55
+Noon,Toys,eg,noon_eg_clp_toys_clp_hero_banner_4,clp_eg_c,hero_4,,
+Noon,Toys,eg,noon_eg_clp_toys_clp_hero_banner_5,clp_eg_c,hero_5,,
+Noon,Toys,eg,noon_eg_clp_toys_clp_hero_banner_6,clp_eg_c,hero_6,,
+Noon,Toys,eg,noon_eg_clp_toys_clp_sfu1,clp_eg_c,sfu,,60
+Noon,Toys,eg,noon_eg_clp_toys_clp_sfu2,clp_eg_c,sfu,,60
+Noon,Toys,eg,noon_eg_clp_toys_clp_sfu3,clp_eg_c,sfu,,60
+Noon,Toys,sa,noon_sa_clp_toys_clp_atf,clp_g3,atf,,125
+Noon,Toys,sa,noon_sa_clp_toys_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Toys,sa,noon_sa_clp_toys_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Toys,sa,noon_sa_clp_toys_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Toys,sa,noon_sa_clp_toys_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Toys,sa,noon_sa_clp_toys_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Toys,sa,noon_sa_clp_toys_clp_sfu_1,clp_g3,sfu,,90
+Noon,Toys,sa,noon_sa_clp_toys_clp_sfu_2,clp_g3,sfu,,90
+Noon,Toys,sa,noon_sa_clp_toys_clp_sfu_3,clp_g3,sfu,,90
+Noon,Toys,ae,noon_ae_clp_toys_brand_carousel,clp_g3,brand_carousel,,
+Noon,Toys,sa,noon_sa_clp_toys_brand_carousel,clp_g3,brand_carousel,,
+Noon,TV - Appliances Sale Page,sa,noon_sa_tv_appliances_sale_hero_banner_2,clp_g1,hero_2,,250
+Noon,TV - Appliances Sale Page,sa,noon_sa_tv_appliances_sale_hero_banner_3,clp_g1,hero_3,,200
+Noon,TV - Appliances Sale Page,sa,noon_sa_tv_appliances_sale_atf,clp_g1,atf,,280
+Noon,TV - Appliances Sale Page,ae,noon_ae_tv_appliances_sale_hero_banner_2,clp_g1,hero_2,,250
+Noon,TV - Appliances Sale Page,ae,noon_ae_tv_appliances_sale_hero_banner_3,clp_g1,hero_3,,150
+Noon,TV - Appliances Sale Page,ae,noon_ae_tv_appliances_sale_atf,clp_g1,atf,,250
+Noon,Valentines Day,ae,noon_ae_clp_valentines_day_clp_atf,,atf,,
+Noon,Valentines Day,ae,noon_ae_clp_valentines_day_clp_hero_banner_2,,hero_2,,
+Noon,Valentines Day,ae,noon_ae_clp_valentines_day_clp_hero_banner_3,,hero_3,,
+Noon,Valentines Day,sa,noon_sa_clp_valentines_day_clp_atf,,atf,,
+Noon,Valentines Day,sa,noon_sa_clp_valentines_day_clp_hero_banner_2,,hero_2,,
+Noon,Valentines Day,sa,noon_sa_clp_valentines_day_clp_hero_banner_3,,hero_3,,
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_atf,clp_g3,atf,,130
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_hero_banner_3,clp_g3,hero_3,,75
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_sfu_1,clp_g3,sfu,,125
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_sfu_2,clp_g3,sfu,,125
+Noon,Wearables,ae,noon_ae_clp_wearables_clp_sfu_3,clp_g3,sfu,,125
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_atf,clp_eg_b,atf,,120
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Wearables,eg,noon_eg_clp_wearables_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_atf,clp_g3,atf,,125
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_hero_banner_2,clp_g3,hero_2,,125
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_hero_banner_3,clp_g3,hero_3,,100
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_hero_banner_4,clp_g3,hero_4,,
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_hero_banner_5,clp_g3,hero_5,,
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_hero_banner_6,clp_g3,hero_6,,
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_sfu_1,clp_g3,sfu,,90
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_sfu_2,clp_g3,sfu,,90
+Noon,Wearables,sa,noon_sa_clp_wearables_clp_sfu_3,clp_g3,sfu,,90
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_atf,clp_g2,atf,,180
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_sfu_1,clp_g2,sfu,,150
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_sfu_2,clp_g2,sfu,,150
+Noon,Women Watches,ae,noon_ae_clp_women_watches_clp_sfu_3,clp_g2,sfu,,150
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_atf,clp_eg_b,atf,,120
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Women Watches,eg,noon_eg_clp_women_watches_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_atf,clp_g2,atf,,180
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_sfu_1,clp_g2,sfu,,130
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_sfu_2,clp_g2,sfu,,130
+Noon,Women Watches,sa,noon_sa_clp_women_watches_clp_sfu_3,clp_g2,sfu,,130
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_atf,clp_g2,atf,,180
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_sfu_1,clp_g2,sfu,,150
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_sfu_2,clp_g2,sfu,,150
+Noon,Womens eyewear,ae,noon_ae_clp_womens_eyewear_clp_sfu_3,clp_g2,sfu,,150
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_atf,clp_eg_b,atf,,120
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Womens eyewear,eg,noon_eg_clp_womens_eyewear_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_atf,clp_g2,atf,,180
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_sfu_1,clp_g2,sfu,,130
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_sfu_2,clp_g2,sfu,,130
+Noon,Womens eyewear,sa,noon_sa_clp_womens_eyewear_clp_sfu_3,clp_g2,sfu,,130
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_atf,clp_g2,atf,,180
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_hero_banner_2,clp_g2,hero_2,,180
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_hero_banner_3,clp_g2,hero_3,,110
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_sfu_1,clp_g2,sfu,,150
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_sfu_2,clp_g2,sfu,,150
+Noon,Womens Fashion,ae,noon_ae_clp_women_s_fashion_clp_sfu_3,clp_g2,sfu,,150
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_atf,clp_eg_b,atf,,120
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_hero_banner_2,clp_eg_b,hero_2,,100
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_hero_banner_3,clp_eg_b,hero_3,,65
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_hero_banner_4,clp_eg_b,hero_4,,
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_hero_banner_5,clp_eg_b,hero_5,,
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_hero_banner_6,clp_eg_b,hero_6,,
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_sfu1,clp_eg_b,sfu,,90
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_sfu2,clp_eg_b,sfu,,90
+Noon,Womens Fashion,eg,noon_eg_clp_women_s_fashion_clp_sfu3,clp_eg_b,sfu,,90
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_atf,clp_g2,atf,,180
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_hero_banner_2,clp_g2,hero_2,,150
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_hero_banner_3,clp_g2,hero_3,,125
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_hero_banner_4,clp_g2,hero_4,,
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_hero_banner_5,clp_g2,hero_5,,
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_hero_banner_6,clp_g2,hero_6,,
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_sfu_1,clp_g2,sfu,,130
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_sfu_2,clp_g2,sfu,,130
+Noon,Womens Fashion,sa,noon_sa_clp_women_s_fashion_clp_sfu_3,clp_g2,sfu,,130
+Noon,Womens Fashion,ae,noon_ae_clp_womens_fashion_brand_carousel,clp_g2,brand_carousel,,
+Noon,Beauty Tools,ae,noon_ae_clp_beauty_tools_clp_hero_banner_2,clp_g3,hero_2,,130
+Noon,noon_non_sale_events_2,ae,noon_ae_non_sale_events_2_hero_banner_2,sale_page,hero_2,,260
+Noon,noon_non_sale_events_2,ae,noon_ae_non_sale_events_2_hero_banner_3,sale_page,hero_3,,260
+Noon,noon_non_sale_events_2,ae,noon_ae_non_sale_events_2_atf,sale_page,atf,,370
+Noon,noon_non_sale_events_2,ae,noon_ae_non_sale_events_2_brand_carousel,sale_page,brand_carousel,,470
+Noon,noon_non_sale_events_2,sa,noon_sa_non_sale_events_2_hero_banner_2,sale_page,hero_2,,350
+Noon,noon_non_sale_events_2,sa,noon_sa_non_sale_events_2_hero_banner_3,sale_page,hero_3,,350
+Noon,noon_non_sale_events_2,sa,noon_sa_non_sale_events_2_atf,sale_page,atf,,350
+Noon,noon_non_sale_events_2,sa,noon_sa_non_sale_events_2_brand_carousel,sale_page,brand_carousel,,400
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_hero_banner_1,clp_g1,hero_1,,
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_hero_banner_2,clp_g1,hero_2,,250
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_hero_banner_3,clp_g1,hero_3,,200
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_hero_banner_4,clp_g1,hero_4,,
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_atf_1,clp_g1,atf,,280
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_atf_2,clp_g1,atf,,280
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_sfu_1,clp_g1,sfu,,200
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_sfu_2,clp_g1,sfu,,200
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_sfu_3,clp_g1,sfu,,200
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_hero_banner_5,clp_g1,hero_5,,
+Noon,small_appliances_bonanza,sa,noon_sa_small_appliances_bonanza_hero_banner_6,clp_g1,hero_6,,
