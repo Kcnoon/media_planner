@@ -2354,28 +2354,28 @@ function renderTable(){
     <td><input class="plan-cell-input" type="date" value="${r.to||''}" onchange="updateRowField(${r.id},'to',this.value)"></td>
     <td>${isOffdeck?displayCountryCode(r.country):`<select class="plan-cell-select" onchange="updateRowField(${r.id},'country',this.value)"><option value="ae" ${r.country==='ae'?'selected':''}>AE</option><option value="sa" ${r.country==='sa'?'selected':''}>SA</option><option value="eg" ${r.country==='eg'?'selected':''}>EG</option></select>`}</td>
     <td>${(r.marketplace||getSlotMarketplace(r)||'').toUpperCase()}</td>
-    <td><input class="plan-cell-input readable-page" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value)"></td>
+    <td><input class="plan-cell-input readable-page" value="${r.page||''}" oninput="updateRowField(${r.id},'page',this.value,false)" onblur="updateRowField(${r.id},'page',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}"></td>
     <td>${r.zone||''}</td>
     <td>${r.dimension||''}</td>
     <td>${isOffdeck?`<div style="font-weight:600">${displaySlotName(r)}</div>`:slotSelectHtml(r.id,r)}<div class="slot-meta">${displayCountryCode(r.country)} | ${r.slot_code||'no_slot_selected'}${r.category?` | ${displayCategoryLabel(r.category)}`:''}</div></td>
     <td style="text-align:center"><span class="country-chip">${r.days||0}d</span></td>
     <td>${isOffdeck?'OFF-DECK':`<select class="plan-cell-select" onchange="updateRowField(${r.id},'buyType',this.value)">${pricingOptionsHtml(findSlotMeta(r.country,r.slot_code)||r,r.buyType)}</select>`}</td>
-    <td>${isOffdeck?'-':`<input class="plan-cell-input readable-rate" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value)">`}</td>
+    <td>${isOffdeck?'-':`<input class="plan-cell-input readable-rate" type="number" value="${rateText(netRate(r))}" oninput="updateRowField(${r.id},'rate',this.value,false)" onblur="updateRowField(${r.id},'rate',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(grossRate(r),'USD')}</div></td>
     <td><div class="slot-meta" style="font-size:12px">${isOffdeck?'-':rateMoney(netRate(r),'USD')}</div></td>
-    <td>${isOffdeck?'-':`<input class="plan-cell-input readable-number" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value)">`}</td>
+    <td>${isOffdeck?'-':`<input class="plan-cell-input readable-number" type="number" value="${roundToNearestTen(r.views||0)}" oninput="updateRowField(${r.id},'views',this.value,false)" onblur="updateRowField(${r.id},'views',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}">`}</td>
     <td><div class="slot-meta" style="font-size:12px">${money2(grossAmount(r),'USD')}</div></td>
-    <td><input class="plan-cell-input readable-money" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value)"></td>
+    <td><input class="plan-cell-input readable-money" type="number" value="${roundToNearestTen(netAmount(r))}" oninput="updateRowField(${r.id},'net_amount',this.value,false)" onblur="updateRowField(${r.id},'net_amount',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}"></td>
     <td><div class="slot-meta" style="font-size:12px">${money2(netAmount(r)*fxRate(S.currency||'AED'),S.currency||'AED')}</div></td>
-    <td><input class="plan-cell-input readable-text" value="${r.phase||''}" oninput="updateRowField(${r.id},'phase',this.value)"></td>
-    <td><input class="plan-cell-input readable-brand" value="${r.brand||''}" oninput="updateRowField(${r.id},'brand',this.value)"></td>
-    <td><input class="plan-cell-note readable-note" value="${r.note||''}" oninput="updateRowField(${r.id},'note',this.value)" placeholder="Add note"></td>
+    <td><input class="plan-cell-input readable-text" value="${r.phase||''}" oninput="updateRowField(${r.id},'phase',this.value,false)" onblur="updateRowField(${r.id},'phase',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}"></td>
+    <td><input class="plan-cell-input readable-brand" value="${r.brand||''}" oninput="updateRowField(${r.id},'brand',this.value,false)" onblur="updateRowField(${r.id},'brand',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}"></td>
+    <td><input class="plan-cell-note readable-note" value="${r.note||''}" oninput="updateRowField(${r.id},'note',this.value,false)" onblur="updateRowField(${r.id},'note',this.value,true)" onkeydown="if(event.key==='Enter'){this.blur()}" placeholder="Add note"></td>
     <td><button class="del-btn" onclick="delRow(${r.id})">×</button></td>
   </tr>`;
   }).join('');
 }
 
-function updateRowField(id,key,value){
+function updateRowField(id,key,value,shouldRender=true){
   const row=S.rows.find(r=>r.id===id); if(!row) return;
   row[key]=value;
   if(key==='country'){
@@ -2455,7 +2455,7 @@ function updateRowField(id,key,value){
       row.gross_cpm=0;
     }
   }
-  renderAll();
+  if(shouldRender) renderAll();
 }
 function serializeRows(){
   return S.rows
