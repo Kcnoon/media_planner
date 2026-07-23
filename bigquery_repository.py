@@ -537,12 +537,25 @@ class BigQueryRepository:
         sub_brands = {norm(value) for value in (req.sub_brands or []) if norm(value)}
         brand_names = {value for value in {brand, *selected_brands, *sub_brands} if value}
 
+        # Fine page per slot from the catalog, so page×comcat pooling is at the real page
+        # level (Home Page / CLP / Salepage…), not the coarse delivery publisher field.
+        slot_pages: dict[tuple[str, str], str] = {}
+        for _cat in self.fetch_slot_catalog():
+            _c, _s = _cat.get("country"), slot_code_key(_cat.get("slot_code"))
+            if _c and _s:
+                slot_pages[(_c, _s)] = str(_cat.get("page") or _cat.get("category") or "").strip()
+
         def aggregate(source_rows: list[dict], prefer_brand: bool) -> list[dict]:
             grouped: dict[tuple[str, str, str, str], dict] = {}
             active_dates: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
             active_dates_30: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
             active_dates_90: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
             active_dates_180: dict[tuple[str, str, str, str], set[date]] = defaultdict(set)
+            # Weighted RoAS is pooled at (page × comcat) level, not per slot: a thinly
+            # delivered slot inherits the robust page×comcat ratio instead of its own noise.
+            pagecomcat_rev: dict[tuple[str, str], float] = defaultdict(float)
+            pagecomcat_spend: dict[tuple[str, str], float] = defaultdict(float)
+            key_pc_spend: dict[tuple, dict[tuple[str, str], float]] = defaultdict(lambda: defaultdict(float))
             for row in source_rows:
                 row_country = infer_country(row)
                 key = (
@@ -591,6 +604,14 @@ class BigQueryRepository:
                 target["clicks"] += row_clicks
                 target["revenue"] += row_revenue
                 target["spends"] += row_spends
+                pc_key = (
+                    norm(slot_pages.get((row_country, slot_code_key(get_first(row, "slot_code", "slot"))), "")
+                         or get_first(row, "page", "publisher", "category")),
+                    norm(get_first(row, "comcat", "comcat_code", "category")),
+                )
+                pagecomcat_rev[pc_key] += row_revenue
+                pagecomcat_spend[pc_key] += row_spends
+                key_pc_spend[key][pc_key] += row_spends
                 if prefer_brand and norm(get_first(row, "brand")) == brand:
                     target["brand_specific"] = True
                 row_date = parse_date(get_first(row, "date", "dt"))
@@ -620,6 +641,15 @@ class BigQueryRepository:
                 target["active_days_30d"] = len(active_dates_30[key])
                 target["active_days_90d"] = len(active_dates_90[key])
                 target["active_days_180d"] = len(active_dates_180[key])
+                # Assign the slot the weighted RoAS of its dominant (page, comcat) bucket.
+                pcs = key_pc_spend.get(key)
+                if pcs:
+                    dom = max(pcs, key=pcs.get)
+                    dom_spend = pagecomcat_spend.get(dom, 0.0)
+                    target["roas_pagecomcat"] = round(pagecomcat_rev[dom] / dom_spend, 6) if dom_spend > 0 else None
+                    target["pagecomcat"] = f"{dom[0]}|{dom[1]}"
+                else:
+                    target["roas_pagecomcat"] = None
             return list(grouped.values())
 
         def row_country_match(row: dict) -> bool:

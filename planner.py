@@ -601,12 +601,15 @@ def build_candidates(historical_rows: list[dict], slot_meta: dict[tuple[str, str
 
         cpm = spends * 1000 / views if views > 0 and spends > 0 else None
         ctr = clicks / views if views > 0 else None
-        roas = revenue / spends if spends > 0 else None
+        # RoAS uses the pooled (page × comcat) weighted figure, not this slot's own thin
+        # ratio; falls back to slot-level only if the pooled value is unavailable.
+        roas_pagecomcat = row.get("roas_pagecomcat")
+        roas = roas_pagecomcat if roas_pagecomcat is not None else (revenue / spends if spends > 0 else None)
         cpd = spends / active_days if active_days > 0 and spends > 0 else None
         confidence_score = _confidence_score(views, clicks, active_days, settings)
         visibility_metric = _objective_metric("visibility", views, clicks, revenue, spends, settings.default_cpm)
         ctr_metric = _objective_metric("ctr", views, clicks, revenue, spends, settings.default_cpm)
-        roas_metric = _objective_metric("roas", views, clicks, revenue, spends, settings.default_cpm)
+        roas_metric = roas_pagecomcat if roas_pagecomcat is not None else _objective_metric("roas", views, clicks, revenue, spends, settings.default_cpm)
         trend_visibility = (
             _objective_metric("visibility", int(row.get("views_30d") or 0), int(row.get("clicks_30d") or 0), float(row.get("revenue_30d") or 0.0), float(row.get("spends_30d") or 0.0), settings.default_cpm) * 0.5
             + _objective_metric("visibility", int(row.get("views_90d") or 0), int(row.get("clicks_90d") or 0), float(row.get("revenue_90d") or 0.0), float(row.get("spends_90d") or 0.0), settings.default_cpm) * 0.3

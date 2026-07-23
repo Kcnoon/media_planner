@@ -53,6 +53,14 @@ class Settings(BaseSettings):
     max_lines_per_phase: int = Field(6, validation_alias="MAX_LINES_PER_PHASE")
     min_total_lines: int = Field(6, validation_alias="MIN_TOTAL_LINES")
 
+    # RoAS-efficiency refinement (see refine.py). Trades budget spend for blended RoAS by
+    # keeping the highest-RoAS slots up to a target utilisation and trimming the dilutive
+    # tail. Enabled with a "balanced" 0.5 target (keep the efficient inventory, drop the
+    # low-RoAS tail); both are env-overridable.
+    roas_refine_enabled: bool = Field(True, validation_alias="ROAS_REFINE_ENABLED")
+    roas_target_utilization: float = Field(0.5, validation_alias="ROAS_TARGET_UTILIZATION")
+    roas_refine_min_lines: int = Field(4, validation_alias="ROAS_REFINE_MIN_LINES")
+
     class Config:
         env_file = ".env"
         extra = "ignore"
