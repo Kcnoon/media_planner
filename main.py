@@ -17,6 +17,8 @@ from bigquery_repository import BigQueryRepository
 from config import Settings, get_settings
 from models import MediaPlanRequest, MediaPlanResponse
 from planner import plan_media, suggest_slots
+from refine import refine_plan_for_roas
+from selection_v2 import plan_media_v2, to_editable_rows
 
 
 app = FastAPI(title="Noon Media Planner API")
@@ -251,7 +253,7 @@ def slot_preselection(req: MediaPlanRequest, settings: Settings = Depends(get_se
 
 
 @app.post("/api/media-plan", response_model=MediaPlanResponse)
-def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
+def create_media_plan(req: MediaPlanRequest, engine: str = "v1", settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
     if req.end_date < req.start_date:
         raise HTTPException(status_code=400, detail="end_date must be on or after start_date")
     if req.start_date < date.today():
@@ -270,15 +272,25 @@ def create_media_plan(req: MediaPlanRequest, settings: Settings = Depends(get_se
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)
     slot_meta = repo.fetch_slot_meta(req)
+
+    if str(engine).lower() == "v2":
+        v2_rows, diagnostics = plan_media_v2(req, historical_rows, inventory_rows, slot_meta, settings)
+        rows = to_editable_rows(v2_rows, req)
+        diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "engine": "v2"})
+        if not rows:
+            raise HTTPException(status_code=422, detail={"message": "No plan rows generated for the selected inputs.", "diagnostics": diagnostics})
+        return build_response(req, rows, diagnostics, repo)
+
     rows, diagnostics = plan_media(req, historical_rows, inventory_rows, slot_meta, settings)
-    diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag})
+    diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "engine": "v1"})
     if not rows:
         raise HTTPException(status_code=422, detail={"message": diagnostics.get("reason") or "No plan rows generated.", "diagnostics": diagnostics})
+    rows, diagnostics["roas_refine"] = refine_plan_for_roas(rows, req, settings)
     return build_response(req, rows, diagnostics, repo)
 
 
 @app.post("/api/media-plan/{plan_id}/regenerate", response_model=MediaPlanResponse)
-def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
+def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, engine: str = "v1", settings: Settings = Depends(get_settings), repo: BigQueryRepository = Depends(get_repo)):
     if req.budget <= 0:
         raise HTTPException(status_code=400, detail="on-deck budget must be positive")
     req.total_budget = gross_budget_from_net(req.budget + req.offdeck_budget, req.discount_pct)
@@ -286,8 +298,17 @@ def regenerate_media_plan(plan_id: str, req: MediaPlanRequest, settings: Setting
     historical_rows = repo.fetch_historical_performance(req)
     inventory_rows = repo.fetch_inventory(req)
     slot_meta = repo.fetch_slot_meta(req)
+
+    if str(engine).lower() == "v2":
+        v2_rows, diagnostics = plan_media_v2(req, historical_rows, inventory_rows, slot_meta, settings)
+        rows = to_editable_rows(v2_rows, req)
+        diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "engine": "v2", "regenerated": True})
+        if not rows:
+            raise HTTPException(status_code=422, detail={"message": "No plan rows generated for the selected inputs.", "diagnostics": diagnostics})
+        return build_response(req, rows, diagnostics, repo, plan_id=plan_id)
+
     rows, diagnostics = plan_media(req, historical_rows, inventory_rows, slot_meta, settings)
-    diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "regenerated": True})
+    diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "engine": "v1", "regenerated": True})
     if not rows:
         raise HTTPException(status_code=422, detail={"message": diagnostics.get("reason") or "No plan rows generated.", "diagnostics": diagnostics})
     return build_response(req, rows, diagnostics, repo, plan_id=plan_id)
