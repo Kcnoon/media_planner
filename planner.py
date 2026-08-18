@@ -252,8 +252,13 @@ def _slot_comcat_relevance(category: str | None, slot_code: str, slot_name: str 
             continue
         if value in comcat_values or any(comcat in value or value in comcat for comcat in comcat_values):
             best = max(best, 1.0)
-    if comcat_tokens and haystack_tokens:
-        best = max(best, len(comcat_tokens & haystack_tokens) / len(comcat_tokens))
+    expanded_tokens = set(comcat_tokens)
+    for comcat in comcat_values:
+        expanded_tokens |= _expanded_comcat_tokens(comcat)
+    if expanded_tokens and haystack_tokens:
+        best = max(best, len(expanded_tokens & haystack_tokens) / len(expanded_tokens))
+    if _is_category_specific_slot(category, None, slot_code, slot_name) and best <= 0:
+        return 0.0
     return best
 
 
@@ -265,12 +270,39 @@ def _comcat_tokens(value: str) -> set[str]:
     }
 
 
+COMCAT_RELATED_TOKENS: dict[str, set[str]] = {
+    "apparel": {"apparel", "fashion", "mens", "womens", "clothing"},
+    "fashion": {"apparel", "fashion", "mens", "womens", "clothing"},
+    "footwear": {"footwear", "shoe", "shoes", "sneaker", "sneakers"},
+    "mobiles": {"mobile", "mobiles", "phone", "phones", "smartphone", "smartphones"},
+    "mobile_accessories": {"mobile", "mobiles", "accessory", "accessories", "phone", "phones"},
+    "camera": {"camera", "cameras"},
+    "cameras": {"camera", "cameras"},
+    "fragrance": {"fragrance", "perfume", "perfumes"},
+    "kitchen_dining": {"kitchen", "dining"},
+    "home_kitchen": {"home", "kitchen"},
+    "large_appliances": {"appliance", "appliances"},
+    "small_appliances": {"appliance", "appliances"},
+}
+
+
 COMCAT_CONFLICT_TOKENS: dict[str, set[str]] = {
     "mobiles": {"camera", "cameras"},
     "mobile_accessories": {"camera", "cameras"},
     "camera": {"mobile", "mobiles", "phone", "phones", "smartphone", "smartphones"},
     "cameras": {"mobile", "mobiles", "phone", "phones", "smartphone", "smartphones"},
 }
+
+
+def _expanded_comcat_tokens(comcat: str) -> set[str]:
+    base = _comcat_tokens(comcat)
+    expanded = set(base)
+    key = str(comcat or "").strip().lower()
+    if key in COMCAT_RELATED_TOKENS:
+        expanded |= COMCAT_RELATED_TOKENS[key]
+    for token in base:
+        expanded |= COMCAT_RELATED_TOKENS.get(token, set())
+    return expanded
 
 
 def _has_comcat_conflict(comcat: str, haystack_tokens: set[str]) -> bool:
@@ -280,6 +312,16 @@ def _has_comcat_conflict(comcat: str, haystack_tokens: set[str]) -> bool:
         if token in COMCAT_CONFLICT_TOKENS:
             requested.add(token)
     return any(haystack_tokens & COMCAT_CONFLICT_TOKENS[token] for token in requested)
+
+
+def _is_category_specific_slot(category: str | None, page: str | None, slot_code: str | None, slot_name: str | None) -> bool:
+    if _is_generic_page(category, page):
+        return False
+    text = f"{category or ''} {page or ''} {slot_code or ''} {slot_name or ''}".lower()
+    if any(marker in text for marker in ("clp", "plp", "salepage")):
+        return True
+    tokens = set(_slot_tokens(text, None))
+    return bool(tokens and not _is_generic_page(category, page))
 
 
 def _slot_values_relevance_for_comcat(category: str | None, page: str | None, slot_code: str | None, slot_name: str | None, comcat: str) -> float:
@@ -301,9 +343,11 @@ def _slot_values_relevance_for_comcat(category: str | None, page: str | None, sl
             continue
         if value == comcat_value or comcat_value in value or value in comcat_value:
             best = max(best, 1.0)
-    comcat_tokens = _comcat_tokens(comcat_value)
+    comcat_tokens = _expanded_comcat_tokens(comcat_value)
     if comcat_tokens and haystack_tokens:
         best = max(best, len(comcat_tokens & haystack_tokens) / len(comcat_tokens))
+    if _is_category_specific_slot(category, page, slot_code, slot_name) and best <= 0:
+        return 0.0
     return best
 
 
@@ -546,6 +590,29 @@ def _phase_splits(req: MediaPlanRequest, phases: list[Phase]) -> dict[str, float
         equal_share = 1.0 / len(phases)
         return {phase.name: equal_share for phase in phases}
     return {phase.name: inclusive_days(phase.from_date, phase.to_date) / total_days for phase in phases}
+
+
+def _weighted_phase_sequence(phases: list[Phase], phase_splits: dict[str, float], count: int) -> list[Phase]:
+    if not phases or count <= 0:
+        return []
+    quotas = []
+    assigned = 0
+    for index, phase in enumerate(phases):
+        raw_quota = max(float(phase_splits.get(phase.name, 0) or 0), 0.0) * count
+        floor_quota = int(raw_quota)
+        assigned += floor_quota
+        quotas.append([phase, floor_quota, raw_quota - floor_quota, index])
+    for phase_quota in sorted(quotas, key=lambda item: (item[2], -item[3]), reverse=True):
+        if assigned >= count:
+            break
+        phase_quota[1] += 1
+        assigned += 1
+    sequence: list[Phase] = []
+    for phase, quota, _fraction, _index in quotas:
+        sequence.extend([phase] * quota)
+    while len(sequence) < count:
+        sequence.append(phases[len(sequence) % len(phases)])
+    return sequence[:count]
 
 
 def _brand_splits(req: MediaPlanRequest) -> list[tuple[str, float]]:
@@ -1181,6 +1248,20 @@ def _candidate_score(candidate: Candidate, objective: str) -> float:
     return candidate.final_score
 
 
+def _placement_priority(candidate: Candidate) -> float:
+    text = f"{candidate.slot_code or ''} {candidate.slot_name or ''} {candidate.page or ''}".lower()
+    priority = 0.0
+    if any(marker in text for marker in ("top_fold", "top fold", "tfu", "hero", "sfu")):
+        priority += 0.18
+    if "presearch" in text:
+        priority += 0.08
+    if "mid_page" in text or "mid page" in text or "_mid_" in text:
+        priority -= 0.14
+    if "lower_mid" in text or "lower mid" in text:
+        priority -= 0.18
+    return priority
+
+
 def suggest_slots(
     req: MediaPlanRequest,
     historical_rows: list[dict],
@@ -1204,14 +1285,13 @@ def suggest_slots(
     for candidate in candidates:
         candidates_by_slot[slot_key(candidate.country, candidate.slot_code)].append(candidate)
 
-    ranked_slot_keys = sorted(
-        candidates_by_slot.keys(),
-        key=lambda key: _candidate_score(
-            preferred_candidate_for_slot(candidates_by_slot[key], selected_slot_pricing_map.get(key), req.objective),
-            req.objective,
-        ),
-        reverse=True,
-    )
+    def ranked_slot_key_score(key: str) -> tuple[float, float]:
+        candidate = preferred_candidate_for_slot(candidates_by_slot[key], selected_slot_pricing_map.get(key), req.objective)
+        if not candidate:
+            return (0.0, 0.0)
+        return (_candidate_score(candidate, req.objective), _placement_priority(candidate))
+
+    ranked_slot_keys = sorted(candidates_by_slot.keys(), key=ranked_slot_key_score, reverse=True)
     ordered_slot_keys: list[str] = []
     for country in [country for country in req.countries if country]:
         country_slot_keys = [key for key in ranked_slot_keys if key.startswith(f"{country}|")]
@@ -1301,6 +1381,16 @@ def plan_media(
     selected_slot_keys = set(selected_slot_key_list)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta, settings)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
+    if selected_slot_keys:
+        candidates = [
+            candidate
+            for candidate in candidates
+            if slot_key(candidate.country, candidate.slot_code) in selected_slot_keys
+            and (
+                slot_key(candidate.country, candidate.slot_code) not in selected_slot_pricing_map
+                or candidate.pricing_model == selected_slot_pricing_map[slot_key(candidate.country, candidate.slot_code)]
+            )
+        ]
     if not candidates:
         return [], {"reason": "No historical delivery rows found for the selected brand/comcat/countries."}
 
@@ -1375,10 +1465,10 @@ def plan_media(
         rate = discounted_rate(gross_rate, req.discount_pct)
 
         remaining_budget = max(req.budget - spent_total, 0)
+        working_budget = max(min(target_budget, remaining_budget), 0)
         if force and buy_type == "CPD":
-            working_budget = max(remaining_budget, 0)
-        else:
-            working_budget = max(min(target_budget, remaining_budget), 0)
+            one_day_net_rate = discounted_rate(gross_rate, req.discount_pct)
+            working_budget = max(working_budget, min(one_day_net_rate, remaining_budget))
         if not is_foc and working_budget <= 0 and not force:
             return False
 
@@ -1563,6 +1653,65 @@ def plan_media(
         for key in candidates_by_slot_key.keys()
     }
 
+    def marketplace_share_for(candidate: Candidate) -> float:
+        shares = {name: share for name, share in marketplace_splits}
+        if candidate.marketplace in shares:
+            return shares[candidate.marketplace]
+        return 1.0
+
+    def comcat_bucket_for(candidate: Candidate) -> tuple[str, float]:
+        matches = [
+            (comcat_name, share, _slot_relevance_for_comcat(candidate, comcat_name))
+            for comcat_name, share in comcat_splits
+            if not comcat_name or _slot_relevance_for_comcat(candidate, comcat_name) > 0
+        ]
+        if not matches:
+            return ("", 1.0 / max(len(comcat_splits), 1))
+        comcat_name, share, _relevance = max(matches, key=lambda item: (item[2], item[1]))
+        return (comcat_name, share)
+
+    selected_phase_sequence = _weighted_phase_sequence(phases, phase_splits, len(selected_slot_key_list))
+    selected_allocations: list[dict] = []
+    selected_bucket_counts: dict[tuple[str, str, str, str, str], int] = defaultdict(int)
+    selected_bucket_targets: dict[tuple[str, str, str, str, str], float] = defaultdict(float)
+    for index, selected_key in enumerate(selected_slot_key_list):
+        candidate = selected_candidate_for_key(selected_key)
+        if not candidate:
+            continue
+        brand_name, brand_share = brand_splits[index % len(brand_splits)]
+        phase = selected_phase_sequence[index] if index < len(selected_phase_sequence) else phases[index % len(phases)]
+        country_share = 1.0 / max(len(countries), 1)
+        comcat_name, comcat_share = comcat_bucket_for(candidate)
+        bucket_key = (candidate.country, str(brand_name or ""), phase.name, candidate.marketplace, comcat_name)
+        bucket_target = req.budget * (
+            max(country_share, 0.01)
+            * max(brand_share, 0.01)
+            * max(phase_splits.get(phase.name, 0), 0.01)
+            * max(marketplace_share_for(candidate), 0.01)
+            * max(comcat_share, 0.01)
+        )
+        selected_bucket_counts[bucket_key] += 1
+        selected_bucket_targets[bucket_key] = max(selected_bucket_targets[bucket_key], bucket_target)
+        selected_allocations.append(
+            {
+                "key": selected_key,
+                "candidate": candidate,
+                "brand_name": brand_name,
+                "brand_share": brand_share,
+                "phase": phase,
+                "bucket_key": bucket_key,
+            }
+        )
+    selected_target_total = sum(selected_bucket_targets.values())
+    selected_scale = (req.budget / selected_target_total) if selected_target_total > 0 else 1.0
+    selected_budget_by_key: dict[tuple[str, str, str], float] = {}
+    for item in selected_allocations:
+        bucket_key = item["bucket_key"]
+        bucket_count = max(selected_bucket_counts.get(bucket_key, 1), 1)
+        selected_budget_by_key[
+            (str(item["key"]), item["phase"].name, str(item["brand_name"] or ""))
+        ] = (selected_bucket_targets.get(bucket_key, 0.0) * selected_scale / bucket_count) if selected_target_total > 0 else req.budget / max(len(selected_allocations), 1)
+
     def row_matches_selected_pricing(row: EditablePlanLine, selected_key: str) -> bool:
         requested_model = selected_slot_pricing_map.get(selected_key)
         if not requested_model:
@@ -1571,20 +1720,20 @@ def plan_media(
         return row_model == requested_model
 
     selected_type = _allocation_type(req.objective)
-    for index, selected_key in enumerate(selected_slot_key_list):
+    for item in selected_allocations:
+        selected_key = str(item["key"])
         if any(
             slot_key(row.country, row.slot_code) == selected_key and row_matches_selected_pricing(row, selected_key)
             for row in rows
             if row.slot_code
         ):
             continue
-        candidate = selected_candidate_for_key(selected_key)
+        candidate = item["candidate"]
         if not candidate:
             continue
-        brand_name, brand_share = brand_splits[index % len(brand_splits)]
-        phase = phases[index % len(phases)]
-        remaining_selected = max(len(selected_slot_key_list) - index, 1)
-        target_budget = (max(req.budget - spent_total, 0) / remaining_selected) * max(brand_share, 0.01)
+        brand_name = str(item["brand_name"] or req.brand)
+        phase = item["phase"]
+        target_budget = selected_budget_by_key.get((selected_key, phase.name, brand_name), req.budget / max(len(selected_allocations), 1))
         selected_score = _candidate_score(candidate, req.objective)
         append_row(candidate, phase, selected_type, selected_score, target_budget, force=True, brand_name=brand_name)
 
@@ -1837,6 +1986,34 @@ def plan_media(
                 line_id += 1
             allocated_offdeck = round(allocated_offdeck + slot_total, 2)
 
+    on_deck_rows = [row for row in rows if str(row.buyType or "").upper() != "OFF-DECK"]
+    on_deck_total = sum(float(row.cost or row.net_amount or 0) for row in on_deck_rows)
+
+    def actual_pct_split(values: dict[str, float]) -> dict[str, float]:
+        if on_deck_total <= 0:
+            return {key: 0.0 for key in values}
+        return {key: round((value / on_deck_total) * 100, 2) for key, value in values.items()}
+
+    actual_marketplace_spend: dict[str, float] = defaultdict(float)
+    actual_phase_spend: dict[str, float] = defaultdict(float)
+    actual_country_spend: dict[str, float] = defaultdict(float)
+    actual_comcat_spend: dict[str, float] = defaultdict(float)
+    for row in on_deck_rows:
+        row_spend = float(row.cost or row.net_amount or 0)
+        actual_marketplace_spend[row.marketplace or "unknown"] += row_spend
+        actual_phase_spend[row.phase or "unknown"] += row_spend
+        actual_country_spend[row.country or "unknown"] += row_spend
+        matched_comcats = [
+            (comcat_name, _row_relevance_for_comcat(row, comcat_name))
+            for comcat_name, _share in comcat_splits
+            if comcat_name and _row_relevance_for_comcat(row, comcat_name) > 0
+        ]
+        if matched_comcats:
+            comcat_name, _relevance = max(matched_comcats, key=lambda item: item[1])
+            actual_comcat_spend[comcat_name] += row_spend
+        else:
+            actual_comcat_spend["unmapped"] += row_spend
+
     diagnostics = {
         "candidate_count": len(candidates),
         "base_candidate_count": len(base_candidates),
@@ -1855,6 +2032,10 @@ def plan_media(
         "marketplace_budget_split": {name: round(share * 100, 2) for name, share in marketplace_splits},
         "comcat_budget_split": {name: round(share * 100, 2) for name, share in comcat_splits if name},
         "phase_budget_split": {name: round(share * 100, 2) for name, share in phase_splits.items()},
+        "actual_country_budget_split": actual_pct_split(dict(actual_country_spend)),
+        "actual_marketplace_budget_split": actual_pct_split(dict(actual_marketplace_spend)),
+        "actual_comcat_budget_split": actual_pct_split(dict(actual_comcat_spend)),
+        "actual_phase_budget_split": actual_pct_split(dict(actual_phase_spend)),
         "country_row_counts": {country: len([row for row in rows if row.country == country and (row.slot_code or "").strip()]) for country in countries},
         "omitted_selected_slots": omitted_selected_slots,
     }

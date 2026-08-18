@@ -461,6 +461,10 @@ class BigQueryRepository:
             cpm_rate = float(rate_meta.get("cpm_rate") or 0.0) if has_rate_card else 0.0
             cpd_rate = float(rate_meta.get("cpd_rate") or 0.0) if has_rate_card else 0.0
             pricing_options = pricing_options_for_type(pricing_model)
+            if pricing_model == "CPM" and cpm_rate <= 0:
+                cpm_rate = float(self.settings.default_cpm)
+            if pricing_model == "CPD" and cpd_rate <= 0:
+                cpd_rate = float(self.settings.default_cpd)
             default_rate = cpd_rate if pricing_model == "CPD" else cpm_rate
             catalog.append(
                 {

@@ -162,6 +162,7 @@ td.mono{font-family:var(--mono);font-size:11px}
 .plan-cell-input.readable-page{min-width:170px;font-size:13px}
 .plan-cell-input.readable-text{min-width:150px;font-size:13px}
 .plan-cell-input.readable-brand{min-width:150px;font-size:13px}
+.plan-cell-select.slot-select-wide{min-width:520px;font-size:13px}
 .plan-cell-note{min-width:180px}
 .plan-cell-note.readable-note{min-width:250px;font-size:13px}
 .slot-meta{font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono);line-height:1.4}
@@ -1679,7 +1680,16 @@ function isOffdeckSlot(slot){
 }
 
 function sanitizeOnDeckSelections(){
-  S.selectedSlots=(S.selectedSlots||[]).filter(slot=>!isOffdeckSlot(slot));
+  const allowedCountries=new Set((S.countries||[]).map(country=>String(country||'').toLowerCase()).filter(Boolean));
+  const availableKeys=new Set((S.availableSlotCatalog||[]).map(slot=>slot.slot_key||slotKey(slot.country,slot.slot_code)).filter(Boolean));
+  S.selectedSlots=(S.selectedSlots||[]).filter(slot=>{
+    if(isOffdeckSlot(slot)) return false;
+    const country=String(slot.country||'').toLowerCase();
+    if(allowedCountries.size && !allowedCountries.has(country)) return false;
+    const key=slot.slot_key||slotKey(slot.country,slot.slot_code);
+    if(availableKeys.size && !availableKeys.has(key)) return false;
+    return true;
+  });
 }
 
 function mergedSuggestionSlots(){
@@ -2319,7 +2329,10 @@ function slotSelectHtml(id,row){
     const sm=isSupermall(s);
     return mk==='supermall'?sm:!sm;
   });
-  return `<select class="plan-cell-select" onchange="updateRowField(${id},'slot_code',this.value)"><option value="">Select slot</option>${options.map(s=>`<option value="${s.slot_code}" ${s.slot_code===row.slot_code?'selected':''}>${s.slot_name} (${s.slot_code})</option>`).join('')}</select>`;
+  return `<select class="plan-cell-select slot-select-wide" title="Choose slot" onchange="updateRowField(${id},'slot_code',this.value)"><option value="">Select slot</option>${options.map(s=>{
+    const label=`${displayCountryCode(s.country)} · ${s.slot_name||s.slot_code} · ${displayCategoryLabel(s.page||s.category)||'Page pending'} · ${s.slot_code}`;
+    return `<option value="${s.slot_code}" ${s.slot_code===row.slot_code?'selected':''}>${label}</option>`;
+  }).join('')}</select>`;
 }
 
 function renderTable(){
@@ -2424,6 +2437,17 @@ function updateRowField(id,key,value,shouldRender=true){
       }
     }
   }
+  if(key==='slot_code'||key==='buyType'){
+    const discount=Number(((row&&row.discount_pct)!=null?row.discount_pct:S.discountPct))||0;
+    if(row.buyType==='CPM'){
+      row.net_amount=Math.round(((Number(row.views)||0)*(Number(row.rate)||0)/1000)*100)/100;
+      row.cost=row.net_amount;
+    }else if(row.buyType!=='OFF-DECK'){
+      row.net_amount=Math.round((Number(row.rate)||0)*(Number(row.days)||0)*100)/100;
+      row.cost=row.net_amount;
+    }
+    row.gross_amount=discount>=100?row.cost:Math.round((row.cost/Math.max(1-(discount/100),0.0001))*100)/100;
+  }
   if(key==='from'||key==='to'){
     const s=new Date(row.from+'T00:00:00'), e=new Date(row.to+'T00:00:00');
     row.days=Math.max(Math.round((e-s)/86400000)+1,1);
@@ -2440,6 +2464,19 @@ function updateRowField(id,key,value,shouldRender=true){
       row.gross_cpm=Math.round((row.net_cpm/discountFactor)*10000)/10000;
     }else if(key==='rate' && row.buyType!=='CPM'){
       row.net_amount=Math.round((Number(row.rate)||0)*(Number(row.days)||0)*100)/100;
+    }else if(key==='net_amount' && row.buyType==='CPM'){
+      const netRateValue=Number(row.rate)||Number(row.net_cpm)||0;
+      if(netRateValue>0){
+        const recalculatedViews=roundToNearestTen((Number(row.net_amount)||0)*1000/netRateValue);
+        const available=Number(row.available_views||0)||0;
+        row.views=available>0?Math.min(recalculatedViews,roundToNearestTen(available)):recalculatedViews;
+      }
+      row.net_cpm=netRateValue;
+      const discountFactor=Math.max(1-((Number(row.discount_pct??S.discountPct)||0)/100),0.0001);
+      row.gross_cpm=Math.round((row.net_cpm/discountFactor)*10000)/10000;
+    }else if(key==='net_amount' && row.buyType!=='CPM'){
+      const days=Math.max(Number(row.days)||0,1);
+      row.rate=Math.round(((Number(row.net_amount)||0)/days)*10000)/10000;
     }
     if(key==='net_amount'){
       row.cost=Number(row.net_amount)||0;

@@ -285,7 +285,10 @@ def create_media_plan(req: MediaPlanRequest, engine: str = "v1", settings: Setti
     diagnostics.update({"selected_comcats": req.comcats, "selected_countries": req.countries, "brand_tag": req.brand_tag, "engine": "v1"})
     if not rows:
         raise HTTPException(status_code=422, detail={"message": diagnostics.get("reason") or "No plan rows generated.", "diagnostics": diagnostics})
-    rows, diagnostics["roas_refine"] = refine_plan_for_roas(rows, req, settings)
+    diagnostics["roas_refine"] = {
+        "applied": False,
+        "reason": "skipped to preserve the requested budget, phase, marketplace, comcat, and selected-slot allocation",
+    }
     return build_response(req, rows, diagnostics, repo)
 
 
