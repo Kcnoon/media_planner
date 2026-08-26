@@ -269,6 +269,15 @@ def pricing_options_for_type(pricing_model: str) -> list[str]:
     return [normalize_pricing_model(pricing_model)]
 
 
+def is_cpd_booking_row(row: dict) -> bool:
+    pricing_value = get_first(row, "type", "pricing_type", "pricing_model", "buy_type", "buy type")
+    if normalize_pricing_model(pricing_value) == "CPD":
+        return True
+    slot_code = str(get_first(row, "slot_code", "slot") or "")
+    slot_name = str(get_first(row, "slot_name", "asset") or "")
+    return infer_pricing_model_from_slot(slot_code, slot_name) == "CPD"
+
+
 def combined_dimension(row: dict) -> str:
     app_dimension = str(get_first(row, "app_dimension", "app dimension") or "").strip()
     web_dimension = str(get_first(row, "web_dimension", "web dimension") or "").strip()
@@ -433,12 +442,37 @@ class BigQueryRepository:
 
         return finalize(dict(by_country_slot)), finalize(dict(by_slot))
 
+    def _fetch_booked_cpd_slot_keys(self, req: MediaPlanRequest) -> set[tuple[str, str]]:
+        rows = self._table_records_for_window(
+            self.settings.booking_table,
+            req.start_date,
+            req.end_date,
+            "dt",
+            "date",
+        )
+        countries = country_values(req.countries)
+        booked: set[tuple[str, str]] = set()
+        for row in rows:
+            if not is_cpd_booking_row(row):
+                continue
+            country = infer_country(row)
+            if countries and country not in countries:
+                continue
+            slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
+            if slot_code:
+                booked.add((country, slot_code_key(slot_code)))
+        return booked
+
     def fetch_slot_catalog(self, req: MediaPlanRequest | None = None) -> list[dict]:
         rows = self._query_records(f"SELECT * FROM `{self.settings.slot_data_table}`")
         rate_by_country_slot: dict[tuple[str, str], dict] = {}
         rate_by_slot: dict[str, dict] = {}
+        cpd_blocked_slot_keys: set[tuple[str, str]] = set()
+        exclude_cpd_by_budget = False
         if req is not None:
             rate_by_country_slot, rate_by_slot = self._fetch_rate_card_map(req.start_date, req.end_date)
+            cpd_blocked_slot_keys = self._fetch_booked_cpd_slot_keys(req)
+            exclude_cpd_by_budget = float(getattr(req, "budget", 0) or 0) < 12000
         catalog = []
         for row in rows:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
@@ -449,6 +483,8 @@ class BigQueryRepository:
             normalized_slot_code = slot_code_key(slot_code)
             rate_meta = rate_by_country_slot.get((country, normalized_slot_code)) or rate_by_slot.get(normalized_slot_code) or {}
             pricing_model = normalize_pricing_model(get_first(row, "type", "pricing_type", "buy_type", "pricing_model") or infer_pricing_model_from_slot(slot_code, slot_name))
+            if pricing_model == "CPD" and (exclude_cpd_by_budget or (country, normalized_slot_code) in cpd_blocked_slot_keys):
+                continue
             has_rate_card = bool(
                 rate_meta
                 and (

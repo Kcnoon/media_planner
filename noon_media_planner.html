@@ -2323,7 +2323,8 @@ function findSlotMeta(country,slotCode){
 }
 function slotSelectHtml(id,row){
   const mk=S.marketplace;
-  const options=S.slotCatalog.filter(s=>{
+  const sourceCatalog=(S.availableSlotCatalog&&S.availableSlotCatalog.length)?S.availableSlotCatalog:S.slotCatalog;
+  const options=sourceCatalog.filter(s=>{
     if(row.country && s.country!==row.country) return false;
     if(!mk || mk==='both') return true;
     const sm=isSupermall(s);
