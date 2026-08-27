@@ -2606,10 +2606,14 @@ function printPlan(mode='detailed'){
   const executiveRows=S.rows.map(row=>{
     const isOffdeck=String(row.buyType||'').toUpperCase()==='OFF-DECK';
     return `<tr>
+    <td>${row.from||''}</td>
+    <td>${row.to||''}</td>
     <td>${displaySlotName(row)}</td>
     <td>${row.page||''}</td>
+    <td>${row.dimension||''}</td>
     <td>${(row.marketplace||'').toUpperCase()}</td>
     <td>${displayCountryCode(row.country)}</td>
+    <td>${row.buyType||''}</td>
     <td style="text-align:right">${isOffdeck?'-':rateText(row.rate||0)}</td>
     <td style="text-align:right">${isOffdeck?'-':views10(row.views||0)}</td>
     <td style="text-align:right">${money2(grossAmount(row),'USD')}</td>
@@ -2617,7 +2621,7 @@ function printPlan(mode='detailed'){
   </tr>`;
   }).join('');
   const tableHead=mode==='executive'
-    ? `<tr><th>Asset / Slot</th><th>Page</th><th>Marketplace</th><th>Country</th><th>Net Rate</th><th>Est. views</th><th>Gross Cost</th><th>Net Cost</th></tr>`
+    ? `<tr><th>From</th><th>To</th><th>Asset / Slot</th><th>Page</th><th>Dimension</th><th>Marketplace</th><th>Country</th><th>Buy Type</th><th>Net Rate</th><th>Est. views</th><th>Gross Cost</th><th>Net Cost</th></tr>`
     : `<tr><th>From</th><th>To</th><th>Country</th><th>Marketplace</th><th>Page</th><th>Zone</th><th>Dimension</th><th>Asset / Slot</th><th>Days</th><th>Buy type</th><th>Rate</th><th>Gross Rate</th><th>Net Rate</th><th>Est. views</th><th>Gross $</th><th>Net $</th><th>Net ${currencySymbol(cur).trim()}</th><th>Phase</th><th>Brand</th><th>Note</th></tr>`;
   const tableRows=mode==='executive'?executiveRows:detailedRows;
   const summaryCards=mode==='executive'
