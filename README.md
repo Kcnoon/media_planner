@@ -9,6 +9,7 @@ Source tables:
 - `noonbiadmon.admon_business_analytics.slot_base_data`
 - `noonbiadmon.admon_business_analytics.slot_rate_card_base`
 - `noonbiadmon.admon_business_analytics.campaign_booking_data_past`
+- `noonbiadmon.admon_business_analytics.adgroup_booked_delivered` (six-month slot eligibility)
 - `noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance`
 - `noonbiadmon.admon_business_analytics.forecasting`
 
@@ -35,6 +36,7 @@ Useful env vars:
 ```bash
 export BIGQUERY_PROJECT=noonbiadmon
 export BOOKING_TABLE=noonbiadmon.admon_business_analytics.campaign_booking_data_past
+export ADGROUP_BOOKED_DELIVERED_TABLE=noonbiadmon.admon_business_analytics.adgroup_booked_delivered
 export DELIVERY_TABLE=noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance
 export FORECAST_TABLE=noonbiadmon.admon_business_analytics.forecasting
 export SLOT_DATA_TABLE=noonbiadmon.admon_business_analytics.slot_base_data

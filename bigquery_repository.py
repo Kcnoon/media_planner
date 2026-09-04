@@ -13,6 +13,9 @@ from config import Settings
 from models import EditablePlanLine, MediaPlanRequest
 
 
+MIN_RECENT_BOOKED_VIEWS = 1_000
+
+
 RUN_HEADERS = [
     "plan_code",
     "created_at",
@@ -306,6 +309,7 @@ class BigQueryRepository:
         self.settings = settings
         self.client = bigquery.Client(project=settings.bigquery_project or None)
         self._schema_cache: dict[str, dict[str, str]] = {}
+        self._recent_booking_cache: dict[tuple[date, tuple[str, ...]], dict[tuple[str, str], int]] = {}
 
     def _table_schema(self, table_id: str) -> dict[str, str]:
         cached = self._schema_cache.get(table_id)
@@ -463,16 +467,80 @@ class BigQueryRepository:
                 booked.add((country, slot_code_key(slot_code)))
         return booked
 
+    def _fetch_recent_booked_views(self, req: MediaPlanRequest) -> dict[tuple[str, str], int]:
+        """Booked views by country/slot in the rolling six-month window ending yesterday."""
+        requested_countries = tuple(sorted(country_values(req.countries)))
+        as_of_date = date.today()
+        cache_key = (as_of_date, requested_countries)
+        cached = self._recent_booking_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        table_id = self.settings.adgroup_booked_delivered_table
+        date_field = self._field_name(
+            table_id,
+            "date", "dt", "event_date", "booking_date", "adgroup_date", "report_date",
+        )
+        slot_field = self._field_name(table_id, "slot_code", "slot", "placement_code")
+        booked_field = self._field_name(
+            table_id,
+            "booked_views", "booked_view", "booked_impressions", "booked_sessions",
+            "views_booked", "booking_views", "booked",
+        )
+        country_field = self._field_name(table_id, "country", "country_code", "market")
+        missing = [
+            label
+            for label, field in (("date", date_field), ("slot", slot_field), ("booked views", booked_field))
+            if not field
+        ]
+        if missing:
+            raise RuntimeError(
+                f"{table_id} is missing required {', '.join(missing)} column(s) for slot booking eligibility."
+            )
+
+        country_select = f"CAST(`{country_field}` AS STRING)" if country_field else "''"
+        sql = f"""
+            SELECT
+                {country_select} AS country,
+                CAST(`{slot_field}` AS STRING) AS slot_code,
+                SUM(COALESCE(SAFE_CAST(`{booked_field}` AS FLOAT64), 0)) AS booked_views
+            FROM `{table_id}`
+            WHERE DATE(`{date_field}`) >= DATE_SUB(@as_of_date, INTERVAL 6 MONTH)
+              AND DATE(`{date_field}`) < @as_of_date
+            GROUP BY 1, 2
+        """
+        rows = self._query_records(
+            sql,
+            [
+                bigquery.ScalarQueryParameter("as_of_date", "DATE", as_of_date.isoformat()),
+            ],
+        )
+        booked_by_slot: dict[tuple[str, str], int] = defaultdict(int)
+        countries = set(requested_countries)
+        for row in rows:
+            country = infer_country(row)
+            if countries and country and country not in countries:
+                continue
+            slot_code = slot_code_key(get_first(row, "slot_code", "slot"))
+            if not slot_code:
+                continue
+            booked_by_slot[(country, slot_code)] += int(parse_number(get_first(row, "booked_views")))
+        result = dict(booked_by_slot)
+        self._recent_booking_cache[cache_key] = result
+        return result
+
     def fetch_slot_catalog(self, req: MediaPlanRequest | None = None) -> list[dict]:
         rows = self._query_records(f"SELECT * FROM `{self.settings.slot_data_table}`")
         rate_by_country_slot: dict[tuple[str, str], dict] = {}
         rate_by_slot: dict[str, dict] = {}
         cpd_blocked_slot_keys: set[tuple[str, str]] = set()
+        recent_booked_views: dict[tuple[str, str], int] | None = None
         exclude_cpd_by_budget = False
         if req is not None:
             rate_by_country_slot, rate_by_slot = self._fetch_rate_card_map(req.start_date, req.end_date)
             cpd_blocked_slot_keys = self._fetch_booked_cpd_slot_keys(req)
-            exclude_cpd_by_budget = float(getattr(req, "budget", 0) or 0) < 12000
+            recent_booked_views = self._fetch_recent_booked_views(req)
+            exclude_cpd_by_budget = float(getattr(req, "budget", 0) or 0) < 15000
         catalog = []
         for row in rows:
             slot_code = str(get_first(row, "slot_code", "slot") or "").strip()
@@ -481,6 +549,14 @@ class BigQueryRepository:
             slot_name = str(get_first(row, "slot_name", "asset", "slot") or slot_code).strip()
             country = infer_country(row)
             normalized_slot_code = slot_code_key(slot_code)
+            booked_views = None
+            if recent_booked_views is not None:
+                booked_views = recent_booked_views.get(
+                    (country, normalized_slot_code),
+                    recent_booked_views.get(("", normalized_slot_code), 0),
+                )
+                if booked_views < MIN_RECENT_BOOKED_VIEWS:
+                    continue
             rate_meta = rate_by_country_slot.get((country, normalized_slot_code)) or rate_by_slot.get(normalized_slot_code) or {}
             pricing_model = normalize_pricing_model(get_first(row, "type", "pricing_type", "buy_type", "pricing_model") or infer_pricing_model_from_slot(slot_code, slot_name))
             if pricing_model == "CPD" and (exclude_cpd_by_budget or (country, normalized_slot_code) in cpd_blocked_slot_keys):
@@ -521,6 +597,7 @@ class BigQueryRepository:
                     "rate_schedule": dict(rate_meta.get("cpm_rate_schedule") or {}),
                     "cpm_rate_schedule": dict(rate_meta.get("cpm_rate_schedule") or {}),
                     "cpd_rate_schedule": dict(rate_meta.get("cpd_rate_schedule") or {}),
+                    "booked_views_last_6_months": booked_views,
                 }
             )
         return catalog
@@ -531,6 +608,7 @@ class BigQueryRepository:
     def fetch_offdeck_slots(self, req: MediaPlanRequest | None = None) -> list[dict]:
         rows = self._query_records(f"SELECT * FROM `{self.settings.offdeck_slots_table}`")
         countries = country_values(req.countries) if req is not None else set()
+        recent_booked_views = self._fetch_recent_booked_views(req) if req is not None else None
         slots = []
         seen = set()
         for index, row in enumerate(rows):
@@ -543,6 +621,15 @@ class BigQueryRepository:
             key = slot_code or slot_name
             if not key or key in seen:
                 continue
+            normalized_key = slot_code_key(key)
+            booked_views = None
+            if recent_booked_views is not None:
+                booked_views = recent_booked_views.get(
+                    (country, normalized_key),
+                    recent_booked_views.get(("", normalized_key), 0),
+                )
+                if booked_views < MIN_RECENT_BOOKED_VIEWS:
+                    continue
             seen.add(key)
             slots.append(
                 {
@@ -555,6 +642,7 @@ class BigQueryRepository:
                     "country": country,
                     "dimension": "",
                     "description": "",
+                    "booked_views_last_6_months": booked_views,
                 }
             )
         slots.sort(key=lambda slot: (str(slot.get("country") or ""), str(slot.get("page") or "").lower(), str(slot.get("slot_name") or "").lower()))

@@ -186,6 +186,10 @@ GENERIC_PAGE_KEYS = {
     "presearch", "search", "search_page", "search page",
 }
 
+# CPD inventory is deliberately reserved for campaigns large enough to absorb a
+# meaningful daily placement without distorting the requested allocation splits.
+MIN_CPD_BUDGET_USD = 15_000.0
+
 
 def _slot_tokens(slot_code: str, slot_name: str | None) -> list[str]:
     text = f"{slot_name or ''} {slot_code or ''}".lower()
@@ -219,8 +223,12 @@ def _page_key(*values: str | None) -> str:
 
 
 def _is_generic_page(*values: str | None) -> bool:
-    key = _page_key(*values)
-    return key in GENERIC_PAGE_KEYS
+    keys = {
+        re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
+        for value in values
+        if str(value or "").strip()
+    }
+    return bool(keys & {re.sub(r"[^a-z0-9]+", "_", value).strip("_") for value in GENERIC_PAGE_KEYS})
 
 
 def _requested_comcat_tokens(req: MediaPlanRequest) -> tuple[set[str], set[str]]:
@@ -259,6 +267,11 @@ def _slot_comcat_relevance(category: str | None, slot_code: str, slot_name: str 
         best = max(best, len(expanded_tokens & haystack_tokens) / len(expanded_tokens))
     if _is_category_specific_slot(category, None, slot_code, slot_name) and best <= 0:
         return 0.0
+    # Homepage is category-neutral, not category-irrelevant.  Keeping a small
+    # positive relevance lets a mobile campaign, for example, retain reach
+    # inventory while category-specific slots still rank much higher.
+    if _is_generic_page(category, slot_name, slot_code):
+        return max(best, 0.2)
     return best
 
 
@@ -348,6 +361,8 @@ def _slot_values_relevance_for_comcat(category: str | None, page: str | None, sl
         best = max(best, len(comcat_tokens & haystack_tokens) / len(comcat_tokens))
     if _is_category_specific_slot(category, page, slot_code, slot_name) and best <= 0:
         return 0.0
+    if _is_generic_page(category, page, slot_name, slot_code):
+        return max(best, 0.2)
     return best
 
 
@@ -1240,12 +1255,63 @@ def _find_non_overlapping_slot_window(
 def _candidate_score(candidate: Candidate, objective: str) -> float:
     normalized = normalize_objective(objective)
     if normalized == "visibility":
-        return candidate.visibility_score
-    if normalized == "ctr":
-        return candidate.ctr_score
-    if normalized == "roas":
-        return candidate.roas_score
-    return candidate.final_score
+        base_score = candidate.visibility_score
+    elif normalized == "ctr":
+        base_score = candidate.ctr_score
+    elif normalized == "roas":
+        base_score = candidate.roas_score
+    else:
+        base_score = candidate.final_score
+
+    placement = _placement_kind(candidate)
+    if normalized == "visibility":
+        placement_bonus = 0.30 if placement == "homepage" else 0.04 if placement == "clp" else 0.0
+    elif normalized in {"roas", "ctr"}:
+        placement_bonus = 0.30 if placement == "clp" else 0.04 if placement == "homepage" else 0.0
+    else:
+        placement_bonus = 0.14 if placement in {"homepage", "clp"} else 0.0
+    return base_score + placement_bonus
+
+
+def _placement_kind(candidate: Candidate) -> str:
+    """Classify the two placement families that campaign objective controls."""
+    values = [candidate.page, candidate.category, candidate.slot_name, candidate.slot_code]
+    normalized_values = {
+        re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
+        for value in values
+        if str(value or "").strip()
+    }
+    if any(value in GENERIC_PAGE_KEYS or value in {"hp", "home"} for value in normalized_values):
+        return "homepage"
+    if any(re.search(r"(^|_)(clp|plp|category|salepage)($|_)", value) for value in normalized_values):
+        return "clp"
+    return "other"
+
+
+def _objective_diverse_order(candidates: list[Candidate], objective: str) -> list[Candidate]:
+    """Rank by objective while retaining some inventory from the secondary family."""
+    ranked = sorted(
+        candidates,
+        key=lambda candidate: (_candidate_score(candidate, objective), _placement_priority(candidate), candidate.views),
+        reverse=True,
+    )
+    normalized = normalize_objective(objective)
+    primary = "homepage" if normalized == "visibility" else "clp" if normalized in {"roas", "ctr"} else ""
+    secondary = "clp" if primary == "homepage" else "homepage" if primary == "clp" else ""
+    if not primary:
+        return ranked
+
+    primary_rows = [candidate for candidate in ranked if _placement_kind(candidate) == primary]
+    secondary_rows = [candidate for candidate in ranked if _placement_kind(candidate) == secondary]
+    other_rows = [candidate for candidate in ranked if _placement_kind(candidate) not in {primary, secondary}]
+    ordered: list[Candidate] = []
+    while primary_rows or secondary_rows:
+        ordered.extend(primary_rows[:4])
+        primary_rows = primary_rows[4:]
+        if secondary_rows:
+            ordered.append(secondary_rows.pop(0))
+    ordered.extend(other_rows)
+    return ordered
 
 
 def _placement_priority(candidate: Candidate) -> float:
@@ -1275,6 +1341,12 @@ def suggest_slots(
     selected_slot_pricing_map = selected_slot_pricing(req)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta, settings)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
+    candidates = [
+        candidate
+        for candidate in candidates
+        if (req.budget >= MIN_CPD_BUDGET_USD or candidate.pricing_model != "CPD")
+        and (not req.comcats or any(_slot_relevance_for_comcat(candidate, comcat) > 0 for comcat in req.comcats))
+    ]
     inventory = _inventory_by_slot_phase(req, inventory_rows)
     phases = default_phases(req)
     seen: set[str] = set()
@@ -1285,13 +1357,16 @@ def suggest_slots(
     for candidate in candidates:
         candidates_by_slot[slot_key(candidate.country, candidate.slot_code)].append(candidate)
 
-    def ranked_slot_key_score(key: str) -> tuple[float, float]:
-        candidate = preferred_candidate_for_slot(candidates_by_slot[key], selected_slot_pricing_map.get(key), req.objective)
-        if not candidate:
-            return (0.0, 0.0)
-        return (_candidate_score(candidate, req.objective), _placement_priority(candidate))
-
-    ranked_slot_keys = sorted(candidates_by_slot.keys(), key=ranked_slot_key_score, reverse=True)
+    representative_candidates = [
+        candidate
+        for key in candidates_by_slot
+        for candidate in [preferred_candidate_for_slot(candidates_by_slot[key], selected_slot_pricing_map.get(key), req.objective)]
+        if candidate
+    ]
+    ranked_slot_keys = [
+        slot_key(candidate.country, candidate.slot_code)
+        for candidate in _objective_diverse_order(representative_candidates, req.objective)
+    ]
     ordered_slot_keys: list[str] = []
     for country in [country for country in req.countries if country]:
         country_slot_keys = [key for key in ranked_slot_keys if key.startswith(f"{country}|")]
@@ -1381,6 +1456,12 @@ def plan_media(
     selected_slot_keys = set(selected_slot_key_list)
     candidates = expand_candidates_for_countries(req, base_candidates, slot_meta, settings)
     candidates = ensure_selected_slot_candidates(req, selected_slot_keys, selected_slot_pricing_map, candidates, slot_meta, settings)
+    candidates = [
+        candidate
+        for candidate in candidates
+        if (req.budget >= MIN_CPD_BUDGET_USD or candidate.pricing_model != "CPD")
+        and (not req.comcats or any(_slot_relevance_for_comcat(candidate, comcat) > 0 for comcat in req.comcats))
+    ]
     if selected_slot_keys:
         candidates = [
             candidate
@@ -1401,7 +1482,15 @@ def plan_media(
     spent_total = sum(row.cost for row in rows)
     line_id = max([row.id for row in rows], default=0) + 1
 
-    excluded_slot_keys = set(req.excluded_slot_keys) | {f"{row.country}|{row.slot_code}" for row in rows if row.slot_code}
+    # User exclusions are global; generated reuse is phase-scoped.  The same slot
+    # may legitimately run in two non-overlapping phases, which is essential for
+    # matching phase budgets without substituting a weaker placement.
+    excluded_slot_keys = set(req.excluded_slot_keys)
+    used_slot_phases = {
+        (slot_key(row.country, row.slot_code), row.phase)
+        for row in rows
+        if row.slot_code
+    }
     foc_slot_keys = {value for value in req.foc_slot_keys if value}
 
     countries = [c for c in req.countries if c]
@@ -1424,6 +1513,8 @@ def plan_media(
         if requested_model and candidate.pricing_model != requested_model:
             return False
         if not force and slot_key_value in excluded_slot_keys:
+            return False
+        if not force and (slot_key_value, phase.name) in used_slot_phases:
             return False
 
         exact_inventory_key = (candidate.country, candidate.slot_code, phase.name)
@@ -1633,7 +1724,7 @@ def plan_media(
         )
         line_id += 1
         spent_total += net_amount
-        excluded_slot_keys.add(slot_key_value)
+        used_slot_phases.add((slot_key_value, phase.name))
         inventory_by_slot_phase[exact_inventory_key] = max(inventory_by_slot_phase[exact_inventory_key] - int(planned_views or 0), 0)
         return True
 
@@ -1703,7 +1794,11 @@ def plan_media(
             }
         )
     selected_target_total = sum(selected_bucket_targets.values())
-    selected_scale = (req.budget / selected_target_total) if selected_target_total > 0 else 1.0
+    # Preselected slots must appear, but committing the entire budget in this
+    # first pass can lock in coarse phase quotas (for example, 1 of 4 selected
+    # slots in a 30% launch phase).  Reserve 20% for the split-aware allocator
+    # and CPM balancing pass below.
+    selected_scale = ((req.budget * 0.8) / selected_target_total) if selected_target_total > 0 else 1.0
     selected_budget_by_key: dict[tuple[str, str, str], float] = {}
     for item in selected_allocations:
         bucket_key = item["bucket_key"]
@@ -1782,7 +1877,7 @@ def plan_media(
                                 and (not comcat_name or _row_relevance_for_comcat(row, comcat_name) > 0)
                             )
                             remaining_target = max(target - already, 0)
-                            ranked = sorted(comcat_candidates, key=lambda c: (getattr(c, score_name), _slot_relevance_for_comcat(c, comcat_name)), reverse=True)
+                            ranked = _objective_diverse_order(comcat_candidates, req.objective)
                             base_goal = _per_country_min_lines(req) * brand_share * phase_share * marketplace_share * comcat_share
                             phase_goal = max(1, min(settings.max_lines_per_phase, round(base_goal)))
                             used_in_phase = len([
@@ -1826,7 +1921,7 @@ def plan_media(
                     or candidate.pricing_model == selected_slot_pricing_map[slot_key(candidate.country, candidate.slot_code)]
                 )
             ]
-        ranked = sorted(country_candidates, key=lambda c: _candidate_score(c, req.objective), reverse=True)
+        ranked = _objective_diverse_order(country_candidates, req.objective)
         for idx, candidate in enumerate(ranked):
             if have >= per_country_min or spent_total >= req.budget:
                 break
@@ -1860,6 +1955,85 @@ def plan_media(
         remaining_slots = max(len(missing_selected) - index, 1)
         target_budget = (max(req.budget - spent_total, 0) / remaining_slots) * max(brand_share, 0.01)
         append_row(candidate, phase, selected_stype, selected_score, target_budget, force=True, brand_name=brand_name)
+
+    # CPM is continuously scalable, so use remaining inventory to close phase and
+    # marketplace deficits before reporting the plan.  This also avoids leaving a
+    # material budget remainder merely because the initial line quotas were met.
+    topup_added = 0.0
+    topup_iterations = 0
+    target_utilization = 0.995
+    while spent_total < req.budget * target_utilization and topup_iterations < 500:
+        remaining_budget = round(max(req.budget - spent_total, 0), 2)
+        if remaining_budget <= 0:
+            break
+        phase_spend = defaultdict(float)
+        marketplace_spend = defaultdict(float)
+        for existing_row in rows:
+            if str(existing_row.buyType or "").upper() == "OFF-DECK":
+                continue
+            row_spend = float(existing_row.cost or existing_row.net_amount or 0)
+            phase_spend[existing_row.phase] += row_spend
+            marketplace_spend[existing_row.marketplace] += row_spend
+
+        eligible_rows: list[tuple[float, EditablePlanLine, int, float]] = []
+        marketplace_share_map = dict(marketplace_splits)
+        for existing_row in rows:
+            if normalize_pricing_model(existing_row.buyType) != "CPM" or existing_row.manual or existing_row.locked:
+                continue
+            inventory_key = (existing_row.country, existing_row.slot_code, existing_row.phase)
+            remaining_views = floor_views_to_block(inventory_by_slot_phase.get(inventory_key, 0))
+            net_cpm = float(existing_row.net_cpm or existing_row.rate or 0)
+            if remaining_views < 100 or net_cpm <= 0 or remaining_budget + 1e-9 < net_cpm * 0.1:
+                continue
+            phase_target = req.budget * phase_splits.get(existing_row.phase, 0)
+            marketplace_target = req.budget * marketplace_share_map.get(existing_row.marketplace, 0)
+            phase_gap = phase_target - phase_spend[existing_row.phase]
+            marketplace_gap = marketplace_target - marketplace_spend[existing_row.marketplace]
+            deficit_score = (
+                phase_gap / max(phase_target, 1.0)
+                + marketplace_gap / max(marketplace_target, 1.0)
+            )
+            eligible_rows.append((deficit_score, existing_row, remaining_views, net_cpm))
+        if not eligible_rows:
+            break
+
+        _deficit_score, row_to_grow, capacity_views, net_cpm = max(
+            eligible_rows,
+            key=lambda item: (item[0], item[1].score, item[2]),
+        )
+        phase_target = req.budget * phase_splits.get(row_to_grow.phase, 0)
+        marketplace_target = req.budget * marketplace_share_map.get(row_to_grow.marketplace, 0)
+        positive_gaps = [
+            gap
+            for gap in (
+                phase_target - phase_spend[row_to_grow.phase],
+                marketplace_target - marketplace_spend[row_to_grow.marketplace],
+            )
+            if gap > 0.01
+        ]
+        desired_spend = min(positive_gaps) if positive_gaps else remaining_budget
+        desired_spend = min(max(desired_spend, net_cpm * 0.1), remaining_budget)
+        affordable_views = floor_views_to_block(int(desired_spend * 1000 / net_cpm))
+        added_views = min(capacity_views, affordable_views)
+        if added_views < 100:
+            # Mark this cell exhausted for the balancing pass and try another.
+            inventory_by_slot_phase[(row_to_grow.country, row_to_grow.slot_code, row_to_grow.phase)] = 0
+            topup_iterations += 1
+            continue
+        added_net = round(added_views * net_cpm / 1000, 2)
+        if added_net <= 0 or added_net > remaining_budget + 0.01:
+            break
+        gross_cpm = float(row_to_grow.gross_cpm or 0)
+        added_gross = round(added_views * gross_cpm / 1000, 2) if gross_cpm > 0 else added_net
+        row_to_grow.views = int(row_to_grow.views or 0) + added_views
+        row_to_grow.cost = round(float(row_to_grow.cost or 0) + added_net, 2)
+        row_to_grow.net_amount = round(float(row_to_grow.net_amount or 0) + added_net, 2)
+        row_to_grow.gross_amount = round(float(row_to_grow.gross_amount or 0) + added_gross, 2)
+        inventory_key = (row_to_grow.country, row_to_grow.slot_code, row_to_grow.phase)
+        inventory_by_slot_phase[inventory_key] = max(inventory_by_slot_phase.get(inventory_key, 0) - added_views, 0)
+        spent_total = round(spent_total + added_net, 2)
+        topup_added = round(topup_added + added_net, 2)
+        topup_iterations += 1
 
     final_selected_keys = {
         selected_key
@@ -2025,6 +2199,10 @@ def plan_media(
         "on_deck_allocated": round(sum(row.cost for row in rows if str(row.buyType or "").upper() != "OFF-DECK"), 2),
         "offdeck_allocated": round(sum(row.cost for row in rows if str(row.buyType or "").upper() == "OFF-DECK"), 2),
         "offdeck_slot_count": len(selected_offdeck_slots),
+        "budget_utilization_pct": round((on_deck_total / req.budget) * 100, 2) if req.budget > 0 else 0.0,
+        "budget_topup_added": topup_added,
+        "budget_utilization_target_pct": 95.0,
+        "cpd_minimum_budget_usd": MIN_CPD_BUDGET_USD,
         "per_country_min": per_country_min,
         "countries": countries,
         "marketplace": req.marketplace,

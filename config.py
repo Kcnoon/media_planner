@@ -8,6 +8,10 @@ class Settings(BaseSettings):
         "noonbiadmon.admon_business_analytics.campaign_booking_data_past",
         validation_alias="BOOKING_TABLE",
     )
+    adgroup_booked_delivered_table: str = Field(
+        "noonbiadmon.admon_business_analytics.adgroup_booked_delivered",
+        validation_alias="ADGROUP_BOOKED_DELIVERED_TABLE",
+    )
     delivery_table: str = Field(
         "noonbiadmon.admon_business_analytics.campaign_delivery_data_past_performance",
         validation_alias="DELIVERY_TABLE",
